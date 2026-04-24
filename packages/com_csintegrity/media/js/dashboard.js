@@ -1,0 +1,39 @@
+/**
+ * Cybersalt Template Integrity — dashboard behaviour
+ *
+ * Wires up the "Copy prompt" button. No-op if either the button or
+ * the prompt block is missing (e.g. on a future view that reuses the
+ * media file).
+ */
+
+(function () {
+    'use strict';
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var btn    = document.getElementById('csintegrity-copy-btn');
+        var prompt = document.getElementById('csintegrity-prompt');
+
+        if (!btn || !prompt || !navigator.clipboard) {
+            return;
+        }
+
+        var defaultLabel = btn.getAttribute('data-default-label') || 'Copy prompt';
+        var copiedLabel  = btn.getAttribute('data-copied-label')  || 'Copied!';
+
+        btn.addEventListener('click', function () {
+            navigator.clipboard.writeText(prompt.innerText).then(function () {
+                btn.classList.remove('btn-outline-info');
+                btn.classList.add('btn-success');
+                btn.innerHTML = '<span class="icon-checkmark" aria-hidden="true"></span> ' + copiedLabel;
+
+                setTimeout(function () {
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-info');
+                    btn.innerHTML = '<span class="icon-copy" aria-hidden="true"></span> ' + defaultLabel;
+                }, 2000);
+            }).catch(function () {
+                btn.innerHTML = btn.innerHTML; // leave label alone on failure
+            });
+        });
+    });
+}());

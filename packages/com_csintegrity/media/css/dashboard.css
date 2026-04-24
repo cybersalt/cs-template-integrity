@@ -1,0 +1,36 @@
+/**
+ * Cybersalt Template Integrity — admin dashboard styling
+ *
+ * Uses Bootstrap 5 / Atum CSS variables so the dashboard renders
+ * correctly in both light and dark mode. No hardcoded colors.
+ */
+
+.csintegrity-dashboard .csintegrity-codeblock {
+    background-color: var(--bs-tertiary-bg, var(--bs-body-bg));
+    color: var(--bs-body-color);
+    border: 1px solid var(--bs-border-color);
+    padding: 1rem;
+    border-radius: var(--bs-border-radius, 0.375rem);
+    max-height: 320px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.csintegrity-dashboard .csintegrity-codeblock code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 0.85em;
+    line-height: 1.45;
+}
+
+.csintegrity-dashboard pre code,
+.csintegrity-dashboard p code {
+    color: var(--bs-code-color, var(--bs-body-color));
+}
+
+.csintegrity-dashboard .card-title .icon-flash,
+.csintegrity-dashboard .card-title .icon-refresh {
+    margin-right: 0.35rem;
+}

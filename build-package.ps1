@@ -45,7 +45,7 @@ $childExtensions = @(
     @{
         Name      = "com_csintegrity"
         SourceDir = Join-Path $scriptDir "packages\com_csintegrity"
-        Contents  = @("csintegrity.xml", "script.php", "admin", "api")
+        Contents  = @("csintegrity.xml", "script.php", "admin", "api", "media")
     },
     @{
         Name      = "plg_webservices_csintegrity"

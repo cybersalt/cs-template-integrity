@@ -16,48 +16,21 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 
-$curlExample = sprintf(
-    "curl -H \"X-Joomla-Token: \$TOKEN\" \\\n     -H \"Accept: application/vnd.api+json\" \\\n     %s",
-    $this->overridesEndpoint
-);
 $rescanAction = Route::_('index.php?option=com_csintegrity', false);
 ?>
 
-<div class="container-fluid">
+<div class="container-fluid csintegrity-dashboard">
+
+    <div class="alert alert-success d-flex align-items-center" role="alert">
+        <span class="icon-publish me-2" aria-hidden="true"></span>
+        <div>
+            <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_STATUS_ACTIVE'); ?>.</strong>
+            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_STATUS_DESCRIPTION'); ?>
+        </div>
+    </div>
+
     <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h3 class="card-title"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_STATUS_TITLE'); ?></h3>
-                    <p class="card-text">
-                        <span class="badge bg-success">
-                            <span class="icon-publish" aria-hidden="true"></span>
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_STATUS_ACTIVE'); ?>
-                        </span>
-                    </p>
-                    <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_STATUS_DESCRIPTION'); ?></p>
-                </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h3 class="card-title"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_ENDPOINT_TITLE'); ?></h3>
-                    <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_ENDPOINT_DESCRIPTION'); ?></p>
-                    <pre class="mb-3"><code><?php echo $this->escape($this->overridesEndpoint); ?></code></pre>
-                    <p class="card-text">
-                        <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_AUTH_LABEL'); ?></strong>
-                        <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_AUTH_DESCRIPTION'); ?>
-                    </p>
-                </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h3 class="card-title"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_SMOKE_TEST_TITLE'); ?></h3>
-                    <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_SMOKE_TEST_DESCRIPTION'); ?></p>
-                    <pre class="mb-0"><code><?php echo $this->escape($curlExample); ?></code></pre>
-                </div>
-            </div>
+        <div class="col-lg-8">
 
             <div class="card mb-3 border-info">
                 <div class="card-body">
@@ -85,9 +58,12 @@ $rescanAction = Route::_('index.php?option=com_csintegrity', false);
                     <p class="card-text mb-2">
                         <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_PROMPT_LABEL'); ?></strong>
                     </p>
-                    <pre class="mb-2" style="max-height: 320px; overflow:auto;"><code id="csintegrity-prompt"><?php echo $this->escape($this->claudePrompt); ?></code></pre>
-                    <button type="button" class="btn btn-outline-info btn-sm"
-                            onclick="navigator.clipboard.writeText(document.getElementById('csintegrity-prompt').innerText).then(function(){ this.innerText = '<?php echo $this->escape(Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPIED'), 'JavaScript'); ?>'; }.bind(this));">
+                    <pre class="csintegrity-codeblock mb-2"><code id="csintegrity-prompt"><?php echo $this->escape($this->claudePrompt); ?></code></pre>
+                    <button type="button"
+                            class="btn btn-outline-info btn-sm"
+                            id="csintegrity-copy-btn"
+                            data-default-label="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPY_BUTTON')); ?>"
+                            data-copied-label="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPIED')); ?>">
                         <span class="icon-copy" aria-hidden="true"></span>
                         <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPY_BUTTON'); ?>
                     </button>
@@ -102,7 +78,7 @@ $rescanAction = Route::_('index.php?option=com_csintegrity', false);
                     </h3>
                     <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_RESCAN_DESCRIPTION'); ?></p>
                     <p class="card-text">
-                        <small class="text-muted">
+                        <small class="text-body-secondary">
                             <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_RESCAN_NOTE'); ?>
                         </small>
                     </p>
@@ -118,20 +94,31 @@ $rescanAction = Route::_('index.php?option=com_csintegrity', false);
                     </form>
                 </div>
             </div>
+
         </div>
 
-        <div class="col-md-4">
+        <div class="col-lg-4">
             <div class="card mb-3">
                 <div class="card-body">
                     <h3 class="card-title"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_ABOUT_TITLE'); ?></h3>
                     <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_ABOUT_DESCRIPTION'); ?></p>
-                    <p class="card-text">
-                        <small class="text-muted">
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.4.0
+                    <hr>
+                    <p class="card-text mb-1">
+                        <small class="text-body-secondary">
+                            <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_ENDPOINT_LABEL'); ?></strong>
+                        </small>
+                    </p>
+                    <p class="card-text mb-2" style="word-break: break-all;">
+                        <small><code><?php echo $this->escape($this->overridesEndpoint); ?></code></small>
+                    </p>
+                    <p class="card-text mb-0">
+                        <small class="text-body-secondary">
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.4.1
                         </small>
                     </p>
                 </div>
             </div>
         </div>
     </div>
+
 </div>

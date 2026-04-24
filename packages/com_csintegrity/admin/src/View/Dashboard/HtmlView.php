@@ -12,6 +12,7 @@ namespace Cybersalt\Component\Csintegrity\Administrator\View\Dashboard;
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\GenericDataException;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
@@ -40,6 +41,9 @@ final class HtmlView extends BaseHtmlView
         $this->apiBase           = $this->siteUrl . '/api/index.php/v1/csintegrity';
         $this->overridesEndpoint = $this->apiBase . '/overrides';
         $this->claudePrompt      = $this->buildClaudePrompt();
+
+        HTMLHelper::_('stylesheet', 'com_csintegrity/dashboard.css', ['relative' => true, 'version' => 'auto']);
+        HTMLHelper::_('script', 'com_csintegrity/dashboard.js', ['relative' => true, 'version' => 'auto', 'defer' => true]);
 
         $this->addToolbar();
 
