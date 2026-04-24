@@ -12,12 +12,15 @@ declare(strict_types=1);
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 
 $curlExample = sprintf(
     "curl -H \"X-Joomla-Token: \$TOKEN\" \\\n     -H \"Accept: application/vnd.api+json\" \\\n     %s",
     $this->overridesEndpoint
 );
+$rescanAction = Route::_('index.php?option=com_csintegrity', false);
 ?>
 
 <div class="container-fluid">
@@ -55,6 +58,31 @@ $curlExample = sprintf(
                     <pre class="mb-0"><code><?php echo $this->escape($curlExample); ?></code></pre>
                 </div>
             </div>
+
+            <div class="card mb-3 border-warning">
+                <div class="card-body">
+                    <h3 class="card-title">
+                        <span class="icon-refresh" aria-hidden="true"></span>
+                        <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_RESCAN_TITLE'); ?>
+                    </h3>
+                    <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_RESCAN_DESCRIPTION'); ?></p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_RESCAN_NOTE'); ?>
+                        </small>
+                    </p>
+                    <form action="<?php echo $this->escape($rescanAction); ?>"
+                          method="post"
+                          onsubmit="return confirm('<?php echo $this->escape(Text::_('COM_CSINTEGRITY_DASHBOARD_RESCAN_CONFIRM'), 'JavaScript'); ?>');">
+                        <?php echo HTMLHelper::_('form.token'); ?>
+                        <input type="hidden" name="task" value="display.rescan">
+                        <button type="submit" class="btn btn-warning">
+                            <span class="icon-refresh" aria-hidden="true"></span>
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_RESCAN_BUTTON'); ?>
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <div class="col-md-4">
@@ -64,7 +92,7 @@ $curlExample = sprintf(
                     <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_ABOUT_DESCRIPTION'); ?></p>
                     <p class="card-text">
                         <small class="text-muted">
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.1.0
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.3.0
                         </small>
                     </p>
                 </div>
