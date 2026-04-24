@@ -3,6 +3,8 @@
 A Joomla 5+ integrity monitor that knows what your template *shipped with*, so it only alerts on unexpected drift — not on every override that naturally differs from core.
 
 > **Status:** Pre-implementation. Repo initialized 2026-04-23. See [Plan](#plan) below.
+>
+> **Starting here?** Read [CLAUDE.md](CLAUDE.md) first — it's the self-contained briefing for anyone (human or AI) picking up work in this repo. The current sprint target is [docs/MVP-v0.1-overrides-api.md](docs/MVP-v0.1-overrides-api.md), backed by the classifier ruleset in [docs/CLASSIFIER-PATTERNS.md](docs/CLASSIFIER-PATTERNS.md) and the 2026-04-24 site-inspection that seeded it in [docs/FIELDWORK-2026-04-24.md](docs/FIELDWORK-2026-04-24.md).
 
 ---
 
@@ -36,6 +38,10 @@ Triggering event: 2026-04-23, Rocky Wall (Fairview Terrace HOA) emailed Tim a sc
 | CLI command `integrity:scan` | Long scans that would exceed HTTP timeouts |
 
 All three extensions ship together as `pkg_csintegrity`.
+
+### Current sprint — MVP v0.1 "Overrides API"
+
+Three read-only REST endpoints on `com_csintegrity` that expose Joomla's native `#__template_overrides` data to external tools (Claude first, any MCP client eventually). Joomla's core REST API doesn't surface override-diff data, so every scanner / classifier iteration is manual until this ships. Full spec and test plan: [docs/MVP-v0.1-overrides-api.md](docs/MVP-v0.1-overrides-api.md).
 
 ### Related manual workflow
 
