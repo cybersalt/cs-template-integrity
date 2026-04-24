@@ -54,6 +54,33 @@ Accept: application/vnd.api+json
 
 A `Bearer`-formatted header returns `401 Forbidden`. When `lib_csintegrity` eventually has its own HTTP client for calling out to other Joomla sites (e.g., a hosted multi-site dashboard), hard-code the `X-Joomla-Token` format.
 
+## `#__template_overrides` schema and the `hash_id` field (confirmed 2026-04-24)
+
+Live test against Joomla 6.1 at j53.basicjoomla.com. Schema is exactly the columns first written in 2018 and unchanged since:
+
+```
+id, template, hash_id, extension_id, state, action, client_id, created_date, modified_date
+```
+
+The column called `hash_id` is **not a hash** — it is a **base64-encoded relative path** of the override file, beginning with `/html/`. Examples decoded:
+
+- `L2h0bWwvbGF5b3V0cy9qb29tbGEvc3lzdGVtL21lc3NhZ2UucGhw` → `/html/layouts/joomla/system/message.php`
+- `L2h0bWwvY29tX2NvbnRlbnQvZmVhdHVyZWQvZGVmYXVsdF9saW5rcy5waHA=` → `/html/com_content/featured/default_links.php`
+
+Path resolution rules for the `{id}/override-file` and `{id}/core-file` endpoints:
+
+| Source | Formula |
+|---|---|
+| Override file (client_id=0, site) | `JPATH_SITE/templates/<template><decoded hash_id>` |
+| Override file (client_id=1, admin) | `JPATH_ADMINISTRATOR/templates/<template><decoded hash_id>` |
+| Core file — strip leading `/html/`, then map first segment: |  |
+| `layouts/…` | `JPATH_SITE/layouts/…` (or `JPATH_ADMINISTRATOR/layouts/…` for client_id=1) |
+| `com_<comp>/<view>/<file>` | `JPATH_SITE/components/com_<comp>/tmpl/<view>/<file>` (or admin) |
+| `mod_<module>/<file>` | `JPATH_SITE/modules/mod_<module>/tmpl/<file>` (or admin) |
+| `plg_<group>_<element>/<file>` | `JPATH_PLUGINS/<group>/<element>/tmpl/<file>` |
+
+`JPATH_PLUGINS` resolves to `JPATH_SITE/plugins` for `client_id=0` and is the same regardless of side (plugins live in one place).
+
 ## Routing gotcha (learned the hard way, 2026-04-24)
 
 A Joomla 5 component with an `api/src/Controller/*Controller.php` + `api/src/View/*/JsonapiView.php` + `api/src/Model/*Model.php` is **not enough** on its own. The URL `/api/index.php/v1/<component>/<view>` will return `404 Resource not found` until a matching `plg_webservices_<component>` plugin exists, is installed, and is enabled.

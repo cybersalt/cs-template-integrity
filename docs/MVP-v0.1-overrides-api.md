@@ -126,14 +126,25 @@ Together, these two endpoints are what Claude needs to diff and classify a flagg
 
 ---
 
-## Schema lookup TODO
+## Schema (confirmed 2026-04-24 against Joomla 6.1)
 
-The `#__template_overrides` schema isn't documented here yet — resolve in one of two ways:
+The earlier guess at columns (`hash_override`, `hash_core`, `override_path`, `core_path`) was wrong. The actual schema is unchanged from the original 2018 Joomla 4.0 migration:
 
-1. `SHOW CREATE TABLE #__template_overrides;` against a live Joomla 5 or 6 site (Tim offered cPanel API access to any Cybersalt-maintained Joomla site).
-2. Read the CREATE TABLE statement from Joomla core SQL at `installation/sql/mysql/base.sql` (or the equivalent file — exact filename drifts between Joomla versions).
+```
+id            int unsigned auto_increment PK
+template      varchar(50)            -- e.g. "fairviewtha_2025"
+hash_id       varchar(255)           -- BASE64-ENCODED RELATIVE PATH, not a hash
+extension_id  int                    -- #__extensions row id of the template
+state         tinyint                -- Joomla's own flag (0 = open, 1 = ?)
+action        varchar(50)            -- e.g. "Joomla Update"
+client_id     tinyint unsigned       -- 0 = site, 1 = admin
+created_date  datetime
+modified_date datetime
+```
 
-The column names above (`template`, `client_id`, `hash_override`, `hash_core`, `action`, `modified_date`, `state`, `override_path`, `core_path`) are the expected names; confirm before coding.
+**`hash_id` is the override path, not a hash.** Decode with `base64_decode($row->hash_id)` to get a string like `/html/layouts/joomla/system/message.php`. The path resolution rules for both override and core files live in [../CLAUDE.md](../CLAUDE.md) under the schema section.
+
+There is no separate `core_path` / `override_path` column. Both paths are computed from `hash_id + template + client_id`.
 
 ---
 
