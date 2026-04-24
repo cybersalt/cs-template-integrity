@@ -16,7 +16,9 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 
-$rescanAction = Route::_('index.php?option=com_csintegrity', false);
+$rescanAction       = Route::_('index.php?option=com_csintegrity', false);
+$markReviewedAction = Route::_('index.php?option=com_csintegrity', false);
+$siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=styles&client_id=0', false);
 ?>
 
 <div class="container-fluid csintegrity-dashboard">
@@ -70,6 +72,42 @@ $rescanAction = Route::_('index.php?option=com_csintegrity', false);
                 </div>
             </div>
 
+            <div class="card mb-3 border-success">
+                <div class="card-body">
+                    <h3 class="card-title">
+                        <span class="icon-checkmark" aria-hidden="true"></span>
+                        <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_TITLE'); ?>
+                    </h3>
+                    <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_INTRO'); ?></p>
+
+                    <div class="mb-3">
+                        <p class="card-text mb-2">
+                            <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_OPTION_A_LABEL'); ?></strong>
+                        </p>
+                        <p class="card-text mb-2"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_OPTION_A_BODY'); ?></p>
+                        <a href="<?php echo $this->escape($siteTemplatesUrl); ?>" class="btn btn-outline-secondary btn-sm">
+                            <span class="icon-arrow-right" aria-hidden="true"></span>
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_OPTION_A_BUTTON'); ?>
+                        </a>
+                    </div>
+
+                    <hr>
+
+                    <div>
+                        <p class="card-text mb-2">
+                            <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_OPTION_B_LABEL'); ?></strong>
+                        </p>
+                        <p class="card-text mb-2"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_OPTION_B_BODY'); ?></p>
+                        <button type="button" class="btn btn-success btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#csintegrity-mark-reviewed-modal">
+                            <span class="icon-checkmark-circle" aria-hidden="true"></span>
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_OPTION_B_BUTTON'); ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="card mb-3 border-warning">
                 <div class="card-body">
                     <h3 class="card-title">
@@ -113,7 +151,7 @@ $rescanAction = Route::_('index.php?option=com_csintegrity', false);
                     </p>
                     <p class="card-text mb-0">
                         <small class="text-body-secondary">
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.4.1
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.5.0
                         </small>
                     </p>
                 </div>
@@ -121,4 +159,43 @@ $rescanAction = Route::_('index.php?option=com_csintegrity', false);
         </div>
     </div>
 
+</div>
+
+<div class="modal fade" id="csintegrity-mark-reviewed-modal" tabindex="-1" aria-labelledby="csintegrity-mark-reviewed-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="csintegrity-mark-reviewed-modal-title">
+                    <span class="icon-warning" aria-hidden="true"></span>
+                    <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_MODAL_TITLE'); ?>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?php echo $this->escape(Text::_('JCANCEL')); ?>"></button>
+            </div>
+            <div class="modal-body">
+                <p><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_MODAL_BODY'); ?></p>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="csintegrity-mark-reviewed-confirm-check">
+                    <label class="form-check-label" for="csintegrity-mark-reviewed-confirm-check">
+                        <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_MODAL_AGREE'); ?></strong>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <?php echo Text::_('JCANCEL'); ?>
+                </button>
+                <form action="<?php echo $this->escape($markReviewedAction); ?>" method="post" class="d-inline">
+                    <?php echo HTMLHelper::_('form.token'); ?>
+                    <input type="hidden" name="task" value="display.markReviewed">
+                    <button type="submit"
+                            class="btn btn-success"
+                            id="csintegrity-mark-reviewed-confirm-btn"
+                            disabled>
+                        <span class="icon-checkmark-circle" aria-hidden="true"></span>
+                        <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_MODAL_CONFIRM'); ?>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>

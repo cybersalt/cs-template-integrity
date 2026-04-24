@@ -12,12 +12,12 @@ namespace Cybersalt\Component\Csintegrity\Administrator\Controller;
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Csintegrity\Administrator\Helper\MarkReviewedHelper;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\RescanHelper;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\Router\Route;
-use Joomla\CMS\Session\Session;
 use Throwable;
 
 final class DisplayController extends BaseController
@@ -28,7 +28,6 @@ final class DisplayController extends BaseController
     {
         $this->checkToken();
 
-        $redirect = Route::_('index.php?option=com_csintegrity&view=dashboard', false);
         /** @var CMSApplication $app */
         $app = $this->app;
 
@@ -50,6 +49,34 @@ final class DisplayController extends BaseController
             );
         }
 
-        $this->setRedirect($redirect);
+        $this->setRedirect(Route::_('index.php?option=com_csintegrity&view=dashboard', false));
+    }
+
+    public function markReviewed(): void
+    {
+        $this->checkToken();
+
+        /** @var CMSApplication $app */
+        $app = $this->app;
+
+        try {
+            $cleared = MarkReviewedHelper::clearAllOverrides();
+
+            if ($cleared === 0) {
+                $app->enqueueMessage(Text::_('COM_CSINTEGRITY_MARK_REVIEWED_NONE'), 'info');
+            } else {
+                $app->enqueueMessage(
+                    Text::sprintf('COM_CSINTEGRITY_MARK_REVIEWED_SUCCESS', $cleared),
+                    'success'
+                );
+            }
+        } catch (Throwable $e) {
+            $app->enqueueMessage(
+                Text::sprintf('COM_CSINTEGRITY_MARK_REVIEWED_ERROR', $e->getMessage()),
+                'error'
+            );
+        }
+
+        $this->setRedirect(Route::_('index.php?option=com_csintegrity&view=dashboard', false));
     }
 }

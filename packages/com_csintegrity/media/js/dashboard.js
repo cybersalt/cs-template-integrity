@@ -10,6 +10,32 @@
     'use strict';
 
     document.addEventListener('DOMContentLoaded', function () {
+        wireCopyButton();
+        wireMarkReviewedModal();
+    });
+
+    function wireMarkReviewedModal() {
+        var checkbox    = document.getElementById('csintegrity-mark-reviewed-confirm-check');
+        var confirmBtn  = document.getElementById('csintegrity-mark-reviewed-confirm-btn');
+        var modalEl     = document.getElementById('csintegrity-mark-reviewed-modal');
+
+        if (!checkbox || !confirmBtn) {
+            return;
+        }
+
+        checkbox.addEventListener('change', function () {
+            confirmBtn.disabled = !checkbox.checked;
+        });
+
+        if (modalEl) {
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                checkbox.checked = false;
+                confirmBtn.disabled = true;
+            });
+        }
+    }
+
+    function wireCopyButton() {
         var btn    = document.getElementById('csintegrity-copy-btn');
         var prompt = document.getElementById('csintegrity-prompt');
 
@@ -35,5 +61,5 @@
                 btn.innerHTML = btn.innerHTML; // leave label alone on failure
             });
         });
-    });
+    }
 }());
