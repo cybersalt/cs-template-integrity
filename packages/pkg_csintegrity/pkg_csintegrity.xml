@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="package" method="upgrade">
+    <name>Cybersalt Template Integrity</name>
+    <author>Cybersalt</author>
+    <creationDate>April 2026</creationDate>
+    <packagename>csintegrity</packagename>
+    <copyright>Copyright (C) 2026 Cybersalt. All rights reserved.</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <authorEmail>support@cybersalt.com</authorEmail>
+    <authorUrl>https://cybersalt.com</authorUrl>
+    <version>0.1.0</version>
+    <url>https://github.com/cybersalt/cs-template-integrity</url>
+    <packager>Cybersalt</packager>
+    <packagerurl>https://cybersalt.com</packagerurl>
+    <description>PKG_CSINTEGRITY_XML_DESCRIPTION</description>
+
+    <scriptfile>script.php</scriptfile>
+
+    <files folder="packages">
+        <file type="component" id="com_csintegrity">com_csintegrity.zip</file>
+        <file type="plugin" id="csintegrity" group="webservices">plg_webservices_csintegrity.zip</file>
+    </files>
+
+    <languages folder="language">
+        <language tag="en-GB">en-GB/pkg_csintegrity.sys.ini</language>
+    </languages>
+</extension>
