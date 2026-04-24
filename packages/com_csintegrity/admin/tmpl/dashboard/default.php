@@ -92,7 +92,7 @@ $rescanAction = Route::_('index.php?option=com_csintegrity', false);
                     <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_ABOUT_DESCRIPTION'); ?></p>
                     <p class="card-text">
                         <small class="text-muted">
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.3.0
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.3.1
                         </small>
                     </p>
                 </div>

@@ -21,6 +21,7 @@ defined('_JEXEC') or die;
 
 use Cybersalt\Component\Csintegrity\Administrator\Helper\PathResolver;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Filter\InputFilter;
 use Joomla\CMS\MVC\Controller\ApiController;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
@@ -34,6 +35,30 @@ final class OverridesController extends ApiController
     protected $contentType = 'overrides';
 
     protected $default_view = 'overrides';
+
+    public function displayList()
+    {
+        $apiFilterInfo = $this->input->get('filter', [], 'array');
+        $filter        = InputFilter::getInstance();
+
+        if (\array_key_exists('template', $apiFilterInfo)) {
+            $this->modelState->set('filter.template', $filter->clean($apiFilterInfo['template'], 'STRING'));
+        }
+
+        if (\array_key_exists('client_id', $apiFilterInfo)) {
+            $this->modelState->set('filter.client_id', $filter->clean($apiFilterInfo['client_id'], 'INT'));
+        }
+
+        if (\array_key_exists('state', $apiFilterInfo)) {
+            $this->modelState->set('filter.state', $filter->clean($apiFilterInfo['state'], 'INT'));
+        }
+
+        if (\array_key_exists('extension_id', $apiFilterInfo)) {
+            $this->modelState->set('filter.extension_id', $filter->clean($apiFilterInfo['extension_id'], 'INT'));
+        }
+
+        return parent::displayList();
+    }
 
     public function overrideFile(): void
     {
