@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.2] — 2026-04-24
+
+### Fixed
+- All dashboard buttons are now the same default size (Bootstrap default). Previously "Copy prompt", "Open Site Templates", and "Mark all as reviewed" were `btn-sm` while "Reset all overrides for review" was the default — sizes were inconsistent.
+- "Copy prompt" was `btn-outline-info` which renders as blue text on a transparent background; in Atum's dark mode that gave blue-on-near-black with poor contrast. Switched to `btn-info` (solid sky-blue with white text), which is readable in both light and dark mode. The transient "Copied!" success state still flips to `btn-success` then back.
+- "Open Site Templates" similarly switched from `btn-outline-secondary` to solid `btn-secondary` for the same readability reason.
+
 ## [0.5.1] — 2026-04-24
 
 ### Changed

@@ -62,7 +62,7 @@ $siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=templates&cl
                     </p>
                     <pre class="csintegrity-codeblock mb-2"><code id="csintegrity-prompt"><?php echo $this->escape($this->claudePrompt); ?></code></pre>
                     <button type="button"
-                            class="btn btn-outline-info btn-sm"
+                            class="btn btn-info"
                             id="csintegrity-copy-btn"
                             data-default-label="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPY_BUTTON')); ?>"
                             data-copied-label="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPIED')); ?>">
@@ -85,7 +85,7 @@ $siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=templates&cl
                             <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_OPTION_A_LABEL'); ?></strong>
                         </p>
                         <p class="card-text mb-2"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_OPTION_A_BODY'); ?></p>
-                        <a href="<?php echo $this->escape($siteTemplatesUrl); ?>" class="btn btn-outline-secondary btn-sm">
+                        <a href="<?php echo $this->escape($siteTemplatesUrl); ?>" class="btn btn-secondary">
                             <span class="icon-arrow-right" aria-hidden="true"></span>
                             <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_OPTION_A_BUTTON'); ?>
                         </a>
@@ -98,7 +98,7 @@ $siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=templates&cl
                             <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_OPTION_B_LABEL'); ?></strong>
                         </p>
                         <p class="card-text mb-2"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_REVIEWED_OPTION_B_BODY'); ?></p>
-                        <button type="button" class="btn btn-success btn-sm"
+                        <button type="button" class="btn btn-success"
                                 data-bs-toggle="modal"
                                 data-bs-target="#csintegrity-mark-reviewed-modal">
                             <span class="icon-checkmark-circle" aria-hidden="true"></span>
@@ -151,7 +151,7 @@ $siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=templates&cl
                     </p>
                     <p class="card-text mb-0">
                         <small class="text-body-secondary">
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.5.1
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.5.2
                         </small>
                     </p>
                 </div>

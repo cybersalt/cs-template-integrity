@@ -48,13 +48,13 @@
 
         btn.addEventListener('click', function () {
             navigator.clipboard.writeText(prompt.innerText).then(function () {
-                btn.classList.remove('btn-outline-info');
+                btn.classList.remove('btn-info');
                 btn.classList.add('btn-success');
                 btn.innerHTML = '<span class="icon-checkmark" aria-hidden="true"></span> ' + copiedLabel;
 
                 setTimeout(function () {
                     btn.classList.remove('btn-success');
-                    btn.classList.add('btn-outline-info');
+                    btn.classList.add('btn-info');
                     btn.innerHTML = '<span class="icon-copy" aria-hidden="true"></span> ' + defaultLabel;
                 }, 2000);
             }).catch(function () {
