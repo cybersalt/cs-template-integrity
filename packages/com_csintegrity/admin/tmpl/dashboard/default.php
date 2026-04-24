@@ -59,6 +59,41 @@ $rescanAction = Route::_('index.php?option=com_csintegrity', false);
                 </div>
             </div>
 
+            <div class="card mb-3 border-info">
+                <div class="card-body">
+                    <h3 class="card-title">
+                        <span class="icon-flash" aria-hidden="true"></span>
+                        <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_TITLE'); ?>
+                    </h3>
+                    <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_INTRO'); ?></p>
+
+                    <ol class="mb-3">
+                        <li class="mb-2">
+                            <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_STEP1_TITLE'); ?></strong>
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_STEP1_BODY'); ?>
+                        </li>
+                        <li class="mb-2">
+                            <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_STEP2_TITLE'); ?></strong>
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_STEP2_BODY'); ?>
+                        </li>
+                        <li class="mb-2">
+                            <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_STEP3_TITLE'); ?></strong>
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_STEP3_BODY'); ?>
+                        </li>
+                    </ol>
+
+                    <p class="card-text mb-2">
+                        <strong><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_PROMPT_LABEL'); ?></strong>
+                    </p>
+                    <pre class="mb-2" style="max-height: 320px; overflow:auto;"><code id="csintegrity-prompt"><?php echo $this->escape($this->claudePrompt); ?></code></pre>
+                    <button type="button" class="btn btn-outline-info btn-sm"
+                            onclick="navigator.clipboard.writeText(document.getElementById('csintegrity-prompt').innerText).then(function(){ this.innerText = '<?php echo $this->escape(Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPIED'), 'JavaScript'); ?>'; }.bind(this));">
+                        <span class="icon-copy" aria-hidden="true"></span>
+                        <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPY_BUTTON'); ?>
+                    </button>
+                </div>
+            </div>
+
             <div class="card mb-3 border-warning">
                 <div class="card-body">
                     <h3 class="card-title">
@@ -92,7 +127,7 @@ $rescanAction = Route::_('index.php?option=com_csintegrity', false);
                     <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_ABOUT_DESCRIPTION'); ?></p>
                     <p class="card-text">
                         <small class="text-muted">
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.3.1
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.4.0
                         </small>
                     </p>
                 </div>
