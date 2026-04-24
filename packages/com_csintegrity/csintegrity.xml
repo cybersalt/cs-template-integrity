@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" method="upgrade">
+    <name>COM_CSINTEGRITY</name>
+    <author>Cybersalt</author>
+    <creationDate>April 2026</creationDate>
+    <copyright>Copyright (C) 2026 Cybersalt. All rights reserved.</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <authorEmail>support@cybersalt.com</authorEmail>
+    <authorUrl>https://cybersalt.com</authorUrl>
+    <version>0.1.0</version>
+    <description>COM_CSINTEGRITY_XML_DESCRIPTION</description>
+
+    <namespace path="src">Cybersalt\Component\Csintegrity</namespace>
+
+    <administration>
+        <files folder="admin">
+            <folder>language</folder>
+            <folder>services</folder>
+            <folder>src</folder>
+        </files>
+    </administration>
+
+    <api>
+        <files folder="api">
+            <folder>language</folder>
+            <folder>src</folder>
+        </files>
+    </api>
+</extension>
