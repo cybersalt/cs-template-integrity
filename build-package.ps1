@@ -51,6 +51,7 @@ if (Test-Path $buildDir) { Remove-Item $buildDir -Recurse -Force }
 New-Item -ItemType Directory -Path $buildDir | Out-Null
 
 Copy-Item $manifestPath $buildDir
+Copy-Item (Join-Path $componentDir "script.php") $buildDir
 Copy-Item (Join-Path $componentDir "admin") (Join-Path $buildDir "admin") -Recurse
 Copy-Item (Join-Path $componentDir "api")   (Join-Path $buildDir "api")   -Recurse
 

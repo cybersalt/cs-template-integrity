@@ -1,0 +1,3 @@
+[submodule ".joomla-brain"]
+	path = .joomla-brain
+	url = https://github.com/cybersalt/Joomla-Brain.git

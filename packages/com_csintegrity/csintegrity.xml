@@ -12,12 +12,20 @@
 
     <namespace path="src">Cybersalt\Component\Csintegrity</namespace>
 
+    <scriptfile>script.php</scriptfile>
+
     <administration>
+        <menu img="class:check-circle" link="option=com_csintegrity&amp;view=dashboard">COM_CSINTEGRITY</menu>
         <files folder="admin">
             <folder>language</folder>
             <folder>services</folder>
             <folder>src</folder>
+            <folder>tmpl</folder>
         </files>
+        <languages folder="admin/language">
+            <language tag="en-GB">en-GB/com_csintegrity.ini</language>
+            <language tag="en-GB">en-GB/com_csintegrity.sys.ini</language>
+        </languages>
     </administration>
 
     <api>
@@ -25,5 +33,8 @@
             <folder>language</folder>
             <folder>src</folder>
         </files>
+        <languages folder="api/language">
+            <language tag="en-GB">en-GB/com_csintegrity.ini</language>
+        </languages>
     </api>
 </extension>
