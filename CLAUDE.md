@@ -54,6 +54,14 @@ Accept: application/vnd.api+json
 
 A `Bearer`-formatted header returns `401 Forbidden`. When `lib_csintegrity` eventually has its own HTTP client for calling out to other Joomla sites (e.g., a hosted multi-site dashboard), hard-code the `X-Joomla-Token` format.
 
+## Routing gotcha (learned the hard way, 2026-04-24)
+
+A Joomla 5 component with an `api/src/Controller/*Controller.php` + `api/src/View/*/JsonapiView.php` + `api/src/Model/*Model.php` is **not enough** on its own. The URL `/api/index.php/v1/<component>/<view>` will return `404 Resource not found` until a matching `plg_webservices_<component>` plugin exists, is installed, and is enabled.
+
+The plugin has one job: listen to the `onBeforeApiRoute` event and call `$router->createCRUDRoutes(...)` for each route the component exposes. Every core component that has an API route (`com_content`, `com_banners`, `com_templates`, …) ships with a corresponding `plg_webservices_*`. See [packages/plg_webservices_csintegrity/src/Extension/Csintegrity.php](packages/plg_webservices_csintegrity/src/Extension/Csintegrity.php) for our implementation.
+
+The plugin **must be enabled** after install — Joomla installs third-party plugins disabled by default. Until it's enabled, the route 404s silently.
+
 ---
 
 ## Test targets
