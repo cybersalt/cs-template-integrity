@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.1] — 2026-04-24
+
+### Changed
+- Components-menu label is now "CS Template Integrity" (was "Cybersalt Template Integrity"). The full name still appears on the dashboard page title.
+- "Open Site Templates" link in the After-review card now points at `view=templates&client_id=0` rather than `view=styles&client_id=0` — the templates list is where the per-template "Changes found" override review actually lives.
+- Repositioned the rescan card. Previously framed as a testing utility; reframed as the user-facing remedy for "I (or someone before me) bulk-dismissed overrides without actually checking them." New title "Reset overrides for review", new button "Reset all overrides for review", description rewritten accordingly.
+
 ## [0.5.0] — 2026-04-24
 
 ### Added

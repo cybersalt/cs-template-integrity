@@ -18,7 +18,7 @@ use Joomla\CMS\Router\Route;
 
 $rescanAction       = Route::_('index.php?option=com_csintegrity', false);
 $markReviewedAction = Route::_('index.php?option=com_csintegrity', false);
-$siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=styles&client_id=0', false);
+$siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=templates&client_id=0', false);
 ?>
 
 <div class="container-fluid csintegrity-dashboard">
@@ -151,7 +151,7 @@ $siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=styles&clien
                     </p>
                     <p class="card-text mb-0">
                         <small class="text-body-secondary">
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.5.0
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.5.1
                         </small>
                     </p>
                 </div>
