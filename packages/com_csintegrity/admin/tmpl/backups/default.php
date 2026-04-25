@@ -17,6 +17,7 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 ?>
 
+<form action="<?php echo $this->escape(\Joomla\CMS\Uri\Uri::getInstance()->toString()); ?>" method="post" name="adminForm" id="adminForm">
 <div class="container-fluid">
     <p class="text-body-secondary mb-3"><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_DESCRIPTION'); ?></p>
     <p class="text-body-secondary mb-3"><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_STORAGE_NOTE'); ?></p>
@@ -27,21 +28,23 @@ use Joomla\CMS\Router\Route;
         <table class="table">
             <thead>
                 <tr>
+                    <th class="w-1"><input type="checkbox" name="checkall-toggle" value="" onclick="Joomla.checkAll(this)"></th>
                     <th><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_COL_TIME'); ?></th>
                     <th><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_COL_FILE'); ?></th>
                     <th><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_COL_SIZE'); ?></th>
                     <th><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_COL_HASH'); ?></th>
                     <th><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_COL_SESSION'); ?></th>
-                    <th><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_COL_DOWNLOAD'); ?></th>
+                    <th><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_COL_ACTIONS'); ?></th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($this->items as $row) : ?>
+                <?php foreach ($this->items as $i => $row) : ?>
                     <?php
                     $viewUrl     = Route::_('index.php?option=com_csintegrity&view=backup&id=' . (int) $row->id, false);
                     $downloadUrl = Route::_('index.php?option=com_csintegrity&task=backups.download&id=' . (int) $row->id, false);
                     ?>
                     <tr>
+                        <td><input type="checkbox" id="cb<?php echo $i; ?>" name="cid[]" value="<?php echo (int) $row->id; ?>" onclick="Joomla.isChecked(this.checked);"></td>
                         <td>
                             <small><?php echo HTMLHelper::_('date', $row->created_at, Text::_('DATE_FORMAT_LC4')); ?></small>
                         </td>
@@ -73,3 +76,8 @@ use Joomla\CMS\Router\Route;
         </table>
     <?php endif; ?>
 </div>
+
+    <input type="hidden" name="task" value="">
+    <input type="hidden" name="boxchecked" value="0">
+    <?php echo HTMLHelper::_('form.token'); ?>
+</form>

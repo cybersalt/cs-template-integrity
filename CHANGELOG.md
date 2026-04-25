@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.3] — 2026-04-24
+
+### Changed
+- `BackupsHelper::createFromContents` now deduplicates on `(file_path, sha256)`. If a backup with that exact path and content already exists, the helper returns the existing id instead of inserting an identical row. Eliminates the noise Tim hit on cybersalt.org where one apply-fix run produced 5 backups of which 4 were byte-identical pre-action snapshots. Audit-log calls in callers (e.g. `fix_applied`, `backup_restored`) still reference the now-shared backup id, which is semantically correct — the snapshot of that state.
+
+### Added
+- Backups list grew a checkbox column and a standard "Delete" toolbar action so existing duplicates (or any stale backup) can be pruned. Backed by `BackupsHelper::delete(int $id)` and `BackupsController::delete()`.
+
 ## [0.8.2] — 2026-04-24
 
 ### Fixed

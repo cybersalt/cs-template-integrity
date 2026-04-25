@@ -57,6 +57,32 @@ final class BackupsController extends BaseController
         $this->setRedirect(Route::_('index.php?option=com_csintegrity&view=backup&id=' . $id, false));
     }
 
+    public function delete(): void
+    {
+        $this->checkToken();
+
+        /** @var CMSApplication $app */
+        $app = $this->app;
+        $ids = (array) $app->getInput()->get('cid', [], 'array');
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids), static fn ($i) => $i > 0)));
+
+        if (empty($ids)) {
+            $app->enqueueMessage(Text::_('COM_CSINTEGRITY_BACKUPS_DELETE_NONE'), 'warning');
+            $this->setRedirect(Route::_('index.php?option=com_csintegrity&view=backups', false));
+            return;
+        }
+
+        $deleted = 0;
+        foreach ($ids as $id) {
+            if (BackupsHelper::delete($id)) {
+                $deleted++;
+            }
+        }
+
+        $app->enqueueMessage(Text::sprintf('COM_CSINTEGRITY_BACKUPS_DELETED', $deleted), 'success');
+        $this->setRedirect(Route::_('index.php?option=com_csintegrity&view=backups', false));
+    }
+
     public function download(): void
     {
         /** @var CMSApplication $app */

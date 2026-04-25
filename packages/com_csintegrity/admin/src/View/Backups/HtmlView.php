@@ -32,5 +32,6 @@ final class HtmlView extends BaseHtmlView
     private function addToolbar(): void
     {
         ToolbarHelper::title(Text::_('COM_CSINTEGRITY_BACKUPS_TITLE'), 'archive');
+        ToolbarHelper::deleteList('', 'backups.delete', 'JTOOLBAR_DELETE');
     }
 }

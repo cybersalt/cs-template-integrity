@@ -24,6 +24,8 @@ use Joomla\CMS\Factory;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
 
+// resolved at call site via use Joomla\Database\ParameterType when needed
+
 final class BackupsHelper
 {
     /** Cap on a single backup row's contents. 1 MB. */
@@ -40,13 +42,26 @@ final class BackupsHelper
             throw new \RuntimeException(sprintf('Backup contents exceed the %d-byte cap.', self::MAX_SIZE));
         }
 
+        $filePath = mb_substr($filePath, 0, 500);
+        $hash     = hash('sha256', $contents);
+
+        // Dedupe: if we already have a backup of this exact path+contents,
+        // return its id instead of inserting a copy. Caller's audit-log
+        // entry (e.g., fix_applied) will reference the existing backup,
+        // which is still semantically correct — that snapshot already
+        // captured this state.
+        $existingId = self::findExistingByPathAndHash($filePath, $hash);
+        if ($existingId !== null) {
+            return $existingId;
+        }
+
         $db  = Factory::getContainer()->get(DatabaseInterface::class);
         $now = Factory::getDate()->toSql();
 
         $row = (object) [
             'session_id'   => $sessionId,
-            'file_path'    => mb_substr($filePath, 0, 500),
-            'file_hash'    => hash('sha256', $contents),
+            'file_path'    => $filePath,
+            'file_hash'    => $hash,
             'file_size'    => $size,
             'contents_b64' => base64_encode($contents),
             'created_by'   => $createdBy ?? self::currentUserId(),
@@ -64,6 +79,40 @@ final class BackupsHelper
         );
 
         return $insertedId;
+    }
+
+    private static function findExistingByPathAndHash(string $filePath, string $hash): ?int
+    {
+        $db    = Factory::getContainer()->get(DatabaseInterface::class);
+        $query = $db->getQuery(true)
+            ->select($db->quoteName('id'))
+            ->from($db->quoteName('#__csintegrity_backups'))
+            ->where($db->quoteName('file_path') . ' = :path')
+            ->where($db->quoteName('file_hash') . ' = :hash')
+            ->bind(':path', $filePath)
+            ->bind(':hash', $hash)
+            ->order($db->quoteName('id') . ' ASC');
+
+        $db->setQuery($query, 0, 1);
+        $existingId = $db->loadResult();
+
+        return $existingId !== null ? (int) $existingId : null;
+    }
+
+    /**
+     * Delete a single backup row.
+     */
+    public static function delete(int $id): bool
+    {
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+
+        $query = $db->getQuery(true)
+            ->delete($db->quoteName('#__csintegrity_backups'))
+            ->where($db->quoteName('id') . ' = :id')
+            ->bind(':id', $id, ParameterType::INTEGER);
+
+        $db->setQuery($query)->execute();
+        return $db->getAffectedRows() > 0;
     }
 
     /**
