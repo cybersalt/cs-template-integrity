@@ -19,6 +19,10 @@ use Joomla\CMS\Router\Route;
 $rescanAction       = Route::_('index.php?option=com_csintegrity', false);
 $markReviewedAction = Route::_('index.php?option=com_csintegrity', false);
 $siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=templates&client_id=0', false);
+$sessionsUrl        = Route::_('index.php?option=com_csintegrity&view=sessions', false);
+$newSessionUrl      = Route::_('index.php?option=com_csintegrity&view=sessionform', false);
+$actionsUrl         = Route::_('index.php?option=com_csintegrity&view=actions', false);
+$backupsUrl         = Route::_('index.php?option=com_csintegrity&view=backups', false);
 ?>
 
 <div class="container-fluid csintegrity-dashboard">
@@ -69,6 +73,61 @@ $siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=templates&cl
                         <span class="icon-copy" aria-hidden="true"></span>
                         <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPY_BUTTON'); ?>
                     </button>
+                </div>
+            </div>
+
+            <div class="card mb-3 border-primary">
+                <div class="card-body">
+                    <h3 class="card-title">
+                        <span class="icon-wrench" aria-hidden="true"></span>
+                        <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_FIX_TITLE'); ?>
+                    </h3>
+                    <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_FIX_INTRO'); ?></p>
+                    <pre class="csintegrity-codeblock mb-2"><code id="csintegrity-fix-prompt"><?php echo $this->escape($this->fixPrompt); ?></code></pre>
+                    <button type="button"
+                            class="btn btn-primary"
+                            id="csintegrity-fix-copy-btn"
+                            data-default-label="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_DASHBOARD_FIX_COPY_BUTTON')); ?>"
+                            data-copied-label="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPIED')); ?>">
+                        <span class="icon-copy" aria-hidden="true"></span>
+                        <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_FIX_COPY_BUTTON'); ?>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-3 border-info">
+                <div class="card-body">
+                    <h3 class="card-title">
+                        <span class="icon-list" aria-hidden="true"></span>
+                        <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_SESSIONS_TITLE'); ?>
+                    </h3>
+                    <p class="card-text"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_SESSIONS_INTRO'); ?></p>
+
+                    <?php if (empty($this->recentSessions)) : ?>
+                        <p class="text-body-secondary"><?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_SESSIONS_EMPTY'); ?></p>
+                    <?php else : ?>
+                        <ul class="list-unstyled mb-3">
+                            <?php foreach ($this->recentSessions as $row) : ?>
+                                <li class="mb-2">
+                                    <a href="<?php echo $this->escape(Route::_('index.php?option=com_csintegrity&view=session&id=' . (int) $row->id, false)); ?>">
+                                        <?php echo $this->escape($row->name); ?>
+                                    </a>
+                                    <span class="badge bg-secondary ms-2"><?php echo $this->escape($row->source); ?></span>
+                                    <?php if (!empty($row->summary)) : ?>
+                                        <br><small class="text-body-secondary"><?php echo $this->escape($row->summary); ?></small>
+                                    <?php endif; ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+
+                    <a href="<?php echo $this->escape($newSessionUrl); ?>" class="btn btn-info">
+                        <span class="icon-plus" aria-hidden="true"></span>
+                        <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_SESSIONS_NEW'); ?>
+                    </a>
+                    <a href="<?php echo $this->escape($sessionsUrl); ?>" class="btn btn-outline-info">
+                        <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_SESSIONS_ALL'); ?>
+                    </a>
                 </div>
             </div>
 
@@ -151,7 +210,7 @@ $siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=templates&cl
                     </p>
                     <p class="card-text mb-0">
                         <small class="text-body-secondary">
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.5.2
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.6.0
                         </small>
                     </p>
                 </div>

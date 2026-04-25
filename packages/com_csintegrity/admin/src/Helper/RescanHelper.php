@@ -44,6 +44,10 @@ final class RescanHelper
 
         $stats = ['inserted' => 0, 'scanned' => 0, 'templates' => count($templates)];
 
+        $logStats = function () use (&$stats): void {
+            ActionLogHelper::log(ActionLogHelper::ACTION_RESCAN, $stats);
+        };
+
         foreach ($templates as $template) {
             $clientId = (int) $template->client_id;
             $name     = (string) $template->element;
@@ -81,6 +85,8 @@ final class RescanHelper
                 $stats['inserted']++;
             }
         }
+
+        $logStats();
 
         return $stats;
     }

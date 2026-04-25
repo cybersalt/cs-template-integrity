@@ -42,6 +42,8 @@ final class MarkReviewedHelper
             ->delete($db->quoteName('#__template_overrides'));
         $db->setQuery($deleteQuery)->execute();
 
+        ActionLogHelper::log(ActionLogHelper::ACTION_MARK_REVIEWED, ['cleared' => $count]);
+
         return $count;
     }
 }

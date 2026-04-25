@@ -10,7 +10,8 @@
     'use strict';
 
     document.addEventListener('DOMContentLoaded', function () {
-        wireCopyButton();
+        wireCopyButton('csintegrity-copy-btn',     'csintegrity-prompt',     'btn-info');
+        wireCopyButton('csintegrity-fix-copy-btn', 'csintegrity-fix-prompt', 'btn-primary');
         wireMarkReviewedModal();
     });
 
@@ -35,9 +36,9 @@
         }
     }
 
-    function wireCopyButton() {
-        var btn    = document.getElementById('csintegrity-copy-btn');
-        var prompt = document.getElementById('csintegrity-prompt');
+    function wireCopyButton(buttonId, promptId, restoreClass) {
+        var btn    = document.getElementById(buttonId);
+        var prompt = document.getElementById(promptId);
 
         if (!btn || !prompt || !navigator.clipboard) {
             return;
@@ -48,17 +49,17 @@
 
         btn.addEventListener('click', function () {
             navigator.clipboard.writeText(prompt.innerText).then(function () {
-                btn.classList.remove('btn-info');
+                btn.classList.remove(restoreClass);
                 btn.classList.add('btn-success');
                 btn.innerHTML = '<span class="icon-checkmark" aria-hidden="true"></span> ' + copiedLabel;
 
                 setTimeout(function () {
                     btn.classList.remove('btn-success');
-                    btn.classList.add('btn-info');
+                    btn.classList.add(restoreClass);
                     btn.innerHTML = '<span class="icon-copy" aria-hidden="true"></span> ' + defaultLabel;
                 }, 2000);
             }).catch(function () {
-                btn.innerHTML = btn.innerHTML; // leave label alone on failure
+                btn.innerHTML = btn.innerHTML;
             });
         });
     }

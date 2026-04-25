@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] — 2026-04-24
+
+### Added
+- **Session log.** New table `#__csintegrity_sessions` and an admin "Sessions" view (Components → CS Template Integrity → Sessions submenu). Reports from Claude are stored as sessions named `YYYY-MM-DD-HHMM` by default. Two ways to add a session: paste-in via a form (claude.ai users) or POST to `/api/index.php/v1/csintegrity/sessions` (Claude Code / agentic users — the dashboard prompt template now tells Claude to do this automatically). Each session can be viewed individually with its full report markdown and the action-log entries that ran while it was active. Delete works via the standard admin checkbox toolbar.
+- **Action log.** New table `#__csintegrity_actions` and an admin "Action log" view. Every notable event is recorded automatically: install, update, rescan, mark-reviewed, session created/deleted, backup created. `Cybersalt\Component\Csintegrity\Administrator\Helper\ActionLogHelper::log($action, $details, $sessionId)` is the single entry point; calls are wired into `RescanHelper`, `MarkReviewedHelper`, `SessionsHelper`, `BackupsHelper`, and `script.php`'s postflight. Logging failures are swallowed — the audit log can never crash the parent operation.
+- **File backups.** New table `#__csintegrity_backups` and admin "File backups" view. Claude POSTs original file contents to `/api/index.php/v1/csintegrity/backups` before proposing a fix; the original is stored as base64 in the DB along with sha256 and size. Each backup is downloadable from the admin list. Restore-from-backup is intentionally deferred — destructive enough to deserve its own design pass.
+- **Apply Fixes prompt card** on the dashboard. Second copy-paste prompt that asks Claude to back up each affected file (POST to `/backups`) before proposing diffs. Read-only by default; Claude proposes, the admin applies. Pairs with the existing Use-with-Claude card.
+- **Session log preview card** on the dashboard. Lists the five most recent sessions with quick links, plus "New session" and "View all sessions" buttons.
+- Component manifest grew `<install>`, `<uninstall>`, and `<update>` SQL blocks pointing at the new schema files in `admin/sql/`. Submenu entries for Dashboard / Sessions / Action log / File backups added under the Components menu.
+
+### Changed
+- Use-with-Claude prompt extended with a step 6 telling Claude to POST its report back to `/v1/csintegrity/sessions` so it's preserved in the audit trail.
+
 ## [0.5.2] — 2026-04-24
 
 ### Fixed

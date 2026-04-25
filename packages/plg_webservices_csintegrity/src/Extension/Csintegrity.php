@@ -53,5 +53,8 @@ final class Csintegrity extends CMSPlugin implements SubscriberInterface
                 $defaults
             ),
         ]);
+
+        $router->createCRUDRoutes('v1/csintegrity/sessions', 'sessions', $defaults);
+        $router->createCRUDRoutes('v1/csintegrity/backups',  'backups',  $defaults);
     }
 }
