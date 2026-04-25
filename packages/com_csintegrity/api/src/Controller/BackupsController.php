@@ -47,7 +47,19 @@ final class BackupsController extends ApiController
     public function restore($id = null): void
     {
         try {
-            $id = (int) ($id ?? $this->input->getInt('id', 0));
+            // Resolve :id across method-arg, input, and URL-path regex.
+            // Joomla's API dispatcher populates input for GET captures
+            // but not POST captures; the regex fallback covers POST.
+            if ($id === null || (int) $id <= 0) {
+                $id = $this->input->getInt('id', 0);
+            }
+            if ((int) $id <= 0) {
+                $path = (string) $this->input->server->get('REQUEST_URI', '', 'string');
+                if (preg_match('#/backups/(\d+)/#', $path, $m)) {
+                    $id = (int) $m[1];
+                }
+            }
+            $id = (int) $id;
             if ($id <= 0) {
                 $this->sendJsonApi(
                     ['errors' => [['status' => '400', 'code' => 'INVALID_ID', 'title' => 'A numeric backup id is required.']]],

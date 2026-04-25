@@ -75,7 +75,7 @@ final class OverridesController extends ApiController
     public function applyFix($id = null): void
     {
         try {
-            $id = (int) ($id ?? $this->input->getInt('id', 0));
+            $id = $this->resolveIdFromRequest($id, '#/overrides/(\d+)/#');
             if ($id <= 0) {
                 $this->sendJsonApiError(400, 'INVALID_ID', 'A numeric override id is required.');
                 return;
@@ -127,7 +127,7 @@ final class OverridesController extends ApiController
     public function dismiss($id = null): void
     {
         try {
-            $id = (int) ($id ?? $this->input->getInt('id', 0));
+            $id = $this->resolveIdFromRequest($id, '#/overrides/(\d+)/#');
             if ($id <= 0) {
                 $this->sendJsonApiError(400, 'INVALID_ID', 'A numeric override id is required.');
                 return;
@@ -149,7 +149,7 @@ final class OverridesController extends ApiController
 
     private function respondFile(string $side): void
     {
-        $id = (int) $this->input->get('id', 0, 'int');
+        $id = $this->resolveIdFromRequest(null, '#/overrides/(\d+)/#');
 
         if ($id <= 0) {
             $this->sendJsonApiError(400, 'INVALID_ID', 'A numeric override id is required.');
@@ -224,6 +224,35 @@ final class OverridesController extends ApiController
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Resolve a URL `:id` capture across the three places it can land:
+     * the method argument (Joomla's preferred, sometimes), `$this->input`
+     * (which works for GET but is empty for POST in our experience), and
+     * a regex against `REQUEST_URI` (last-resort URL-path parse).
+     *
+     * @param  mixed  $argId  The first method argument, if any.
+     * @param  string $regex  Regex with one capture group matching the
+     *                        id segment in the path (e.g. `#/overrides/(\d+)/#`).
+     */
+    private function resolveIdFromRequest($argId, string $regex): int
+    {
+        if ($argId !== null && (int) $argId > 0) {
+            return (int) $argId;
+        }
+
+        $fromInput = $this->input->getInt('id', 0);
+        if ($fromInput > 0) {
+            return $fromInput;
+        }
+
+        $path = (string) $this->input->server->get('REQUEST_URI', '', 'string');
+        if ($path !== '' && preg_match($regex, $path, $m)) {
+            return (int) $m[1];
+        }
+
+        return 0;
     }
 
     private function loadOverrideRow(int $id): ?object

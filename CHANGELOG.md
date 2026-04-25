@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.2] — 2026-04-24
+
+### Fixed
+- POST endpoints with `:id` URL captures (`/overrides/{id}/apply-fix`, `/overrides/{id}/dismiss`, `/backups/{id}/restore`) now resolve the id reliably even when Joomla's API dispatcher doesn't populate `$this->input` from a POST URL capture (the dispatcher does this for GET routes but not POST in practice). New `resolveIdFromRequest()` helper checks three sources in order: the method argument, `$this->input->getInt('id')`, and a regex against `REQUEST_URI`. Same fallback inlined into `BackupsController::restore()`. Existing GET endpoints (`overrideFile` / `coreFile`) also routed through the helper for consistency.
+
 ## [0.8.1] — 2026-04-24
 
 ### Fixed
