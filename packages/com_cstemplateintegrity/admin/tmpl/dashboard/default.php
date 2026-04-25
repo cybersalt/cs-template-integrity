@@ -40,6 +40,14 @@ $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=ba
 
             <div class="card mb-3 border-info">
                 <div class="card-body">
+                    <div class="alert alert-success d-flex align-items-center mb-3" role="alert">
+                        <span class="icon-checkmark-circle me-2 fs-4" aria-hidden="true"></span>
+                        <div>
+                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_AUDIENCE_TITLE'); ?></strong>
+                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_AUDIENCE_BODY'); ?>
+                        </div>
+                    </div>
+
                     <h3 class="card-title">
                         <span class="icon-flash" aria-hidden="true"></span>
                         <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_TITLE'); ?>
@@ -59,6 +67,10 @@ $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=ba
                             <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP3_TITLE'); ?></strong>
                             <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP3_BODY'); ?>
                         </li>
+                        <li class="mb-2">
+                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP4_TITLE'); ?></strong>
+                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP4_BODY'); ?>
+                        </li>
                     </ol>
 
                     <p class="card-text mb-2">
@@ -76,8 +88,16 @@ $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=ba
                 </div>
             </div>
 
-            <div class="card mb-3 border-primary">
+            <div class="card mb-3 border-warning">
                 <div class="card-body">
+                    <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+                        <span class="icon-warning me-2 fs-4" aria-hidden="true"></span>
+                        <div>
+                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_AUDIENCE_TITLE'); ?></strong>
+                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_AUDIENCE_BODY'); ?>
+                        </div>
+                    </div>
+
                     <h3 class="card-title">
                         <span class="icon-wrench" aria-hidden="true"></span>
                         <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_TITLE'); ?>

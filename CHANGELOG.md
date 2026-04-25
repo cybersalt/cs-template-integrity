@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.0] — 2026-04-25
+
+### Changed
+
+- **Reworked the two-prompt UX into a one-prompt-plus-conversation flow.** The old model assumed users would always paste two prompts (one to scan, one to fix), but in the same Claude chat the second prompt was redundant — Claude already had the session id, the diffs, the API base, and the report in context. v0.11.0 collapses the default flow into the scan prompt and reframes the fix prompt as the cross-session helper.
+  - **Scan prompt** now ends with an explicit hand-off step (#6): after POSTing the report, Claude asks the user which findings to fix and waits, then for each confirmed finding runs the same fetch → patch → apply-fix → dismiss workflow that used to live in the fix prompt. **Critically, it now also handles the unknown-finding case** — if a finding doesn't fit "code change" or "configuration question" (e.g. it needs a database tweak, a plugin reinstall, or contacting a third-party developer), Claude stops and explains in plain English instead of applying a partial fix.
+  - **Fix prompt** is now scoped to the cross-session case only: starting a fresh chat to continue a review (closed the original chat overnight, handing it to a teammate, switched from claude.ai to Claude Code mid-flow). It now begins by GET-ing the prior session report (`/sessions/{id}`) so a new Claude can rebuild the context, then asks the user which findings to fix. Same unknown-finding catch-all applies.
+- **Dashboard reworked to make the two paths obvious.** Each card now leads with a Bootstrap alert banner stating who it's for:
+  - Scan card: green *"Start here. This is the only card you need for a normal review."*
+  - Fix card: yellow *"Most users do NOT need this card. Use only if you're starting a fresh chat to apply fixes from a previous review."*
+  - Card titles renamed: *"Use with Claude"* → *"Run a review with Claude"*; *"Apply fixes"* → *"Continue a previous review in a new chat"*.
+- New step 4 in the scan card's instructions: *"Tell Claude what to fix — in the same chat"* with a concrete example reply, so non-technical users see the conversational hand-off they'd otherwise have to infer.
+
+### Why
+
+A real client test on fairviewterracehoa.com triggered the question: the existing fix prompt was tightly coupled to the three classifier categories (ALERT/REVIEW/INFO), and a finding that didn't fit either of the prompt's two action buckets ("code change" or "configuration question") would have left Claude in an awkward spot. The conversational hand-off side-steps that — Claude can ask the user before doing anything ambiguous — and the catch-all branch makes it explicit even in the cross-session prompt.
+
 ## [0.10.2] — 2026-04-25
 
 ### Changed
