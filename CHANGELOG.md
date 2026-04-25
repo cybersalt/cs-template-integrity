@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.3] — 2026-04-24
+
+### Changed
+- "Copy prompt" button renamed to "Copy scan prompt" for symmetry with "Copy fix prompt" — clearer pairing of the two prompts.
+
 ## [0.6.2] — 2026-04-24
 
 ### Fixed
