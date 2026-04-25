@@ -37,6 +37,8 @@ final class HtmlView extends BaseHtmlView
 
     public bool $fileExists = false;
 
+    public string $highlightLanguage = 'plaintext';
+
     public function display($tpl = null): void
     {
         $id = (int) Factory::getApplication()->getInput()->getInt('id', 0);
@@ -49,15 +51,18 @@ final class HtmlView extends BaseHtmlView
             throw new GenericDataException(Text::_('COM_CSINTEGRITY_BACKUP_NOT_FOUND'), 404);
         }
 
-        $this->backup        = $row;
-        $this->contents      = BackupsHelper::decodeContents($row);
-        $this->absolutePath  = JPATH_ROOT . '/' . ltrim((string) $row->file_path, '/\\');
-        $this->fileExists    = is_file($this->absolutePath);
-        $this->backUrl       = Route::_('index.php?option=com_csintegrity&view=backups', false);
-        $this->downloadUrl   = Route::_('index.php?option=com_csintegrity&task=backups.download&id=' . $id, false);
-        $this->restoreAction = Route::_('index.php?option=com_csintegrity', false);
+        $this->backup            = $row;
+        $this->contents          = BackupsHelper::decodeContents($row);
+        $this->absolutePath      = JPATH_ROOT . '/' . ltrim((string) $row->file_path, '/\\');
+        $this->fileExists        = is_file($this->absolutePath);
+        $this->backUrl           = Route::_('index.php?option=com_csintegrity&view=backups', false);
+        $this->downloadUrl       = Route::_('index.php?option=com_csintegrity&task=backups.download&id=' . $id, false);
+        $this->restoreAction     = Route::_('index.php?option=com_csintegrity', false);
+        $this->highlightLanguage = self::languageForExtension(pathinfo((string) $row->file_path, PATHINFO_EXTENSION));
 
         HTMLHelper::_('stylesheet', 'com_csintegrity/dashboard.css', ['relative' => true, 'version' => 'auto']);
+        HTMLHelper::_('stylesheet', 'com_csintegrity/highlight-theme.css', ['relative' => true, 'version' => 'auto']);
+        HTMLHelper::_('script', 'com_csintegrity/highlight.min.js', ['relative' => true, 'version' => 'auto', 'defer' => true]);
         HTMLHelper::_('script', 'com_csintegrity/dashboard.js', ['relative' => true, 'version' => 'auto', 'defer' => true]);
 
         // The "Restore now…" button uses a Bootstrap 5 modal. Joomla 5+
@@ -72,5 +77,26 @@ final class HtmlView extends BaseHtmlView
         );
 
         parent::display($tpl);
+    }
+
+    private static function languageForExtension(string $ext): string
+    {
+        return match (strtolower($ext)) {
+            'php', 'phtml'   => 'php',
+            'html', 'htm'    => 'xml',
+            'xml', 'xhtml'   => 'xml',
+            'js', 'mjs'      => 'javascript',
+            'ts'             => 'typescript',
+            'jsx', 'tsx'     => 'javascript',
+            'css', 'scss',
+            'sass', 'less'   => 'css',
+            'json'           => 'json',
+            'yaml', 'yml'    => 'yaml',
+            'md', 'markdown' => 'markdown',
+            'sh', 'bash'     => 'bash',
+            'sql'            => 'sql',
+            'ini'            => 'ini',
+            default          => 'plaintext',
+        };
     }
 }

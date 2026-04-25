@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.4] — 2026-04-24
+
+### Added
+- **Syntax highlighting** on the Backup detail view's contents block. Bundled `highlight.js` v11.9.0 (~120 KB minified) plus a small `highlight-theme.css` that picks token colors from Bootstrap CSS variables (`--bs-primary`, `--bs-success`, `--bs-warning`, etc.) so it adapts to Atum's light/dark mode without needing two separate stylesheets. Language is auto-detected from the file extension — `.php`, `.html`, `.css`, `.js`, `.json`, `.yaml`, `.md`, `.sh`, `.sql`, `.ini`, plus a few aliases. Falls back to plaintext for anything unknown. If the bundled JS fails to load for any reason, the codeblock still renders fine — just unhighlighted.
+
+### Fixed
+- **Resize handle on the session report and backup contents only allowed shrinking, not growing.** CSS specificity bug — `.csintegrity-dashboard .csintegrity-codeblock { max-height: 320px }` (the dashboard prompt-card scope) was beating `.csintegrity-report { max-height: none }`, so the 320 px cap leaked onto pages it shouldn't have. Fixed via `:not()` exclusion on the dashboard rule plus `!important` on the resizable-block rule for belt-and-braces. The same `.csintegrity-backup-contents` class added on the Backup view now also resizes properly.
+
 ## [0.8.3] — 2026-04-24
 
 ### Changed

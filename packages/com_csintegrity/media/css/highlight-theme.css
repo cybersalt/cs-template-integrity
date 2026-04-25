@@ -1,0 +1,71 @@
+/**
+ * highlight.js theme keyed off Bootstrap 5 / Atum CSS variables.
+ * Adapts to whichever theme Atum is in (light or dark) without
+ * needing two separate stylesheets — the variables flip with the
+ * theme attribute.
+ */
+
+.hljs {
+    display: block;
+    overflow-x: auto;
+    background: transparent;
+    color: var(--bs-body-color);
+}
+
+.hljs-comment,
+.hljs-quote {
+    color: var(--bs-secondary-color, var(--bs-secondary));
+    font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-doctag,
+.hljs-built_in,
+.hljs-name,
+.hljs-tag {
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+.hljs-string,
+.hljs-attr,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-meta-string {
+    color: var(--bs-success);
+}
+
+.hljs-number,
+.hljs-literal,
+.hljs-deletion {
+    color: var(--bs-info);
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-attribute {
+    color: var(--bs-warning);
+}
+
+.hljs-section,
+.hljs-title,
+.hljs-class .hljs-title,
+.hljs-function .hljs-title,
+.hljs-meta {
+    color: var(--bs-danger);
+    font-weight: 600;
+}
+
+.hljs-regexp,
+.hljs-link {
+    color: var(--bs-warning);
+}
+
+.hljs-emphasis { font-style: italic; }
+.hljs-strong   { font-weight: bold; }
+
+.hljs-addition {
+    color: var(--bs-success);
+    background: rgba(var(--bs-success-rgb, 25, 135, 84), 0.1);
+}

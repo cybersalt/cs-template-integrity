@@ -21,24 +21,26 @@
 /*
  * Tall code blocks (the prompt cards on the dashboard) are capped to
  * a scrollable height so they don't push the rest of the page down.
- * The session-report viewer uses the same class but should expand
- * naturally — see .csintegrity-report below.
+ * The session-report and backup-contents blocks use the same base
+ * .csintegrity-codeblock class but should expand freely — :not()
+ * exclusion keeps the cap from leaking onto them.
  */
-.csintegrity-dashboard .csintegrity-codeblock {
+.csintegrity-dashboard .csintegrity-codeblock:not(.csintegrity-report):not(.csintegrity-backup-contents) {
     max-height: 320px;
 }
 
-.csintegrity-report {
-    /* Session reports get a generous default height plus a vertical
-     * resize handle in the bottom-right corner — the user can grab it
-     * to make the block as tall as they like.
-     *
-     * Browsers' resize handle only fires when the element has an
-     * explicit `height` (not just min-height) AND a non-visible
-     * overflow. Both are set here.  */
+.csintegrity-report,
+.csintegrity-backup-contents {
+    /* Resizable code blocks. Browsers only render the resize handle
+     * reliably when the element has explicit `height` (not just
+     * min-height) plus non-visible overflow. The user grabs the
+     * bottom-right corner and drags up to shrink, down to grow.
+     * `max-height: none !important` is needed because the
+     * .csintegrity-dashboard scope above would otherwise win on
+     * specificity and cap growth. */
     height: 600px;
     min-height: 200px;
-    max-height: none;
+    max-height: none !important;
     resize: vertical;
     overflow: auto;
 }

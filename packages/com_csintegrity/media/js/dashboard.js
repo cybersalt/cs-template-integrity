@@ -17,7 +17,20 @@
         wireGatedConfirmModal('csintegrity-restore-modal',
                               'csintegrity-restore-confirm-check',
                               'csintegrity-restore-confirm-btn');
+        wireSyntaxHighlight();
     });
+
+    function wireSyntaxHighlight() {
+        var codeEl = document.getElementById('csintegrity-backup-contents-code');
+        if (!codeEl || typeof window.hljs === 'undefined') {
+            return;
+        }
+        try {
+            window.hljs.highlightElement(codeEl);
+        } catch (e) {
+            // highlighting is a nicety; never block the page
+        }
+    }
 
     /**
      * Bootstrap modal that gates a destructive submit button on a checkbox.

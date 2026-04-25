@@ -91,7 +91,7 @@ $b = $this->backup;
                 <div class="card-body">
                     <h4 class="card-title"><?php echo Text::_('COM_CSINTEGRITY_BACKUP_CONTENTS_HEADING'); ?></h4>
                     <p class="text-body-secondary mb-2"><?php echo Text::_('COM_CSINTEGRITY_BACKUP_CONTENTS_HELP'); ?></p>
-                    <pre class="csintegrity-codeblock csintegrity-report" id="csintegrity-backup-contents"><?php echo $this->escape($this->contents); ?></pre>
+                    <pre class="csintegrity-codeblock csintegrity-backup-contents"><code id="csintegrity-backup-contents-code" class="language-<?php echo $this->escape($this->highlightLanguage); ?>"><?php echo $this->escape($this->contents); ?></code></pre>
                 </div>
             </div>
         </div>
