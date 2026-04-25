@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.6] — 2026-04-24
+
+### Changed
+- "Back to sessions" button switched from `btn-secondary` (grey) to `btn-info` (sky blue with white text). It's a navigation action; it should look like one.
+- Session report block is now resizable. Default minimum height of 600px (was content-fitted, often too short for long reports), plus a vertical resize handle in the bottom-right corner so users can drag it taller as needed.
+- Sessions and Action log views grew an intro paragraph that explains what each view actually shows. Sessions = read-only Claude reports. Action log = the audit trail of changes (rescans, mark-reviewed, session creation, backup saves). Tim found the two confusing on first look — the wording now distinguishes content from changes.
+
 ## [0.6.5] — 2026-04-24
 
 ### Fixed

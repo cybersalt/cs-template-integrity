@@ -22,6 +22,10 @@ $listAction = Route::_('index.php?option=com_csintegrity&view=sessions', false);
 
 <form action="<?php echo $this->escape(Uri::getInstance()->toString()); ?>" method="post" name="adminForm" id="adminForm">
     <div class="container-fluid">
+        <p class="text-body-secondary mb-3">
+            <?php echo Text::_('COM_CSINTEGRITY_SESSIONS_INTRO'); ?>
+        </p>
+
         <?php if (empty($this->items)) : ?>
             <div class="alert alert-info">
                 <?php echo Text::_('COM_CSINTEGRITY_SESSIONS_EMPTY'); ?>

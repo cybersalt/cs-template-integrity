@@ -21,7 +21,7 @@ $action = Route::_('index.php?option=com_csintegrity&task=sessions.save', false)
 
 <div class="container-fluid csintegrity-dashboard">
     <p class="mb-3">
-        <a href="<?php echo $this->escape($this->backUrl); ?>" class="btn btn-secondary">
+        <a href="<?php echo $this->escape($this->backUrl); ?>" class="btn btn-info">
             <span class="icon-arrow-left" aria-hidden="true"></span>
             <?php echo Text::_('COM_CSINTEGRITY_SESSION_BACK_TO_LIST'); ?>
         </a>

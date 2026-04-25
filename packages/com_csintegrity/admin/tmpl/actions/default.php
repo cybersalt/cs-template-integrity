@@ -19,6 +19,7 @@ use Joomla\CMS\Router\Route;
 
 <div class="container-fluid">
     <p class="text-body-secondary mb-3"><?php echo Text::_('COM_CSINTEGRITY_ACTIONS_DESCRIPTION'); ?></p>
+    <p class="text-body-secondary mb-3"><?php echo Text::_('COM_CSINTEGRITY_ACTIONS_VS_SESSIONS'); ?></p>
 
     <?php if (empty($this->items)) : ?>
         <div class="alert alert-info"><?php echo Text::_('COM_CSINTEGRITY_ACTIONS_EMPTY'); ?></div>

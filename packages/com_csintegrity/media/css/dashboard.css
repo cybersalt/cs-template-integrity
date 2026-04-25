@@ -29,8 +29,12 @@
 }
 
 .csintegrity-report {
-    /* Session reports can be long; let the page scroll, not the block. */
+    /* Session reports get a generous default height plus a vertical
+     * resize handle in the bottom-right corner — the user can grab it
+     * to make the block as tall as they like. */
+    min-height: 600px;
     max-height: none;
+    resize: vertical;
 }
 
 .csintegrity-codeblock code {
