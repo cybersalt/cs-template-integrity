@@ -22,14 +22,36 @@
 
     function wireSyntaxHighlight() {
         var codeEl = document.getElementById('csintegrity-backup-contents-code');
-        if (!codeEl || typeof window.hljs === 'undefined') {
+        if (!codeEl) {
             return;
         }
-        try {
-            window.hljs.highlightElement(codeEl);
-        } catch (e) {
-            // highlighting is a nicety; never block the page
-        }
+
+        // Poll for window.hljs in case the script load order put us
+        // ahead of highlight.js (defer attribute may or may not have
+        // landed on the tag depending on how HTMLHelper rendered it).
+        var attempts = 0;
+        var maxAttempts = 50;  // 50 * 100ms = 5 seconds
+        var poll = function () {
+            if (typeof window.hljs !== 'undefined' && typeof window.hljs.highlightElement === 'function') {
+                try {
+                    window.hljs.highlightElement(codeEl);
+                } catch (e) {
+                    if (window.console && console.warn) {
+                        console.warn('csintegrity highlight failed:', e);
+                    }
+                }
+                return;
+            }
+            attempts++;
+            if (attempts >= maxAttempts) {
+                if (window.console && console.warn) {
+                    console.warn('csintegrity: window.hljs never became available; backup contents will render unhighlighted.');
+                }
+                return;
+            }
+            setTimeout(poll, 100);
+        };
+        poll();
     }
 
     /**

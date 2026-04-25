@@ -62,8 +62,24 @@ final class HtmlView extends BaseHtmlView
 
         HTMLHelper::_('stylesheet', 'com_csintegrity/dashboard.css', ['relative' => true, 'version' => 'auto']);
         HTMLHelper::_('stylesheet', 'com_csintegrity/highlight-theme.css', ['relative' => true, 'version' => 'auto']);
-        HTMLHelper::_('script', 'com_csintegrity/highlight.min.js', ['relative' => true, 'version' => 'auto', 'defer' => true]);
-        HTMLHelper::_('script', 'com_csintegrity/dashboard.js', ['relative' => true, 'version' => 'auto', 'defer' => true]);
+
+        // Joomla's HTMLHelper::script $options array silently drops keys
+        // it doesn't recognize, including `defer` — so script ordering
+        // ends up implicit. Pass `defer` as an actual HTML attribute via
+        // the fourth parameter ($attribs) so the tag is real-defer, and
+        // dashboard.js's polling loop covers the rest.
+        HTMLHelper::_(
+            'script',
+            'com_csintegrity/highlight.min.js',
+            ['relative' => true, 'version' => 'auto'],
+            ['defer' => true]
+        );
+        HTMLHelper::_(
+            'script',
+            'com_csintegrity/dashboard.js',
+            ['relative' => true, 'version' => 'auto'],
+            ['defer' => true]
+        );
 
         // The "Restore now…" button uses a Bootstrap 5 modal. Joomla 5+
         // ships Bootstrap, but only loads modal/dropdown/etc. assets on

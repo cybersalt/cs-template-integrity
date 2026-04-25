@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.5] — 2026-04-24
+
+### Fixed
+- v0.8.4 didn't actually highlight backup contents when Tim opened a backup. Two reasons: (1) Joomla's `HTMLHelper::script()` silently drops options it doesn't recognize, including `defer`, so `defer => true` in the options array ended up nowhere — moved to the fourth parameter ($attribs) so it lands on the script tag as a real HTML attribute. (2) Even with defer, script timing can be funny across browsers and proxies; `wireSyntaxHighlight()` now polls for `window.hljs` for up to 5 seconds before giving up. Either fix on its own should be enough; both together cover the long tail of edge cases. If `hljs` never loads, a `console.warn` records the failure so it's diagnosable from the browser dev tools.
+
 ## [0.8.4] — 2026-04-24
 
 ### Added
