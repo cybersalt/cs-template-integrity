@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.2] — 2026-04-24
+
+### Fixed
+- Restore-backup confirmation modal was too narrow — long file paths in the prompt body got crammed against the modal's left edge. Added `modal-lg` to the dialog (~800px on medium+ screens) so paths have room.
+- Post-restore success message was wrapped in `<code>` tags. The default code styling inside an `alert-success` doesn't flip readably between light and dark mode (dark text on light-green vs light text on dark-green-ish — neither version is great). Dropped the wrap; plain text in the success bar is readable in both modes.
+
 ## [0.7.1] — 2026-04-24
 
 ### Fixed
