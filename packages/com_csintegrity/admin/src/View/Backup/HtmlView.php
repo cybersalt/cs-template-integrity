@@ -60,6 +60,12 @@ final class HtmlView extends BaseHtmlView
         HTMLHelper::_('stylesheet', 'com_csintegrity/dashboard.css', ['relative' => true, 'version' => 'auto']);
         HTMLHelper::_('script', 'com_csintegrity/dashboard.js', ['relative' => true, 'version' => 'auto', 'defer' => true]);
 
+        // The "Restore now…" button uses a Bootstrap 5 modal. Joomla 5+
+        // ships Bootstrap, but only loads modal/dropdown/etc. assets on
+        // request — without this the data-bs-toggle attribute is just
+        // dead HTML on this view.
+        $this->getDocument()->getWebAssetManager()->useScript('bootstrap.modal');
+
         ToolbarHelper::title(
             Text::sprintf('COM_CSINTEGRITY_BACKUP_TITLE', '#' . (int) $row->id),
             'archive'

@@ -53,6 +53,12 @@ final class HtmlView extends BaseHtmlView
         HTMLHelper::_('stylesheet', 'com_csintegrity/dashboard.css', ['relative' => true, 'version' => 'auto']);
         HTMLHelper::_('script', 'com_csintegrity/dashboard.js', ['relative' => true, 'version' => 'auto', 'defer' => true]);
 
+        // Explicit modal asset for the Mark-all-reviewed confirmation
+        // modal — was working incidentally because Atum was loading
+        // Bootstrap's modal asset for other reasons; requesting it
+        // explicitly so we don't depend on that.
+        $this->getDocument()->getWebAssetManager()->useScript('bootstrap.modal');
+
         $this->addToolbar();
 
         parent::display($tpl);

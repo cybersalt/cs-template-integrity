@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.1] — 2026-04-24
+
+### Fixed
+- "Restore now…" button on the backup detail view did nothing on click. The button uses Bootstrap 5's `data-bs-toggle="modal"` to open the confirmation modal, but Joomla 5+ only loads the `bootstrap.modal` script asset when explicitly requested, and the Backup view wasn't doing that. Added `useScript('bootstrap.modal')` to both the Backup and Dashboard HtmlViews so the modal opens reliably on either page (the Mark-all-reviewed modal on the dashboard had been working incidentally because Atum was loading the asset for unrelated reasons; making it explicit so we don't depend on that).
+
 ## [0.7.0] — 2026-04-24
 
 ### Added
