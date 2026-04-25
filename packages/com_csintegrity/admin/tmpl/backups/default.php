@@ -15,6 +15,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
+use Joomla\CMS\Session\Session;
 ?>
 
 <form action="<?php echo $this->escape(\Joomla\CMS\Uri\Uri::getInstance()->toString()); ?>" method="post" name="adminForm" id="adminForm">
@@ -41,7 +42,7 @@ use Joomla\CMS\Router\Route;
                 <?php foreach ($this->items as $i => $row) : ?>
                     <?php
                     $viewUrl     = Route::_('index.php?option=com_csintegrity&view=backup&id=' . (int) $row->id, false);
-                    $downloadUrl = Route::_('index.php?option=com_csintegrity&task=backups.download&id=' . (int) $row->id, false);
+                    $downloadUrl = Route::_('index.php?option=com_csintegrity&task=backups.download&id=' . (int) $row->id . '&' . Session::getFormToken() . '=1', false);
                     ?>
                     <tr>
                         <td><input type="checkbox" id="cb<?php echo $i; ?>" name="cid[]" value="<?php echo (int) $row->id; ?>" onclick="Joomla.isChecked(this.checked);"></td>

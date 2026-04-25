@@ -22,6 +22,7 @@ defined('_JEXEC') or die;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\MarkReviewedHelper;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\OverridesHelper;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\PathResolver;
+use Cybersalt\Component\Csintegrity\Administrator\Helper\PermissionHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Filter\InputFilter;
 use Joomla\CMS\MVC\Controller\ApiController;
@@ -40,6 +41,10 @@ final class OverridesController extends ApiController
 
     public function displayList()
     {
+        if (!$this->authoriseOrFail(PermissionHelper::class . '::requireView')) {
+            return null;
+        }
+
         $apiFilterInfo = $this->input->get('filter', [], 'array');
         $filter        = InputFilter::getInstance();
 
@@ -62,18 +67,36 @@ final class OverridesController extends ApiController
         return parent::displayList();
     }
 
+    public function displayItem($id = null)
+    {
+        if (!$this->authoriseOrFail(PermissionHelper::class . '::requireView')) {
+            return null;
+        }
+        return parent::displayItem($id);
+    }
+
     public function overrideFile(): void
     {
+        if (!$this->authoriseOrFail(PermissionHelper::class . '::requireView')) {
+            return;
+        }
         $this->respondFile('override');
     }
 
     public function coreFile(): void
     {
+        if (!$this->authoriseOrFail(PermissionHelper::class . '::requireView')) {
+            return;
+        }
         $this->respondFile('core');
     }
 
     public function applyFix($id = null): void
     {
+        if (!$this->authoriseOrFail(PermissionHelper::class . '::requireWrite')) {
+            return;
+        }
+
         try {
             $id = $this->resolveIdFromRequest($id, '#/overrides/(\d+)/#');
             if ($id <= 0) {
@@ -109,6 +132,10 @@ final class OverridesController extends ApiController
 
     public function dismissAll(): void
     {
+        if (!$this->authoriseOrFail(PermissionHelper::class . '::requireWrite')) {
+            return;
+        }
+
         try {
             $cleared = MarkReviewedHelper::clearAllOverrides();
 
@@ -126,6 +153,10 @@ final class OverridesController extends ApiController
 
     public function dismiss($id = null): void
     {
+        if (!$this->authoriseOrFail(PermissionHelper::class . '::requireWrite')) {
+            return;
+        }
+
         try {
             $id = $this->resolveIdFromRequest($id, '#/overrides/(\d+)/#');
             if ($id <= 0) {
@@ -315,5 +346,28 @@ final class OverridesController extends ApiController
             ],
             $status
         );
+    }
+
+    /**
+     * Run a PermissionHelper::require* callable and translate its
+     * thrown RuntimeException into a JSON:API error response. Returns
+     * true if authorised, false otherwise (caller must early-return).
+     *
+     * @param callable-string $check Fully-qualified static method name.
+     */
+    private function authoriseOrFail(string $check): bool
+    {
+        try {
+            $check();
+            return true;
+        } catch (\RuntimeException $e) {
+            $code   = $e->getCode() ?: 403;
+            $name   = $e->getMessage() === 'AUTH_REQUIRED' ? 'AUTH_REQUIRED' : 'FORBIDDEN';
+            $title  = $name === 'AUTH_REQUIRED'
+                ? 'Authentication is required for this endpoint.'
+                : 'Your account is not authorised to access this csintegrity endpoint.';
+            $this->sendJsonApiError($code === 401 ? 401 : 403, $name, $title);
+            return false;
+        }
     }
 }

@@ -7,7 +7,7 @@
     <license>GNU General Public License version 2 or later</license>
     <authorEmail>support@cybersalt.com</authorEmail>
     <authorUrl>https://cybersalt.com</authorUrl>
-    <version>0.8.5</version>
+    <version>0.9.0</version>
     <description>COM_CSINTEGRITY_XML_DESCRIPTION</description>
 
     <namespace path="src">Cybersalt\Component\Csintegrity</namespace>
@@ -39,6 +39,7 @@
             <menu link="option=com_csintegrity&amp;view=backups">COM_CSINTEGRITY_SUBMENU_BACKUPS</menu>
         </submenu>
         <files folder="admin">
+            <filename>access.xml</filename>
             <folder>language</folder>
             <folder>services</folder>
             <folder>sql</folder>

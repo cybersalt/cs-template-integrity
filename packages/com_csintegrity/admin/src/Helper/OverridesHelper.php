@@ -55,13 +55,14 @@ final class OverridesHelper
             throw new \RuntimeException('Could not resolve the override file path from this row.');
         }
 
-        // Path-traversal guard. Resolve dirname through realpath() and
-        // verify it sits under JPATH_ROOT.
-        $parentReal = realpath(\dirname($absolute));
-        $rootReal   = realpath(JPATH_ROOT);
-        if ($parentReal === false || $rootReal === false || strpos($parentReal, $rootReal) !== 0) {
-            throw new \RuntimeException('Refusing to apply fix: target path is outside the Joomla site root.');
-        }
+        // Separator-anchored containment check + PHP-write whitelist.
+        // The whitelist allows .php only inside templates/.../html/, so
+        // a hostile #__template_overrides row that decoded to e.g.
+        // /html/../../../administrator/components/com_users/foo.php
+        // would still be refused even after passing assertWithinRoot.
+        $safety   = PathSafetyHelper::assertWithinRoot($absolute);
+        PathSafetyHelper::assertPhpWriteAllowed($absolute);
+        $rootReal = $safety['rootReal'];
 
         if (!is_file($absolute)) {
             throw new \RuntimeException('Override file does not exist on disk; nothing to fix.');
@@ -77,6 +78,8 @@ final class OverridesHelper
         if ($written === false) {
             throw new \RuntimeException(sprintf('Could not write to %s. Check filesystem permissions.', $relativePath));
         }
+
+        PathSafetyHelper::invalidateOpcacheIfPhp($absolute);
 
         ActionLogHelper::log(
             ActionLogHelper::ACTION_FIX_APPLIED,

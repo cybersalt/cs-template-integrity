@@ -13,6 +13,7 @@ namespace Cybersalt\Component\Csintegrity\Administrator\Controller;
 defined('_JEXEC') or die;
 
 use Cybersalt\Component\Csintegrity\Administrator\Helper\MarkReviewedHelper;
+use Cybersalt\Component\Csintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\RescanHelper;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Language\Text;
@@ -27,6 +28,7 @@ final class DisplayController extends BaseController
     public function rescan(): void
     {
         $this->checkToken();
+        PermissionHelper::requireWrite();
 
         /** @var CMSApplication $app */
         $app = $this->app;
@@ -55,6 +57,7 @@ final class DisplayController extends BaseController
     public function markReviewed(): void
     {
         $this->checkToken();
+        PermissionHelper::requireWrite();
 
         /** @var CMSApplication $app */
         $app = $this->app;

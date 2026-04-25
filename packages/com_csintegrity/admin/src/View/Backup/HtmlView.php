@@ -19,6 +19,7 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\GenericDataException;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Router\Route;
+use Joomla\CMS\Session\Session;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 
 final class HtmlView extends BaseHtmlView
@@ -56,7 +57,7 @@ final class HtmlView extends BaseHtmlView
         $this->absolutePath      = JPATH_ROOT . '/' . ltrim((string) $row->file_path, '/\\');
         $this->fileExists        = is_file($this->absolutePath);
         $this->backUrl           = Route::_('index.php?option=com_csintegrity&view=backups', false);
-        $this->downloadUrl       = Route::_('index.php?option=com_csintegrity&task=backups.download&id=' . $id, false);
+        $this->downloadUrl       = Route::_('index.php?option=com_csintegrity&task=backups.download&id=' . $id . '&' . Session::getFormToken() . '=1', false);
         $this->restoreAction     = Route::_('index.php?option=com_csintegrity', false);
         $this->highlightLanguage = self::languageForExtension(pathinfo((string) $row->file_path, PATHINFO_EXTENSION));
 

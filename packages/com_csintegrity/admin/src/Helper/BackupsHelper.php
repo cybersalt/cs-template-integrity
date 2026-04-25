@@ -156,7 +156,9 @@ final class BackupsHelper
      *
      * Before overwriting the live file, this method takes a fresh
      * backup of its CURRENT contents — so the restore operation is
-     * itself reversible. Refuses to write outside of JPATH_ROOT.
+     * itself reversible. Refuses to write outside of JPATH_ROOT and
+     * refuses to write a PHP-executable file outside of a template
+     * override path.
      *
      * @return array{backup_id: int, restored_path: string, pre_restore_backup_id: ?int, bytes_written: int}
      */
@@ -168,20 +170,18 @@ final class BackupsHelper
         }
 
         $relativePath = ltrim((string) $row->file_path, '/\\');
-        if ($relativePath === '') {
-            throw new \RuntimeException('Backup row has no file_path.');
+        if ($relativePath === '' || str_contains($relativePath, '..')) {
+            throw new \RuntimeException('Backup row has an invalid file_path.');
         }
 
         $absolute = JPATH_ROOT . '/' . $relativePath;
 
-        // Path-traversal guard. Resolve dirname through realpath() (which
-        // follows symlinks and collapses .. segments) and verify it sits
-        // under JPATH_ROOT.
-        $parentReal = realpath(\dirname($absolute));
-        $rootReal   = realpath(JPATH_ROOT);
-        if ($parentReal === false || $rootReal === false || strpos($parentReal, $rootReal) !== 0) {
-            throw new \RuntimeException('Refusing to restore: target path is outside the Joomla site root.');
-        }
+        // Separator-anchored containment check + PHP-write whitelist.
+        // assertWithinRoot's strpos predecessor was bypassable when
+        // JPATH_ROOT had a sibling directory whose name began with the
+        // same prefix (e.g. /var/www/joomla and /var/www/joomla-bak).
+        PathSafetyHelper::assertWithinRoot($absolute);
+        PathSafetyHelper::assertPhpWriteAllowed($absolute);
 
         $restoredContents = self::decodeContents($row);
         if ($restoredContents === '') {
@@ -204,6 +204,8 @@ final class BackupsHelper
         if ($written === false) {
             throw new \RuntimeException(sprintf('Could not write to %s. Check filesystem permissions.', $relativePath));
         }
+
+        PathSafetyHelper::invalidateOpcacheIfPhp($absolute);
 
         ActionLogHelper::log(
             ActionLogHelper::ACTION_BACKUP_RESTORED,

@@ -11,6 +11,10 @@
  *   GET  /api/index.php/v1/csintegrity/sessions/{id}
  *   POST /api/index.php/v1/csintegrity/sessions
  *
+ * Read endpoints require csintegrity.view (or core.manage). The POST
+ * endpoint requires csintegrity.write. Reports may contain sensitive
+ * configuration details, so unauthenticated access is refused.
+ *
  * The POST endpoint lets Claude (typically Claude Code) submit its
  * findings directly to the site. Body is a flat JSON object:
  *   { "name": "optional", "summary": "optional", "report_markdown": "..." }
@@ -22,6 +26,7 @@ namespace Cybersalt\Component\Csintegrity\Api\Controller;
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Csintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\SessionsHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Controller\ApiController;
@@ -34,13 +39,35 @@ final class SessionsController extends ApiController
 
     protected $default_view = 'sessions';
 
+    public function displayList()
+    {
+        if (!$this->authoriseOrFail(PermissionHelper::class . '::requireView')) {
+            return null;
+        }
+        return parent::displayList();
+    }
+
+    public function displayItem($id = null)
+    {
+        if (!$this->authoriseOrFail(PermissionHelper::class . '::requireView')) {
+            return null;
+        }
+        return parent::displayItem($id);
+    }
+
     public function add(): void
     {
+        if (!$this->authoriseOrFail(PermissionHelper::class . '::requireWrite')) {
+            return;
+        }
         $this->createSession();
     }
 
     public function edit(): void
     {
+        if (!$this->authoriseOrFail(PermissionHelper::class . '::requireWrite')) {
+            return;
+        }
         $this->createSession();
     }
 
@@ -110,5 +137,24 @@ final class SessionsController extends ApiController
         $app->sendHeaders();
         echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $app->close();
+    }
+
+    private function authoriseOrFail(string $check): bool
+    {
+        try {
+            $check();
+            return true;
+        } catch (\RuntimeException $e) {
+            $code  = $e->getCode() ?: 403;
+            $name  = $e->getMessage() === 'AUTH_REQUIRED' ? 'AUTH_REQUIRED' : 'FORBIDDEN';
+            $title = $name === 'AUTH_REQUIRED'
+                ? 'Authentication is required for this endpoint.'
+                : 'Your account is not authorised to access this csintegrity endpoint.';
+            $this->sendJsonApi(
+                ['errors' => [['status' => (string) ($code === 401 ? 401 : 403), 'code' => $name, 'title' => $title]]],
+                $code === 401 ? 401 : 403
+            );
+            return false;
+        }
     }
 }

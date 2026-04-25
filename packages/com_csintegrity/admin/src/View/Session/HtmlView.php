@@ -20,6 +20,7 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\GenericDataException;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Router\Route;
+use Joomla\CMS\Session\Session;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 
 final class HtmlView extends BaseHtmlView
@@ -48,7 +49,7 @@ final class HtmlView extends BaseHtmlView
         }
 
         $this->actions     = ActionsHelper::listForSession($id);
-        $this->downloadUrl = Route::_('index.php?option=com_csintegrity&task=session.download&id=' . $id, false);
+        $this->downloadUrl = Route::_('index.php?option=com_csintegrity&task=session.download&id=' . $id . '&' . Session::getFormToken() . '=1', false);
 
         // Back-button destination depends on where the user came from.
         // Pages that link to a session pass &from=<view> in the URL;

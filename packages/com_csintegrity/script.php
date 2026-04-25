@@ -64,13 +64,20 @@ final class Com_CsintegrityInstallerScript
             : 'COM_CSINTEGRITY_POSTINSTALL_INSTALLED';
         $url = 'index.php?option=com_csintegrity&view=dashboard';
 
+        // Translated language strings are echoed escaped — the
+        // post-install message is rendered into Joomla's installer
+        // output frame, and even strings we control today shouldn't
+        // be templated as raw HTML, since a future translation file
+        // could carry markup that breaks the layout.
+        $h = static fn (string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
         echo '<div class="card mb-3" style="margin: 20px 0;">'
             . '<div class="card-body">'
-            . '<h3 class="card-title">' . Text::_('COM_CSINTEGRITY') . '</h3>'
-            . '<p class="card-text">' . Text::_($messageKey) . '</p>'
-            . '<a href="' . $url . '" class="btn btn-primary text-white">'
+            . '<h3 class="card-title">' . $h(Text::_('COM_CSINTEGRITY')) . '</h3>'
+            . '<p class="card-text">' . $h(Text::_($messageKey)) . '</p>'
+            . '<a href="' . $h($url) . '" class="btn btn-primary text-white">'
             . '<span class="icon-dashboard" aria-hidden="true"></span> '
-            . Text::_('COM_CSINTEGRITY_POSTINSTALL_OPEN')
+            . $h(Text::_('COM_CSINTEGRITY_POSTINSTALL_OPEN'))
             . '</a>'
             . '</div></div>';
     }

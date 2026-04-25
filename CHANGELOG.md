@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.0] — 2026-04-24
+
+### Security
+
+This release closes the high- and medium-severity findings from the v0.8.5 security review and adds defense-in-depth around any code path that writes files under `JPATH_ROOT`. **Upgrade is strongly recommended for any installation of v0.8.x; v0.8.x exposed write-side API endpoints with no permission gate, which on a production site is an authenticated arbitrary-write-under-webroot primitive.**
+
+- **ACL gate on every endpoint.** New `admin/access.xml` defines two component-scoped actions, `csintegrity.view` and `csintegrity.write`, alongside the standard `core.admin` / `core.manage` / `core.options`. New `PermissionHelper` is consulted at the top of every API controller method and every admin write-side controller method. Read endpoints (overrides list, override-file, core-file, sessions list, sessions item, backups list, backups item) require `csintegrity.view` or `core.manage`. Write endpoints (`apply-fix`, `dismiss`, `dismiss-all`, `backups POST`, `backups/:id/restore`, `sessions POST`, the admin restore/delete/save/rescan/markReviewed actions) require `csintegrity.write` or `core.manage`. Until an admin grants those actions to a group, only Super Users can use the extension. Previously, any valid Joomla API token reached every endpoint.
+- **Backups POST no longer accepts a free-form path or contents.** The new contract requires `override_id`; the helper resolves the file path server-side from `#__template_overrides` and snapshots the live file's bytes from disk. The previous `file_path` + `contents` body would, when paired with `restore`, write arbitrary bytes to any path under `JPATH_ROOT` — a clean RCE primitive once an attacker had a write token. The new shape rules out that bridge entirely.
+- **Path-traversal guard rewritten.** The old `strpos($parentReal, $rootReal) !== 0` check passed when `JPATH_ROOT` had a sibling whose real path began with the same prefix — e.g. `/var/www/joomla` and `/var/www/joomla-bak`. New `PathSafetyHelper::assertWithinRoot()` uses `str_starts_with` with a trailing `DIRECTORY_SEPARATOR` so prefix collisions cannot bypass it. Both `OverridesHelper::applyFix()` and `BackupsHelper::restore()` now route through it, plus the new backup-create flow.
+- **PHP-write whitelist.** `PathSafetyHelper::assertPhpWriteAllowed()` refuses any `.php` / `.phtml` / `.phar` / `.pht` write whose path is not under `templates/<tpl>/html/` (site) or `administrator/templates/<tpl>/html/` (admin). Belt-and-braces against a hostile `#__template_overrides` row whose `hash_id` decodes to a path that escapes `/html/`. Non-PHP extensions are unrestricted (still subject to within-root).
+- **opcache invalidation.** Both write paths call `opcache_invalidate()` (when available) on the target after `file_put_contents()`, so a fix that changes a file already cached by OPcache takes effect on the next request rather than silently running stale bytes.
+- **CRLF / response-splitting fix on backup download.** Admin `backups.download` previously reflected `basename($row->file_path)` into the `Content-Disposition` header after only stripping double-quotes. A backup row whose path contained CR/LF could inject arbitrary HTTP headers. The filename now passes through `preg_replace('/[^A-Za-z0-9._-]/', '-', ...)` before being reflected. (`session.download` already had this guard.)
+- **CSRF on download endpoints.** Admin `backups.download` and `session.download` now require a session form-token query parameter via `checkToken('get')`, plus an explicit `PermissionHelper::requireView()`. Listing templates were updated to append `Session::getFormToken()`. Without this, a logged-in admin could be tricked by a crafted cross-site link into exfiltrating a backup or session report.
+- **HTML-escape installer post-message.** `script.php::showPostInstallMessage()` now wraps every `Text::_()` call in `htmlspecialchars()`. Today's strings are static, but installer output should not template translation strings as raw HTML — a future translator's mistake would otherwise become an issue at install time.
+- The README and the dashboard help string previously claimed `core.manage` was enforced; that claim is now actually true.
+
 ## [0.8.5] — 2026-04-24
 
 ### Fixed

@@ -12,6 +12,7 @@ namespace Cybersalt\Component\Csintegrity\Administrator\Controller;
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Csintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\SessionsHelper;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Language\Text;
@@ -26,6 +27,7 @@ final class SessionsController extends BaseController
     public function save(): void
     {
         $this->checkToken();
+        PermissionHelper::requireWrite();
 
         /** @var CMSApplication $app */
         $app  = $this->app;
@@ -50,6 +52,7 @@ final class SessionsController extends BaseController
     public function delete(): void
     {
         $this->checkToken();
+        PermissionHelper::requireWrite();
 
         /** @var CMSApplication $app */
         $app = $this->app;

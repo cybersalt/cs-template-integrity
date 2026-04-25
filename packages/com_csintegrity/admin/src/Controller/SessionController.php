@@ -12,6 +12,7 @@ namespace Cybersalt\Component\Csintegrity\Administrator\Controller;
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Csintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\SessionsHelper;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Language\Text;
@@ -29,6 +30,13 @@ final class SessionController extends BaseController
 
     public function download(): void
     {
+        // GET-form CSRF guard. The download link in the session view
+        // includes a session token query param; without it the request
+        // is rejected so a cross-site attacker cannot trick a logged-in
+        // admin into exfiltrating a session report by sending a crafted URL.
+        $this->checkToken('get');
+        PermissionHelper::requireView();
+
         /** @var CMSApplication $app */
         $app = $this->app;
         $id  = (int) $app->getInput()->getInt('id', 0);
