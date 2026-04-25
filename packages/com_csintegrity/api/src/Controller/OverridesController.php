@@ -72,10 +72,10 @@ final class OverridesController extends ApiController
         $this->respondFile('core');
     }
 
-    public function applyFix(): void
+    public function applyFix($id = null): void
     {
         try {
-            $id = (int) $this->input->get('id', 0, 'int');
+            $id = (int) ($id ?? $this->input->getInt('id', 0));
             if ($id <= 0) {
                 $this->sendJsonApiError(400, 'INVALID_ID', 'A numeric override id is required.');
                 return;
@@ -124,10 +124,10 @@ final class OverridesController extends ApiController
         }
     }
 
-    public function dismiss(): void
+    public function dismiss($id = null): void
     {
         try {
-            $id = (int) $this->input->get('id', 0, 'int');
+            $id = (int) ($id ?? $this->input->getInt('id', 0));
             if ($id <= 0) {
                 $this->sendJsonApiError(400, 'INVALID_ID', 'A numeric override id is required.');
                 return;

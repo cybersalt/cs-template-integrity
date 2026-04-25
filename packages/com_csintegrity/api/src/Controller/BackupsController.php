@@ -44,10 +44,10 @@ final class BackupsController extends ApiController
         $this->createBackup();
     }
 
-    public function restore(): void
+    public function restore($id = null): void
     {
         try {
-            $id = (int) $this->input->get('id', 0, 'int');
+            $id = (int) ($id ?? $this->input->getInt('id', 0));
             if ($id <= 0) {
                 $this->sendJsonApi(
                     ['errors' => [['status' => '400', 'code' => 'INVALID_ID', 'title' => 'A numeric backup id is required.']]],

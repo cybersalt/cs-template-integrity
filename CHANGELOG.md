@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.1] — 2026-04-24
+
+### Fixed
+- v0.8.0's three new POST endpoints (`apply-fix`, `dismiss`, `backups/.../restore`) were rejecting requests with "A numeric override id is required" even when the id was clearly in the URL. Joomla's API dispatcher passes `:id` URL captures as a method parameter for POST endpoints, not via `$this->input`. Each method now accepts `$id = null` and falls back to `$this->input->getInt('id', 0)` as a safety net.
+
 ## [0.8.0] — 2026-04-24
 
 ### Added
