@@ -44,32 +44,17 @@ final class Com_CsintegrityInstallerScript
 
     public function postflight(string $type, InstallerAdapter $adapter): bool
     {
-        $this->logLifecycleEvent($type);
-        $this->showPostInstallMessage($type);
+        try {
+            $this->showPostInstallMessage($type);
+        } catch (\Throwable $e) {
+            // Never block install on a postflight UI failure.
+        }
         return true;
     }
 
     public function uninstall(InstallerAdapter $adapter): bool
     {
         return true;
-    }
-
-    private function logLifecycleEvent(string $type): void
-    {
-        $helper = '\\Cybersalt\\Component\\Csintegrity\\Administrator\\Helper\\ActionLogHelper';
-        if (!class_exists($helper)) {
-            return;
-        }
-
-        $action = $type === 'update'
-            ? $helper::ACTION_UPDATE
-            : $helper::ACTION_INSTALL;
-
-        try {
-            $helper::log($action, ['type' => $type]);
-        } catch (\Throwable $e) {
-            // Swallow — install must not crash on logging.
-        }
     }
 
     protected function showPostInstallMessage(string $type): void

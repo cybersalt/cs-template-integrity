@@ -1,5 +1,5 @@
 --
--- Cybersalt Template Integrity — 0.6.0 schema upgrade
+-- Cybersalt Template Integrity -- 0.6.0 schema upgrade
 -- Adds session log, action log, and backup tables. Earlier versions
 -- (0.1.0 through 0.5.x) had no custom tables.
 --

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.1] — 2026-04-24
+
+### Fixed
+- Defensive pass on the v0.6.0 install that Tim hit "Unexpected token '<'... is not valid JSON" on. Removed three plausible variables: (1) submenu strings now live in `com_csintegrity.sys.ini` so Joomla's installer/menu rendering can resolve them; (2) `script.php` no longer calls `ActionLogHelper::log` during postflight — autoloading another component class from inside install was the most plausible failure point; (3) em-dash characters in SQL comments replaced with plain `--` to avoid any non-ASCII byte parsing edge case in Joomla's SQL splitter.
+
 ## [0.6.0] — 2026-04-24
 
 ### Added
