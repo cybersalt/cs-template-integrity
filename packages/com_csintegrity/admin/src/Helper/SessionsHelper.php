@@ -125,7 +125,11 @@ final class SessionsHelper
     public static function autoName(?\DateTimeInterface $when = null): string
     {
         $dt = $when ?? new \DateTimeImmutable('now');
-        return $dt->format('Y-m-d-Hi');
+
+        // Include seconds in the name. Two sessions created in the same
+        // minute (e.g. from concurrent API POSTs) would collide on the
+        // older Y-m-d-Hi format and produce identical download filenames.
+        return $dt->format('Y-m-d-His');
     }
 
     private static function currentUserId(): int

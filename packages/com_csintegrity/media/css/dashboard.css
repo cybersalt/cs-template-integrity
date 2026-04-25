@@ -31,10 +31,16 @@
 .csintegrity-report {
     /* Session reports get a generous default height plus a vertical
      * resize handle in the bottom-right corner — the user can grab it
-     * to make the block as tall as they like. */
-    min-height: 600px;
+     * to make the block as tall as they like.
+     *
+     * Browsers' resize handle only fires when the element has an
+     * explicit `height` (not just min-height) AND a non-visible
+     * overflow. Both are set here.  */
+    height: 600px;
+    min-height: 200px;
     max-height: none;
     resize: vertical;
+    overflow: auto;
 }
 
 /*

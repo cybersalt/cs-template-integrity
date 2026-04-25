@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.8] — 2026-04-24
+
+### Fixed
+- Resize handle on the session report block now actually works. v0.6.6 set `min-height: 600px` plus `resize: vertical`, but most browsers only render the resize handle reliably when the element has a concrete `height` and non-visible `overflow`. Switched to `height: 600px` + `overflow: auto` (with `min-height: 200px` so a user can shrink it but not collapse it).
+
+### Changed
+- Auto-generated session names now include seconds. Format went from `YYYY-MM-DD-HHMM` to `YYYY-MM-DD-HHMMSS` so two sessions created in the same minute (concurrent API POSTs, rapid manual saves) don't collide on names — and downloaded report filenames stay distinct. The Use-with-Claude prompt template and the new-session form's name-help text both updated to reflect the new format.
+
 ## [0.6.7] — 2026-04-24
 
 ### Added

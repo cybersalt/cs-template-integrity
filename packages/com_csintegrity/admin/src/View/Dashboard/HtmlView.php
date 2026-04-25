@@ -137,7 +137,7 @@ final class HtmlView extends BaseHtmlView
              session log:
                POST {$this->apiBase}/sessions
                Content-Type: application/json
-               { "name": "<auto-named, format YYYY-MM-DD-HHMM>",
+               { "name": "<auto-named, format YYYY-MM-DD-HHMMSS>",
                  "summary": "<one-line summary, eg '1 alert, 3 review, 12 info'>",
                  "report_markdown": "<the full report from step 4>",
                  "source": "claude_code" }
