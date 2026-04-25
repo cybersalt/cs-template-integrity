@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.2] — 2026-04-25
+
+### Changed
+
+- **Dashboard step 2 now also tells claude.ai users to start a new chat after adding the domain to the allowlist.** The running chat caches the allowlist it had at start; only a fresh chat picks up the newly-added domain. Without this hint, users add the domain, resend the prompt, get the same "Host not in allowlist" error, and assume the allowlist setting didn't take. Note covers both the Claude desktop app and the web version.
+
 ## [0.10.1] — 2026-04-24
 
 ### Fixed
