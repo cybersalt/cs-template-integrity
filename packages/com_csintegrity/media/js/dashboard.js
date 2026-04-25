@@ -10,7 +10,7 @@
     'use strict';
 
     document.addEventListener('DOMContentLoaded', function () {
-        wireCopyButton('csintegrity-copy-btn',     'csintegrity-prompt',     'btn-info');
+        wireCopyButton('csintegrity-copy-btn',     'csintegrity-prompt',     'btn-primary');
         wireCopyButton('csintegrity-fix-copy-btn', 'csintegrity-fix-prompt', 'btn-primary');
         wireMarkReviewedModal();
     });

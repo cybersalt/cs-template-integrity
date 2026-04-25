@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.2] — 2026-04-24
+
+### Fixed
+- "Copy prompt" button now matches "Copy fix prompt" — both are `btn btn-primary` (blue with white text). Tim preferred the blue style; the previous `btn-info` was rendering as a near-black button with white text in Atum's dark mode.
+- "View all sessions" button switched from `btn-outline-info` to `btn btn-secondary`. The outline variant rendered as a black box with thin blue edge and blue text in dark mode — unreadable. Recorded as a global feedback rule: avoid `btn-outline-*` classes in any Joomla admin UI; use solid `btn-*` variants instead.
+
 ## [0.6.1] — 2026-04-24
 
 ### Fixed

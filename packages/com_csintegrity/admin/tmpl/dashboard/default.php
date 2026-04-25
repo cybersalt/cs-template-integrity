@@ -66,7 +66,7 @@ $backupsUrl         = Route::_('index.php?option=com_csintegrity&view=backups', 
                     </p>
                     <pre class="csintegrity-codeblock mb-2"><code id="csintegrity-prompt"><?php echo $this->escape($this->claudePrompt); ?></code></pre>
                     <button type="button"
-                            class="btn btn-info"
+                            class="btn btn-primary"
                             id="csintegrity-copy-btn"
                             data-default-label="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPY_BUTTON')); ?>"
                             data-copied-label="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_DASHBOARD_USAGE_COPIED')); ?>">
@@ -125,7 +125,7 @@ $backupsUrl         = Route::_('index.php?option=com_csintegrity&view=backups', 
                         <span class="icon-plus" aria-hidden="true"></span>
                         <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_SESSIONS_NEW'); ?>
                     </a>
-                    <a href="<?php echo $this->escape($sessionsUrl); ?>" class="btn btn-outline-info">
+                    <a href="<?php echo $this->escape($sessionsUrl); ?>" class="btn btn-secondary">
                         <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_SESSIONS_ALL'); ?>
                     </a>
                 </div>
@@ -210,7 +210,7 @@ $backupsUrl         = Route::_('index.php?option=com_csintegrity&view=backups', 
                     </p>
                     <p class="card-text mb-0">
                         <small class="text-body-secondary">
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.6.1
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.6.2
                         </small>
                     </p>
                 </div>
