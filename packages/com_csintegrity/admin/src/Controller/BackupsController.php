@@ -17,10 +17,45 @@ use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\Router\Route;
+use Throwable;
 
 final class BackupsController extends BaseController
 {
     protected $default_view = 'backups';
+
+    public function restore(): void
+    {
+        $this->checkToken();
+
+        /** @var CMSApplication $app */
+        $app = $this->app;
+        $id  = (int) $app->getInput()->getInt('id', 0);
+
+        if ($id <= 0) {
+            $app->enqueueMessage(Text::_('COM_CSINTEGRITY_BACKUPS_RESTORE_BAD_ID'), 'error');
+            $this->setRedirect(Route::_('index.php?option=com_csintegrity&view=backups', false));
+            return;
+        }
+
+        try {
+            $stats = BackupsHelper::restore($id);
+
+            $msg = Text::sprintf(
+                'COM_CSINTEGRITY_BACKUPS_RESTORE_SUCCESS',
+                $stats['restored_path'],
+                $stats['bytes_written'],
+                $stats['pre_restore_backup_id'] ?? 0
+            );
+            $app->enqueueMessage($msg, 'success');
+        } catch (Throwable $e) {
+            $app->enqueueMessage(
+                Text::sprintf('COM_CSINTEGRITY_BACKUPS_RESTORE_ERROR', $e->getMessage()),
+                'error'
+            );
+        }
+
+        $this->setRedirect(Route::_('index.php?option=com_csintegrity&view=backup&id=' . $id, false));
+    }
 
     public function download(): void
     {

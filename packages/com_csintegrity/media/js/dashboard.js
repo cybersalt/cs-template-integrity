@@ -14,7 +14,35 @@
         wireCopyButton('csintegrity-fix-copy-btn', 'csintegrity-fix-prompt', 'btn-primary');
         wireMarkReviewedModal();
         wireFullscreenButton();
+        wireGatedConfirmModal('csintegrity-restore-modal',
+                              'csintegrity-restore-confirm-check',
+                              'csintegrity-restore-confirm-btn');
     });
+
+    /**
+     * Bootstrap modal that gates a destructive submit button on a checkbox.
+     * Re-used by Mark-all-reviewed and Restore-backup modals.
+     */
+    function wireGatedConfirmModal(modalId, checkboxId, confirmBtnId) {
+        var checkbox   = document.getElementById(checkboxId);
+        var confirmBtn = document.getElementById(confirmBtnId);
+        var modalEl    = document.getElementById(modalId);
+
+        if (!checkbox || !confirmBtn) {
+            return;
+        }
+
+        checkbox.addEventListener('change', function () {
+            confirmBtn.disabled = !checkbox.checked;
+        });
+
+        if (modalEl) {
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                checkbox.checked    = false;
+                confirmBtn.disabled = true;
+            });
+        }
+    }
 
     function wireFullscreenButton() {
         var btn = document.getElementById('csintegrity-fullscreen-btn');

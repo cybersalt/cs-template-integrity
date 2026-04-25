@@ -19,6 +19,7 @@ use Joomla\CMS\Router\Route;
 
 <div class="container-fluid">
     <p class="text-body-secondary mb-3"><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_DESCRIPTION'); ?></p>
+    <p class="text-body-secondary mb-3"><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_STORAGE_NOTE'); ?></p>
 
     <?php if (empty($this->items)) : ?>
         <div class="alert alert-info"><?php echo Text::_('COM_CSINTEGRITY_BACKUPS_EMPTY'); ?></div>
@@ -36,12 +37,17 @@ use Joomla\CMS\Router\Route;
             </thead>
             <tbody>
                 <?php foreach ($this->items as $row) : ?>
-                    <?php $downloadUrl = Route::_('index.php?option=com_csintegrity&task=backups.download&id=' . (int) $row->id, false); ?>
+                    <?php
+                    $viewUrl     = Route::_('index.php?option=com_csintegrity&view=backup&id=' . (int) $row->id, false);
+                    $downloadUrl = Route::_('index.php?option=com_csintegrity&task=backups.download&id=' . (int) $row->id, false);
+                    ?>
                     <tr>
                         <td>
                             <small><?php echo HTMLHelper::_('date', $row->created_at, Text::_('DATE_FORMAT_LC4')); ?></small>
                         </td>
-                        <td><small><code><?php echo $this->escape($row->file_path); ?></code></small></td>
+                        <td>
+                            <a href="<?php echo $this->escape($viewUrl); ?>"><small><code><?php echo $this->escape($row->file_path); ?></code></small></a>
+                        </td>
                         <td><small><?php echo number_format((int) $row->file_size); ?> B</small></td>
                         <td><small class="text-body-secondary"><?php echo $this->escape(substr($row->file_hash, 0, 12)); ?>&hellip;</small></td>
                         <td>
@@ -54,7 +60,10 @@ use Joomla\CMS\Router\Route;
                             <?php endif; ?>
                         </td>
                         <td>
-                            <a href="<?php echo $this->escape($downloadUrl); ?>" class="btn btn-sm btn-outline-secondary">
+                            <a href="<?php echo $this->escape($viewUrl); ?>" class="btn btn-sm btn-info" title="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_BACKUPS_VIEW')); ?>">
+                                <span class="icon-eye" aria-hidden="true"></span>
+                            </a>
+                            <a href="<?php echo $this->escape($downloadUrl); ?>" class="btn btn-sm btn-info" title="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_BACKUPS_COL_DOWNLOAD')); ?>">
                                 <span class="icon-download" aria-hidden="true"></span>
                             </a>
                         </td>

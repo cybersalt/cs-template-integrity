@@ -102,6 +102,79 @@ final class BackupsHelper
         return base64_decode((string) ($row->contents_b64 ?? ''), true) ?: '';
     }
 
+    /**
+     * Restore a stored backup to its original file path.
+     *
+     * Before overwriting the live file, this method takes a fresh
+     * backup of its CURRENT contents — so the restore operation is
+     * itself reversible. Refuses to write outside of JPATH_ROOT.
+     *
+     * @return array{backup_id: int, restored_path: string, pre_restore_backup_id: ?int, bytes_written: int}
+     */
+    public static function restore(int $id): array
+    {
+        $row = self::find($id);
+        if ($row === null) {
+            throw new \RuntimeException(sprintf('Backup #%d not found.', $id));
+        }
+
+        $relativePath = ltrim((string) $row->file_path, '/\\');
+        if ($relativePath === '') {
+            throw new \RuntimeException('Backup row has no file_path.');
+        }
+
+        $absolute = JPATH_ROOT . '/' . $relativePath;
+
+        // Path-traversal guard. Resolve dirname through realpath() (which
+        // follows symlinks and collapses .. segments) and verify it sits
+        // under JPATH_ROOT.
+        $parentReal = realpath(\dirname($absolute));
+        $rootReal   = realpath(JPATH_ROOT);
+        if ($parentReal === false || $rootReal === false || strpos($parentReal, $rootReal) !== 0) {
+            throw new \RuntimeException('Refusing to restore: target path is outside the Joomla site root.');
+        }
+
+        $restoredContents = self::decodeContents($row);
+        if ($restoredContents === '') {
+            throw new \RuntimeException('Backup is empty; nothing to restore.');
+        }
+
+        // Pre-restore safety backup of the current file state, so this
+        // restore is itself reversible.
+        $preRestoreBackupId = null;
+        if (is_file($absolute)) {
+            $currentContents    = (string) @file_get_contents($absolute);
+            $preRestoreBackupId = self::createFromContents(
+                $relativePath,
+                $currentContents,
+                (int) ($row->session_id ?? 0) ?: null
+            );
+        }
+
+        $written = file_put_contents($absolute, $restoredContents);
+        if ($written === false) {
+            throw new \RuntimeException(sprintf('Could not write to %s. Check filesystem permissions.', $relativePath));
+        }
+
+        ActionLogHelper::log(
+            ActionLogHelper::ACTION_BACKUP_RESTORED,
+            [
+                'backup_id'             => $id,
+                'restored_path'         => $relativePath,
+                'pre_restore_backup_id' => $preRestoreBackupId,
+                'bytes_written'         => $written,
+            ],
+            isset($row->session_id) ? (int) $row->session_id : null
+        );
+
+        return [
+            'backup_id'             => $id,
+            'restored_path'         => $relativePath,
+            'pre_restore_backup_id' => $preRestoreBackupId,
+            'bytes_written'         => (int) $written,
+        ];
+    }
+
     private static function currentUserId(): int
     {
         try {

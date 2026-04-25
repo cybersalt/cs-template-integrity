@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] — 2026-04-24
+
+### Added
+- **Backup detail view** at `index.php?option=com_csintegrity&view=backup&id=N`. Shows the backup's metadata (relative path, absolute path, size, sha256, created-at, linked review session, whether the live file at that path currently exists), the full backed-up contents in a resizable code block, and three action cards: restore-via-button, restore-manually-via-FTP, and where-this-backup-lives. Each row in the Backups list now links to this detail page (file path is clickable, plus an explicit "View" button next to "Download").
+- **Restore action.** New `BackupsHelper::restore(int $id)` writes the backup contents back to the original file path. Before overwriting, it auto-creates a fresh backup of the live file's current state — so the restore is itself reversible. Path-traversal guard via `realpath()` refuses to write outside `JPATH_ROOT`. Restore is gated by a Bootstrap modal with a confirmation checkbox (same UX as Mark-all-reviewed). Logged to the action log as `backup_restored` with both the source backup id and the auto-created pre-restore backup id, linked to the original review session if any.
+- **Manual-restore instructions** card on the backup detail page. For users who prefer FTP / their editor: download the backup, open their file client, replace the file at the destination path shown.
+- **Storage explanation** card. Tells the user up-front: backups are in the `#__csintegrity_backups` table as base64-encoded contents, not files on disk; a database backup also captures them; uninstalling the component drops the table.
+
+### Changed
+- `dashboard.js` factored out the gated-checkbox-modal pattern into `wireGatedConfirmModal(modalId, checkboxId, btnId)` so the existing Mark-all-reviewed modal and the new Restore modal share one implementation.
+
 ## [0.6.11] — 2026-04-24
 
 ### Changed
