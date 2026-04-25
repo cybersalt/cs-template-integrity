@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.11] — 2026-04-24
+
+### Changed
+- Apply Fixes prompt rewritten to fix three weaknesses found while testing it: (1) it now explicitly tells Claude to fetch original contents via `GET /overrides/{id}/override-file` before staging a backup — the previous wording said "save a backup of the original file" but didn't say *how* to obtain the original; (2) introduced a "Review session" placeholder that ties backups to the prior scan's session id rather than a new one — now the audit trail can answer "which scan surfaced the issue this backup is for?"; (3) explicit "classify first" step that distinguishes code-fix findings (XSS, missing escape, etc. → diff) from config/licensing findings (Web357-style overrides → ask, don't propose a code change). Final summary step asks the user to confirm before further action and reminds them to dismiss the relevant override-tracker warnings after applying the patched files.
+
 ## [0.6.10] — 2026-04-24
 
 ### Changed
