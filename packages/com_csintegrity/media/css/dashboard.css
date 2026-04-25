@@ -1,28 +1,44 @@
 /**
- * Cybersalt Template Integrity — admin dashboard styling
+ * Cybersalt Template Integrity — admin styling
  *
- * Uses Bootstrap 5 / Atum CSS variables so the dashboard renders
- * correctly in both light and dark mode. No hardcoded colors.
+ * Uses Bootstrap 5 / Atum CSS variables so the UI renders correctly
+ * in both light and dark mode. No hardcoded colors.
  */
 
-.csintegrity-dashboard .csintegrity-codeblock {
+.csintegrity-codeblock {
     background-color: var(--bs-tertiary-bg, var(--bs-body-bg));
     color: var(--bs-body-color);
     border: 1px solid var(--bs-border-color);
     padding: 1rem;
     border-radius: var(--bs-border-radius, 0.375rem);
-    max-height: 320px;
     overflow: auto;
     white-space: pre-wrap;
     word-break: break-word;
+    font-size: 0.85em;
+    line-height: 1.45;
 }
 
-.csintegrity-dashboard .csintegrity-codeblock code {
+/*
+ * Tall code blocks (the prompt cards on the dashboard) are capped to
+ * a scrollable height so they don't push the rest of the page down.
+ * The session-report viewer uses the same class but should expand
+ * naturally — see .csintegrity-report below.
+ */
+.csintegrity-dashboard .csintegrity-codeblock {
+    max-height: 320px;
+}
+
+.csintegrity-report {
+    /* Session reports can be long; let the page scroll, not the block. */
+    max-height: none;
+}
+
+.csintegrity-codeblock code {
     background: transparent;
     color: inherit;
     padding: 0;
-    font-size: 0.85em;
-    line-height: 1.45;
+    font-size: inherit;
+    line-height: inherit;
 }
 
 .csintegrity-dashboard pre code,

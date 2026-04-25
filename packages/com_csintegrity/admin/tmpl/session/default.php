@@ -19,6 +19,13 @@ $session = $this->session;
 ?>
 
 <div class="container-fluid csintegrity-dashboard">
+    <p class="mb-3">
+        <a href="<?php echo $this->escape($this->backUrl); ?>" class="btn btn-secondary">
+            <span class="icon-arrow-left" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSINTEGRITY_SESSION_BACK_TO_LIST'); ?>
+        </a>
+    </p>
+
     <div class="row">
         <div class="col-lg-9">
             <div class="card mb-3">
@@ -41,7 +48,7 @@ $session = $this->session;
                     <?php if (empty($session->report_markdown)) : ?>
                         <p class="text-body-secondary"><?php echo Text::_('COM_CSINTEGRITY_SESSION_REPORT_EMPTY'); ?></p>
                     <?php else : ?>
-                        <pre class="csintegrity-codeblock"><code><?php echo $this->escape($session->report_markdown); ?></code></pre>
+                        <pre class="csintegrity-codeblock csintegrity-report"><?php echo $this->escape($session->report_markdown); ?></pre>
                     <?php endif; ?>
                 </div>
             </div>

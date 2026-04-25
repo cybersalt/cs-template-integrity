@@ -15,11 +15,11 @@ defined('_JEXEC') or die;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\ActionsHelper;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\SessionsHelper;
 use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\GenericDataException;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Router\Route;
-use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 
 final class HtmlView extends BaseHtmlView
@@ -28,6 +28,8 @@ final class HtmlView extends BaseHtmlView
 
     /** @var list<\stdClass> */
     public array $actions = [];
+
+    public string $backUrl = '';
 
     public function display($tpl = null): void
     {
@@ -42,24 +44,15 @@ final class HtmlView extends BaseHtmlView
         }
 
         $this->actions = ActionsHelper::listForSession($id);
+        $this->backUrl = Route::_('index.php?option=com_csintegrity&view=sessions', false);
 
-        $this->addToolbar();
-        parent::display($tpl);
-    }
+        HTMLHelper::_('stylesheet', 'com_csintegrity/dashboard.css', ['relative' => true, 'version' => 'auto']);
 
-    private function addToolbar(): void
-    {
         ToolbarHelper::title(
             Text::sprintf('COM_CSINTEGRITY_SESSION_TITLE', $this->escape($this->session->name)),
             'eye'
         );
 
-        // ToolbarHelper::cancel() relies on submitting an "adminForm" — this
-        // page has no form, so the button silently did nothing. Use a real
-        // link-button instead so the back arrow actually navigates.
-        $toolbar = Toolbar::getInstance('toolbar');
-        $toolbar->linkButton('back', 'JTOOLBAR_BACK')
-            ->url(Route::_('index.php?option=com_csintegrity&view=sessions', false))
-            ->icon('icon-arrow-left');
+        parent::display($tpl);
     }
 }

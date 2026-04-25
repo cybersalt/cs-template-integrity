@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.5] — 2026-04-24
+
+### Fixed
+- **Back button on the session viewer actually works now.** v0.6.4 used `Toolbar::linkButton()`, which still rendered the back arrow as a toolbar button that Joomla's submit-handler tried to wire up — silent no-op. Replaced with a plain in-page `<a class="btn btn-secondary">` link at the top of the session and new-session-form templates. Guaranteed to navigate.
+- **Session report wraps inside the viewer.** The `.csintegrity-codeblock` styling (with `white-space: pre-wrap; word-break: break-word`) only applied on the dashboard because `dashboard.css` was only loaded by the Dashboard `HtmlView`. Now loaded by the Session and Sessionform views too. Also relaxed the CSS selector — base styling now applies anywhere `.csintegrity-codeblock` is used, with the 320px height cap scoped to dashboard cards only. The session-report block has its own `.csintegrity-report` class that lets the page scroll instead of the block.
+
 ## [0.6.4] — 2026-04-24
 
 ### Fixed

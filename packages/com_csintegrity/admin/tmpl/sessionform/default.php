@@ -20,6 +20,13 @@ $action = Route::_('index.php?option=com_csintegrity&task=sessions.save', false)
 ?>
 
 <div class="container-fluid csintegrity-dashboard">
+    <p class="mb-3">
+        <a href="<?php echo $this->escape($this->backUrl); ?>" class="btn btn-secondary">
+            <span class="icon-arrow-left" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSINTEGRITY_SESSION_BACK_TO_LIST'); ?>
+        </a>
+    </p>
+
     <form action="<?php echo $this->escape($action); ?>" method="post" id="csintegrity-session-form">
         <div class="card mb-3">
             <div class="card-body">
