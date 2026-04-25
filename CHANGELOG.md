@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] — 2026-04-24
+
+### Added
+- **Apply Fixes is now end-to-end automatable.** Three new write-side API endpoints round out the workflow so Claude can complete the loop without the user clicking through the admin between each step:
+  - `POST /v1/csintegrity/overrides/{id}/apply-fix` — body `{ contents, session_id? }`. Auto-backs up the live file's current state, writes the patched contents to disk, returns the pre-fix backup id so the operation is reversible. Path-traversal guard refuses anything outside `JPATH_ROOT`. Backed by `OverridesHelper::applyFix()`.
+  - `POST /v1/csintegrity/overrides/{id}/dismiss` (and `DELETE` on the same URL) — clears one override-tracker row. Backed by `OverridesHelper::dismissOne()`.
+  - `POST /v1/csintegrity/overrides/dismiss-all` — clears every flagged row. Wraps the existing `MarkReviewedHelper::clearAllOverrides()`.
+  - `POST /v1/csintegrity/backups/{id}/restore` — same effect as the admin Restore button, exposed via API. Wraps `BackupsHelper::restore()`.
+- New action constants `ACTION_FIX_APPLIED` and `ACTION_OVERRIDE_DISMISSED` so the action log distinguishes write events from passive ones.
+- New `Cybersalt\Component\Csintegrity\Administrator\Helper\OverridesHelper` for write-side operations (the existing `OverridesModel` is read-only).
+
+### Changed
+- Apply Fixes prompt rewritten for the new endpoints. Workflow is now: classify finding → fetch current contents → build patch → POST `/apply-fix` (one call: auto-backup + write) → POST `/dismiss` for that finding's tracker row. After all fixes are applied, an optional `/dismiss-all` clears bulk non-security warnings the user explicitly told Claude to mark checked. Reverse-a-fix instructions still point at the per-backup admin page.
+
+### Notes
+- These endpoints are gated by Joomla's standard API token auth — anyone with a valid `X-Joomla-Token` and `core.manage` on `com_csintegrity` can write. Auto-backups + path guards + action-log entries are the safety nets. The admin's existing modals (with confirmation checkboxes) are unchanged; this just makes the same operations available headlessly.
+
 ## [0.7.2] — 2026-04-24
 
 ### Fixed

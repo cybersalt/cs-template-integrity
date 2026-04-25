@@ -35,6 +35,8 @@ final class ActionLogHelper
     public const ACTION_SESSION_DELETED  = 'session_deleted';
     public const ACTION_BACKUP_CREATED   = 'backup_created';
     public const ACTION_BACKUP_RESTORED  = 'backup_restored';
+    public const ACTION_FIX_APPLIED      = 'fix_applied';
+    public const ACTION_OVERRIDE_DISMISSED = 'override_dismissed';
 
     /**
      * @param  array<string,mixed>  $details  arbitrary metadata; JSON-encoded into the row

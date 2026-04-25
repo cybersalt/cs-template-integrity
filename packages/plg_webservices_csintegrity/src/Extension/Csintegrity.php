@@ -52,6 +52,34 @@ final class Csintegrity extends CMSPlugin implements SubscriberInterface
                 ['id' => '(\d+)'],
                 $defaults
             ),
+            new Route(
+                ['POST'],
+                'v1/csintegrity/overrides/:id/apply-fix',
+                'overrides.applyFix',
+                ['id' => '(\d+)'],
+                $defaults
+            ),
+            new Route(
+                ['POST', 'DELETE'],
+                'v1/csintegrity/overrides/:id/dismiss',
+                'overrides.dismiss',
+                ['id' => '(\d+)'],
+                $defaults
+            ),
+            new Route(
+                ['POST'],
+                'v1/csintegrity/overrides/dismiss-all',
+                'overrides.dismissAll',
+                [],
+                $defaults
+            ),
+            new Route(
+                ['POST'],
+                'v1/csintegrity/backups/:id/restore',
+                'backups.restore',
+                ['id' => '(\d+)'],
+                $defaults
+            ),
         ]);
 
         $router->createCRUDRoutes('v1/csintegrity/sessions', 'sessions', $defaults);

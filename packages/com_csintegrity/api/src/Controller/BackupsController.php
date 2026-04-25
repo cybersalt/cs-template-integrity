@@ -44,6 +44,38 @@ final class BackupsController extends ApiController
         $this->createBackup();
     }
 
+    public function restore(): void
+    {
+        try {
+            $id = (int) $this->input->get('id', 0, 'int');
+            if ($id <= 0) {
+                $this->sendJsonApi(
+                    ['errors' => [['status' => '400', 'code' => 'INVALID_ID', 'title' => 'A numeric backup id is required.']]],
+                    400
+                );
+                return;
+            }
+
+            $stats = BackupsHelper::restore($id);
+
+            $this->sendJsonApi(
+                [
+                    'data' => [
+                        'type'       => 'csintegrity-restore',
+                        'id'         => (string) $id,
+                        'attributes' => $stats,
+                    ],
+                ],
+                200
+            );
+        } catch (Throwable $e) {
+            $this->sendJsonApi(
+                ['errors' => [['status' => '500', 'code' => 'RESTORE_FAILED', 'title' => $e->getMessage()]]],
+                500
+            );
+        }
+    }
+
     private function createBackup(): void
     {
         try {

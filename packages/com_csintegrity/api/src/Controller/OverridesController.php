@@ -19,6 +19,8 @@ namespace Cybersalt\Component\Csintegrity\Api\Controller;
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Csintegrity\Administrator\Helper\MarkReviewedHelper;
+use Cybersalt\Component\Csintegrity\Administrator\Helper\OverridesHelper;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\PathResolver;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Filter\InputFilter;
@@ -68,6 +70,81 @@ final class OverridesController extends ApiController
     public function coreFile(): void
     {
         $this->respondFile('core');
+    }
+
+    public function applyFix(): void
+    {
+        try {
+            $id = (int) $this->input->get('id', 0, 'int');
+            if ($id <= 0) {
+                $this->sendJsonApiError(400, 'INVALID_ID', 'A numeric override id is required.');
+                return;
+            }
+
+            $body      = $this->parseJsonBody();
+            $contents  = isset($body['contents']) ? (string) $body['contents'] : '';
+            $sessionId = isset($body['session_id']) ? (int) $body['session_id'] : null;
+
+            if ($contents === '') {
+                $this->sendJsonApiError(400, 'MISSING_CONTENTS', 'Body must include a non-empty contents field.');
+                return;
+            }
+
+            $result = OverridesHelper::applyFix($id, $contents, $sessionId);
+
+            $this->sendJsonApi(
+                [
+                    'data' => [
+                        'type'       => 'csintegrity-fix',
+                        'id'         => (string) $id,
+                        'attributes' => $result,
+                    ],
+                ],
+                201
+            );
+        } catch (Throwable $e) {
+            $this->sendJsonApiError(500, 'APPLY_FIX_FAILED', $e->getMessage());
+        }
+    }
+
+    public function dismissAll(): void
+    {
+        try {
+            $cleared = MarkReviewedHelper::clearAllOverrides();
+
+            $this->sendJsonApi([
+                'data' => [
+                    'type'       => 'csintegrity-dismiss-all',
+                    'id'         => 'all',
+                    'attributes' => ['cleared' => $cleared],
+                ],
+            ], 200);
+        } catch (Throwable $e) {
+            $this->sendJsonApiError(500, 'DISMISS_ALL_FAILED', $e->getMessage());
+        }
+    }
+
+    public function dismiss(): void
+    {
+        try {
+            $id = (int) $this->input->get('id', 0, 'int');
+            if ($id <= 0) {
+                $this->sendJsonApiError(400, 'INVALID_ID', 'A numeric override id is required.');
+                return;
+            }
+
+            $deleted = OverridesHelper::dismissOne($id);
+
+            $this->sendJsonApi([
+                'data' => [
+                    'type'       => 'csintegrity-dismiss',
+                    'id'         => (string) $id,
+                    'attributes' => ['dismissed' => $deleted],
+                ],
+            ], $deleted ? 200 : 404);
+        } catch (Throwable $e) {
+            $this->sendJsonApiError(500, 'DISMISS_FAILED', $e->getMessage());
+        }
     }
 
     private function respondFile(string $side): void
@@ -162,13 +239,18 @@ final class OverridesController extends ApiController
         return $row ?: null;
     }
 
-    private function relativizePath(string $absolute): string
+    /**
+     * @return array<string,mixed>
+     */
+    private function parseJsonBody(): array
     {
-        $base = JPATH_ROOT;
-        if (str_starts_with($absolute, $base)) {
-            return ltrim(substr($absolute, strlen($base)), '/\\');
+        $raw = (string) file_get_contents('php://input');
+        if ($raw === '') {
+            return [];
         }
-        return $absolute;
+
+        $decoded = json_decode($raw, true);
+        return is_array($decoded) ? $decoded : [];
     }
 
     private function sendJsonApi(array $payload, int $status = 200): void
@@ -179,6 +261,15 @@ final class OverridesController extends ApiController
         $app->sendHeaders();
         echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $app->close();
+    }
+
+    private function relativizePath(string $absolute): string
+    {
+        $base = JPATH_ROOT;
+        if (str_starts_with($absolute, $base)) {
+            return ltrim(substr($absolute, strlen($base)), '/\\');
+        }
+        return $absolute;
     }
 
     private function sendJsonApiError(int $status, string $code, string $detail): void
