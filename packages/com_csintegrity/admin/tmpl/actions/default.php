@@ -42,7 +42,7 @@ use Joomla\CMS\Router\Route;
                         <td><code><?php echo $this->escape($row->action); ?></code></td>
                         <td>
                             <?php if ($row->session_id) : ?>
-                                <a href="<?php echo $this->escape(Route::_('index.php?option=com_csintegrity&view=session&id=' . (int) $row->session_id, false)); ?>">
+                                <a href="<?php echo $this->escape(Route::_('index.php?option=com_csintegrity&view=session&id=' . (int) $row->session_id . '&from=actions', false)); ?>">
                                     #<?php echo (int) $row->session_id; ?>
                                 </a>
                             <?php else : ?>

@@ -22,7 +22,7 @@ $session = $this->session;
     <p class="mb-3">
         <a href="<?php echo $this->escape($this->backUrl); ?>" class="btn btn-info">
             <span class="icon-arrow-left" aria-hidden="true"></span>
-            <?php echo Text::_('COM_CSINTEGRITY_SESSION_BACK_TO_LIST'); ?>
+            <?php echo Text::_($this->backLabelKey); ?>
         </a>
         <a href="<?php echo $this->escape($this->downloadUrl); ?>" class="btn btn-info">
             <span class="icon-download" aria-hidden="true"></span>

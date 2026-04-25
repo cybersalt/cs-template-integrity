@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.9] — 2026-04-24
+
+### Changed
+- "Back" button on the session viewer is now context-aware. If you arrived from the Action log, the button reads "Back to action log" and returns there. From Backups → "Back to backups". From the dashboard's session-log card → "Back to dashboard". From the Sessions list (or any other entry point) → "Back to sessions" (the previous default). Implemented via a `&from=<view>` URL param appended to every session link in the admin; missing or unknown values fall through to the sessions list.
+
 ## [0.6.8] — 2026-04-24
 
 ### Fixed

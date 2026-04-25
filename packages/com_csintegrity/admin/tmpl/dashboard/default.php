@@ -109,7 +109,7 @@ $backupsUrl         = Route::_('index.php?option=com_csintegrity&view=backups', 
                         <ul class="list-unstyled mb-3">
                             <?php foreach ($this->recentSessions as $row) : ?>
                                 <li class="mb-2">
-                                    <a href="<?php echo $this->escape(Route::_('index.php?option=com_csintegrity&view=session&id=' . (int) $row->id, false)); ?>">
+                                    <a href="<?php echo $this->escape(Route::_('index.php?option=com_csintegrity&view=session&id=' . (int) $row->id . '&from=dashboard', false)); ?>">
                                         <?php echo $this->escape($row->name); ?>
                                     </a>
                                     <span class="badge bg-secondary ms-2"><?php echo $this->escape($row->source); ?></span>
@@ -210,7 +210,7 @@ $backupsUrl         = Route::_('index.php?option=com_csintegrity&view=backups', 
                     </p>
                     <p class="card-text mb-0">
                         <small class="text-body-secondary">
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.6.8
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.6.9
                         </small>
                     </p>
                 </div>

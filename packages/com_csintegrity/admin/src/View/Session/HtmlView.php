@@ -31,6 +31,8 @@ final class HtmlView extends BaseHtmlView
 
     public string $backUrl = '';
 
+    public string $backLabelKey = 'COM_CSINTEGRITY_SESSION_BACK_TO_LIST';
+
     public string $downloadUrl = '';
 
     public function display($tpl = null): void
@@ -46,8 +48,34 @@ final class HtmlView extends BaseHtmlView
         }
 
         $this->actions     = ActionsHelper::listForSession($id);
-        $this->backUrl     = Route::_('index.php?option=com_csintegrity&view=sessions', false);
         $this->downloadUrl = Route::_('index.php?option=com_csintegrity&task=session.download&id=' . $id, false);
+
+        // Back-button destination depends on where the user came from.
+        // Pages that link to a session pass &from=<view> in the URL;
+        // any unknown / missing value falls through to the sessions list.
+        $from = (string) Factory::getApplication()->getInput()->getCmd('from', '');
+
+        switch ($from) {
+            case 'actions':
+                $this->backUrl      = Route::_('index.php?option=com_csintegrity&view=actions', false);
+                $this->backLabelKey = 'COM_CSINTEGRITY_SESSION_BACK_TO_ACTIONS';
+                break;
+
+            case 'backups':
+                $this->backUrl      = Route::_('index.php?option=com_csintegrity&view=backups', false);
+                $this->backLabelKey = 'COM_CSINTEGRITY_SESSION_BACK_TO_BACKUPS';
+                break;
+
+            case 'dashboard':
+                $this->backUrl      = Route::_('index.php?option=com_csintegrity&view=dashboard', false);
+                $this->backLabelKey = 'COM_CSINTEGRITY_SESSION_BACK_TO_DASHBOARD';
+                break;
+
+            default:
+                $this->backUrl      = Route::_('index.php?option=com_csintegrity&view=sessions', false);
+                $this->backLabelKey = 'COM_CSINTEGRITY_SESSION_BACK_TO_LIST';
+                break;
+        }
 
         HTMLHelper::_('stylesheet', 'com_csintegrity/dashboard.css', ['relative' => true, 'version' => 'auto']);
         HTMLHelper::_('script', 'com_csintegrity/dashboard.js', ['relative' => true, 'version' => 'auto', 'defer' => true]);

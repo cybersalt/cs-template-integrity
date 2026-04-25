@@ -46,7 +46,7 @@ use Joomla\CMS\Router\Route;
                         <td><small class="text-body-secondary"><?php echo $this->escape(substr($row->file_hash, 0, 12)); ?>&hellip;</small></td>
                         <td>
                             <?php if ($row->session_id) : ?>
-                                <a href="<?php echo $this->escape(Route::_('index.php?option=com_csintegrity&view=session&id=' . (int) $row->session_id, false)); ?>">
+                                <a href="<?php echo $this->escape(Route::_('index.php?option=com_csintegrity&view=session&id=' . (int) $row->session_id . '&from=backups', false)); ?>">
                                     #<?php echo (int) $row->session_id; ?>
                                 </a>
                             <?php else : ?>
