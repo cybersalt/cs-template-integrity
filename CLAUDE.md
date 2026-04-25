@@ -8,13 +8,13 @@ This file is the self-contained briefing for Claude Code (or any AI pair) workin
 
 A Joomla 5+ **template-literate integrity monitor**. It reads Joomla's own override-diff data and classifies each flagged override as cosmetic / review / security — so site owners only get alerted on drift that actually matters. See [README.md](README.md) for the product pitch, competitive landscape, and tier model.
 
-**Packaging:** three extensions shipped together as `pkg_csintegrity`.
+**Packaging:** three extensions shipped together as `pkg_cstemplateintegrity`.
 
 | Extension | Role |
 |---|---|
-| `com_csintegrity` | Admin UI — dashboard, findings browser, baseline management, settings, API key config, cost caps. Also exposes the Web Services API routes (see MVP v0.1 spec below). |
-| `plg_system_csintegrity` | Installer hooks, scheduler, admin-module-style dashboard widget, email alert dispatcher. |
-| `lib_csintegrity` | Shared baseline, hashing, classifier ruleset, Anthropic client. Consumed by the component, plugin, and CLI. |
+| `com_cstemplateintegrity` | Admin UI — dashboard, findings browser, baseline management, settings, API key config, cost caps. Also exposes the Web Services API routes (see MVP v0.1 spec below). |
+| `plg_system_cstemplateintegrity` | Installer hooks, scheduler, admin-module-style dashboard widget, email alert dispatcher. |
+| `lib_cstemplateintegrity` | Shared baseline, hashing, classifier ruleset, Anthropic client. Consumed by the component, plugin, and CLI. |
 
 Placeholder scaffolds exist in `packages/`. Phase 0 fills them in.
 
@@ -33,7 +33,7 @@ Placeholder scaffolds exist in `packages/`. Phase 0 fills them in.
 
 ## Current sprint: MVP v0.1 — Overrides API
 
-**Goal.** Ship three read-only REST endpoints on `com_csintegrity` that expose Joomla's native `#__template_overrides` data to an external consumer (primarily Claude / Claude Code, eventually any MCP client). Everything else — scanner, classifier, email alerts, hosted dashboard — builds on top of this.
+**Goal.** Ship three read-only REST endpoints on `com_cstemplateintegrity` that expose Joomla's native `#__template_overrides` data to an external consumer (primarily Claude / Claude Code, eventually any MCP client). Everything else — scanner, classifier, email alerts, hosted dashboard — builds on top of this.
 
 Full spec: [docs/MVP-v0.1-overrides-api.md](docs/MVP-v0.1-overrides-api.md)
 
@@ -52,7 +52,7 @@ X-Joomla-Token: <token>
 Accept: application/vnd.api+json
 ```
 
-A `Bearer`-formatted header returns `401 Forbidden`. When `lib_csintegrity` eventually has its own HTTP client for calling out to other Joomla sites (e.g., a hosted multi-site dashboard), hard-code the `X-Joomla-Token` format.
+A `Bearer`-formatted header returns `401 Forbidden`. When `lib_cstemplateintegrity` eventually has its own HTTP client for calling out to other Joomla sites (e.g., a hosted multi-site dashboard), hard-code the `X-Joomla-Token` format.
 
 ## `#__template_overrides` schema and the `hash_id` field (confirmed 2026-04-24)
 
@@ -85,7 +85,7 @@ Path resolution rules for the `{id}/override-file` and `{id}/core-file` endpoint
 
 A Joomla 5 component with an `api/src/Controller/*Controller.php` + `api/src/View/*/JsonapiView.php` + `api/src/Model/*Model.php` is **not enough** on its own. The URL `/api/index.php/v1/<component>/<view>` will return `404 Resource not found` until a matching `plg_webservices_<component>` plugin exists, is installed, and is enabled.
 
-The plugin has one job: listen to the `onBeforeApiRoute` event and call `$router->createCRUDRoutes(...)` for each route the component exposes. Every core component that has an API route (`com_content`, `com_banners`, `com_templates`, …) ships with a corresponding `plg_webservices_*`. See [packages/plg_webservices_csintegrity/src/Extension/Csintegrity.php](packages/plg_webservices_csintegrity/src/Extension/Csintegrity.php) for our implementation.
+The plugin has one job: listen to the `onBeforeApiRoute` event and call `$router->createCRUDRoutes(...)` for each route the component exposes. Every core component that has an API route (`com_content`, `com_banners`, `com_templates`, …) ships with a corresponding `plg_webservices_*`. See [packages/plg_webservices_cstemplateintegrity/src/Extension/Cstemplateintegrity.php](packages/plg_webservices_cstemplateintegrity/src/Extension/Cstemplateintegrity.php) for our implementation.
 
 The plugin **must be enabled** after install — Joomla installs third-party plugins disabled by default. Until it's enabled, the route 404s silently.
 
@@ -102,9 +102,9 @@ Proposed dev flow: build locally → test on cybersalt.org via SFTP or one-shot 
 
 ## Reference material
 
-- **Joomla Web Services API endpoint docs** — `E:\github\joomla-mcp-php\http\*.http`. These are Nicholas Dionysopoulos's HTTP-client collections for the Akeeba Joomla MCP; they're the cleanest route-listing reference for the core `v1/templates/styles`, `v1/extensions`, `v1/joomlaupdate` endpoints. Mirror their routing conventions for `v1/csintegrity/...`.
+- **Joomla Web Services API endpoint docs** — `E:\github\joomla-mcp-php\http\*.http`. These are Nicholas Dionysopoulos's HTTP-client collections for the Akeeba Joomla MCP; they're the cleanest route-listing reference for the core `v1/templates/styles`, `v1/extensions`, `v1/joomlaupdate` endpoints. Mirror their routing conventions for `v1/cstemplateintegrity/...`.
 - **Existing Cybersalt component to model on** — https://github.com/cybersalt/cs-disk-usage (PHP-only Joomla 5 component, similar scope, same naming convention).
-- **`#__template_overrides` schema** — read straight from Joomla core source until we confirm. Needed for the `TemplateOverride` model in `com_csintegrity`.
+- **`#__template_overrides` schema** — read straight from Joomla core source until we confirm. Needed for the `TemplateOverride` model in `com_cstemplateintegrity`.
 
 ---
 
@@ -113,16 +113,16 @@ Proposed dev flow: build locally → test on cybersalt.org via SFTP or one-shot 
 1. **`#__template_overrides` schema** — prefer `SHOW CREATE TABLE` output from a live Joomla 5/6 site, or is it acceptable to read the CREATE TABLE statement out of the Joomla core `.sql` files? (Tim offered cPanel API access to any Cybersalt-maintained Joomla site for this.)
 2. **Endpoint granularity** — split `override-file` and `core-file` into two endpoints per the current spec, or fold into one `{id}/files` endpoint returning both? Two-endpoint is easier to cache; one-endpoint is one round trip. Leaning two.
 3. **Local PHP install** — VS Code side currently has no PHP. Options: (a) `winget install PHP.PHP` to run local smoke tests; (b) commit + deploy over SFTP to cybersalt.org and run from there. (b) is slower per iteration but matches production.
-4. **API key gating on the MVP routes** — require a specific `csintegrity.view` ACL permission, or accept any valid Joomla API token with read access to `com_csintegrity`? Leaning the latter for v0.1, the former for v1.0.
+4. **API key gating on the MVP routes** — require a specific `cstemplateintegrity.view` ACL permission, or accept any valid Joomla API token with read access to `com_cstemplateintegrity`? Leaning the latter for v0.1, the former for v1.0.
 
 ---
 
 ## Coding conventions
 
-- Namespaced Joomla 5 component. `Cybersalt\Component\Csintegrity\Administrator\...` for admin-side classes.
+- Namespaced Joomla 5 component. `Cybersalt\Component\Cstemplateintegrity\Administrator\...` for admin-side classes.
 - PSR-12. Declare strict types.
 - No direct DB access outside of model classes. Use `$this->getDatabase()` via DI, not the deprecated `Factory::getDbo()`.
-- All user-visible strings go through `Text::_()` with keys under `COM_CSINTEGRITY_*`.
+- All user-visible strings go through `Text::_()` with keys under `COM_CSTEMPLATEINTEGRITY_*`.
 - Escape every echo. Yes, even in admin views. See the XSS finding in fieldwork doc for why we care.
 - Follow `cs-disk-usage`'s directory structure and manifest style unless there's a specific reason to deviate.
 

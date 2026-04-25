@@ -1,0 +1,85 @@
+/**
+ * Cybersalt Template Integrity — admin styling
+ *
+ * Uses Bootstrap 5 / Atum CSS variables so the UI renders correctly
+ * in both light and dark mode. No hardcoded colors.
+ */
+
+.cstemplateintegrity-codeblock {
+    background-color: var(--bs-tertiary-bg, var(--bs-body-bg));
+    color: var(--bs-body-color);
+    border: 1px solid var(--bs-border-color);
+    padding: 1rem;
+    border-radius: var(--bs-border-radius, 0.375rem);
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.85em;
+    line-height: 1.45;
+}
+
+/*
+ * Tall code blocks (the prompt cards on the dashboard) are capped to
+ * a scrollable height so they don't push the rest of the page down.
+ * The session-report and backup-contents blocks use the same base
+ * .cstemplateintegrity-codeblock class but should expand freely — :not()
+ * exclusion keeps the cap from leaking onto them.
+ */
+.cstemplateintegrity-dashboard .cstemplateintegrity-codeblock:not(.cstemplateintegrity-report):not(.cstemplateintegrity-backup-contents) {
+    max-height: 320px;
+}
+
+.cstemplateintegrity-report,
+.cstemplateintegrity-backup-contents {
+    /* Resizable code blocks. Browsers only render the resize handle
+     * reliably when the element has explicit `height` (not just
+     * min-height) plus non-visible overflow. The user grabs the
+     * bottom-right corner and drags up to shrink, down to grow.
+     * `max-height: none !important` is needed because the
+     * .cstemplateintegrity-dashboard scope above would otherwise win on
+     * specificity and cap growth. */
+    height: 600px;
+    min-height: 200px;
+    max-height: none !important;
+    resize: vertical;
+    overflow: auto;
+}
+
+/*
+ * Native HTML5 fullscreen styling. When the report enters fullscreen the
+ * browser also applies a default solid-black background to the element,
+ * which kills our theme-aware colors — restore them and pad generously.
+ */
+.cstemplateintegrity-report-fullscreen,
+.cstemplateintegrity-report:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    padding: 2.5rem 3rem;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    resize: none;
+    background-color: var(--bs-body-bg, #fff);
+    color: var(--bs-body-color, #212529);
+    font-size: 1em;
+    overflow: auto;
+}
+
+.cstemplateintegrity-codeblock code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.cstemplateintegrity-dashboard pre code,
+.cstemplateintegrity-dashboard p code {
+    color: var(--bs-code-color, var(--bs-body-color));
+}
+
+.cstemplateintegrity-dashboard .card-title .icon-flash,
+.cstemplateintegrity-dashboard .card-title .icon-refresh {
+    margin-right: 0.35rem;
+}

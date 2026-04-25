@@ -32,16 +32,16 @@ Triggering event: 2026-04-23, Rocky Wall (Fairview Terrace HOA) emailed Tim a sc
 
 | Extension | Role |
 |---|---|
-| `com_csintegrity` | Admin UI — dashboard, findings browser, baseline management, settings, API key config, cost caps |
-| `plg_system_csintegrity` | Installer hooks, scheduler, admin-module-style dashboard widget |
-| `lib_csintegrity` | Shared baseline / hashing / Claude-client code, consumed by component, plugin, and CLI |
+| `com_cstemplateintegrity` | Admin UI — dashboard, findings browser, baseline management, settings, API key config, cost caps |
+| `plg_system_cstemplateintegrity` | Installer hooks, scheduler, admin-module-style dashboard widget |
+| `lib_cstemplateintegrity` | Shared baseline / hashing / Claude-client code, consumed by component, plugin, and CLI |
 | CLI command `integrity:scan` | Long scans that would exceed HTTP timeouts |
 
-All three extensions ship together as `pkg_csintegrity`.
+All three extensions ship together as `pkg_cstemplateintegrity`.
 
 ### Current sprint — MVP v0.1 "Overrides API"
 
-Three read-only REST endpoints on `com_csintegrity` that expose Joomla's native `#__template_overrides` data to external tools (Claude first, any MCP client eventually). Joomla's core REST API doesn't surface override-diff data, so every scanner / classifier iteration is manual until this ships. Full spec and test plan: [docs/MVP-v0.1-overrides-api.md](docs/MVP-v0.1-overrides-api.md).
+Three read-only REST endpoints on `com_cstemplateintegrity` that expose Joomla's native `#__template_overrides` data to external tools (Claude first, any MCP client eventually). Joomla's core REST API doesn't surface override-diff data, so every scanner / classifier iteration is manual until this ships. Full spec and test plan: [docs/MVP-v0.1-overrides-api.md](docs/MVP-v0.1-overrides-api.md).
 
 ### Related manual workflow
 
@@ -54,10 +54,10 @@ Until this extension exists, Cybersalt handles these requests manually via the `
 ```
 cs-template-integrity/
 ├── packages/
-│   ├── com_csintegrity/        # admin component
-│   ├── plg_system_csintegrity/ # system plugin
-│   └── lib_csintegrity/        # shared library
-├── pkg_csintegrity.xml         # package manifest
+│   ├── com_cstemplateintegrity/        # admin component
+│   ├── plg_system_cstemplateintegrity/ # system plugin
+│   └── lib_cstemplateintegrity/        # shared library
+├── pkg_cstemplateintegrity.xml         # package manifest
 ├── build-package.ps1           # produces installable ZIPs
 ├── bump-version.ps1            # version bumper across manifests
 ├── CHANGELOG.md

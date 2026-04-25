@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="plugin" group="webservices" method="upgrade">
+    <name>plg_webservices_cstemplateintegrity</name>
+    <author>Cybersalt</author>
+    <creationDate>April 2026</creationDate>
+    <copyright>Copyright (C) 2026 Cybersalt. All rights reserved.</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <authorEmail>support@cybersalt.com</authorEmail>
+    <authorUrl>https://cybersalt.com</authorUrl>
+    <version>0.10.0</version>
+    <description>PLG_WEBSERVICES_CSTEMPLATEINTEGRITY_XML_DESCRIPTION</description>
+
+    <namespace path="src">Cybersalt\Plugin\WebServices\Cstemplateintegrity</namespace>
+
+    <files>
+        <folder plugin="cstemplateintegrity">services</folder>
+        <folder>src</folder>
+    </files>
+
+    <languages>
+        <language tag="en-GB">language/en-GB/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="en-GB">language/en-GB/plg_webservices_cstemplateintegrity.sys.ini</language>
+    </languages>
+</extension>

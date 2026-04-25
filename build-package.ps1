@@ -1,6 +1,6 @@
 # Build script for cs-template-integrity
 # Produces a single installable package at the repo root:
-#   pkg_csintegrity_v{version}_{YYYYMMDD}_{HHMM}.zip
+#   pkg_cstemplateintegrity_v{version}_{YYYYMMDD}_{HHMM}.zip
 # which wraps both the component and the webservices plugin. Install
 # this one zip; Joomla unpacks it and installs both child extensions.
 # The package's script.php auto-enables the webservices plugin on
@@ -25,8 +25,8 @@ if (-not (Test-Path $sevenZip)) {
     throw "7-Zip not found at $sevenZip. Install 7-Zip or update the path in build-package.ps1."
 }
 
-$pkgDir         = Join-Path $scriptDir "packages\pkg_csintegrity"
-$pkgManifest    = Join-Path $pkgDir "pkg_csintegrity.xml"
+$pkgDir         = Join-Path $scriptDir "packages\pkg_cstemplateintegrity"
+$pkgManifest    = Join-Path $pkgDir "pkg_cstemplateintegrity.xml"
 
 if (-not (Test-Path $pkgManifest)) {
     throw "Package manifest not found at $pkgManifest"
@@ -43,25 +43,25 @@ if ([string]::IsNullOrEmpty($Version)) {
 
 $childExtensions = @(
     @{
-        Name      = "com_csintegrity"
-        SourceDir = Join-Path $scriptDir "packages\com_csintegrity"
-        Contents  = @("csintegrity.xml", "script.php", "admin", "api", "media")
+        Name      = "com_cstemplateintegrity"
+        SourceDir = Join-Path $scriptDir "packages\com_cstemplateintegrity"
+        Contents  = @("cstemplateintegrity.xml", "script.php", "admin", "api", "media")
     },
     @{
-        Name      = "plg_webservices_csintegrity"
-        SourceDir = Join-Path $scriptDir "packages\plg_webservices_csintegrity"
-        Contents  = @("csintegrity.xml", "services", "src", "language")
+        Name      = "plg_webservices_cstemplateintegrity"
+        SourceDir = Join-Path $scriptDir "packages\plg_webservices_cstemplateintegrity"
+        Contents  = @("cstemplateintegrity.xml", "services", "src", "language")
     }
 )
 
 $timestamp   = Get-Date -Format "yyyyMMdd_HHmm"
-$pkgZipName  = "pkg_csintegrity_v${Version}_${timestamp}.zip"
+$pkgZipName  = "pkg_cstemplateintegrity_v${Version}_${timestamp}.zip"
 $pkgZipPath  = Join-Path $scriptDir $pkgZipName
 
 # Clean old builds
-Get-ChildItem -Path $scriptDir -Filter "pkg_csintegrity_v${Version}*.zip" | Remove-Item -Force
-Get-ChildItem -Path $scriptDir -Filter "com_csintegrity_v${Version}*.zip" | Remove-Item -Force
-Get-ChildItem -Path $scriptDir -Filter "plg_webservices_csintegrity_v${Version}*.zip" | Remove-Item -Force
+Get-ChildItem -Path $scriptDir -Filter "pkg_cstemplateintegrity_v${Version}*.zip" | Remove-Item -Force
+Get-ChildItem -Path $scriptDir -Filter "com_cstemplateintegrity_v${Version}*.zip" | Remove-Item -Force
+Get-ChildItem -Path $scriptDir -Filter "plg_webservices_cstemplateintegrity_v${Version}*.zip" | Remove-Item -Force
 
 $pkgStage = Join-Path $scriptDir "build"
 if (Test-Path $pkgStage) { Remove-Item $pkgStage -Recurse -Force }
@@ -69,7 +69,7 @@ New-Item -ItemType Directory -Path $pkgStage | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $pkgStage "packages") | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $pkgStage "language\en-GB") | Out-Null
 
-Write-Host "Building pkg_csintegrity v$Version ..." -ForegroundColor Cyan
+Write-Host "Building pkg_cstemplateintegrity v$Version ..." -ForegroundColor Cyan
 
 # 1. Build each child extension into the staging packages/ folder with
 #    a stable, non-timestamped filename.
@@ -106,9 +106,9 @@ foreach ($ext in $childExtensions) {
 }
 
 # 2. Copy the package manifest, script, and language files into the staging root.
-Copy-Item $pkgManifest (Join-Path $pkgStage "pkg_csintegrity.xml")
+Copy-Item $pkgManifest (Join-Path $pkgStage "pkg_cstemplateintegrity.xml")
 Copy-Item (Join-Path $pkgDir "script.php") (Join-Path $pkgStage "script.php")
-Copy-Item (Join-Path $pkgDir "language\en-GB\pkg_csintegrity.sys.ini") (Join-Path $pkgStage "language\en-GB\pkg_csintegrity.sys.ini")
+Copy-Item (Join-Path $pkgDir "language\en-GB\pkg_cstemplateintegrity.sys.ini") (Join-Path $pkgStage "language\en-GB\pkg_cstemplateintegrity.sys.ini")
 
 # 3. Zip the whole package.
 Push-Location $pkgStage

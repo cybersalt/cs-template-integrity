@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.0] — 2026-04-24
+
+### Changed
+
+- **Renamed everywhere from `csintegrity` to `cstemplateintegrity`.** "CS Template Integrity" matches Cybersalt's existing extension family naming (`cs-disk-usage` → `com_csdiskusage`, etc.) and also locks the scope: this tool stays focused on template-override integrity. MySites Guru already covers core-file integrity, extension-file integrity, and stowaway-file detection on Joomla, so we don't intend to expand into those.
+- Component slug `com_csintegrity` → `com_cstemplateintegrity`. Plugin `plg_webservices_csintegrity` → `plg_webservices_cstemplateintegrity`. Package `pkg_csintegrity` → `pkg_cstemplateintegrity`. Library and system-plugin scaffolds renamed to match.
+- Namespace `Cybersalt\Component\Csintegrity\…` → `Cybersalt\Component\Cstemplateintegrity\…`. Plugin namespace `Cybersalt\Plugin\WebServices\Csintegrity\…` → `Cybersalt\Plugin\WebServices\Cstemplateintegrity\…`.
+- Database tables `#__csintegrity_sessions/_actions/_backups` → `#__cstemplateintegrity_sessions/_actions/_backups`.
+- API routes `/v1/csintegrity/…` → `/v1/cstemplateintegrity/…`. ACL actions `csintegrity.view/.write` → `cstemplateintegrity.view/.write`. Language keys `COM_CSINTEGRITY_*` → `COM_CSTEMPLATEINTEGRITY_*`. Component option `option=com_csintegrity` → `option=com_cstemplateintegrity`. Media destination folder likewise.
+- The old v0.6.0 update SQL (which targeted `#__csintegrity_*` tables) has been dropped. v0.10.0 is the new floor; there is no in-place upgrade from v0.9.x — uninstall v0.9 first (which drops the old tables) then install v0.10.
+
+### Migration
+
+There is no automatic upgrade path from v0.9.x. To move a site from v0.9 to v0.10:
+
+1. Note any sessions/backups you want to preserve (download via the admin UI). On a fresh dev site, skip this.
+2. Uninstall **CS Template Integrity** from the Joomla extension manager. This drops the `#__csintegrity_*` tables and the `csintegrity` web-services plugin.
+3. Install `pkg_cstemplateintegrity_v0.10.0_*.zip`. The new `#__cstemplateintegrity_*` tables are created at install time.
+4. Enable the **plg_webservices_cstemplateintegrity** plugin in System → Plugins (third-party plugins install disabled by default).
+5. In **System → Permissions** for **CS Template Integrity**, grant *View* and *Modify* to whatever group should be able to use the API/admin (Super Users always pass).
+
 ## [0.9.0] — 2026-04-24
 
 ### Security
