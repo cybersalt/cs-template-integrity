@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.1] — 2026-04-24
+
+### Fixed
+
+- **Uninstall flashed the "installed, click here to open the dashboard" card.** Both `com_cstemplateintegrity/script.php` and `pkg_cstemplateintegrity/script.php` had postflight handlers that ran the install-message renderer on every postflight call — including uninstall. Joomla calls `postflight($type, …)` on install, update, **and uninstall**, so without an explicit `$type` filter the uninstall path rendered an "installed" success card with a link to a route that no longer existed. Both scripts now early-return from `postflight()` for any `$type` that isn't `install` / `update` / `discover_install`. The package script also gates its `enableWebservicesPlugin()` call on the same set, so it doesn't try to enable a plugin that's about to be removed.
+- **Apply HTML-escape to `Text::_()` output in pkg_/script.php.** v0.9.0 fixed this in `com_/script.php` but missed the matching code in the package-level installer; now both wrap every `Text::_()` in `htmlspecialchars()` before echoing into Joomla's installer frame.
+
+### Changed
+
+- **Dashboard step 2 now documents the claude.ai code-execution sandbox allowlist.** Hitting the prompt for the first time on a fresh claude.ai account fails with *"Host not in allowlist"* — the sandbox blocks every domain not on its default list. The Step 2 body now points users at *Settings → Capabilities → Code execution → Network access* in claude.ai and notes that Claude Code in a terminal has no such restriction. (Cosmetic clarification only — no code change beyond the language string.)
+
 ## [0.10.0] — 2026-04-24
 
 ### Changed

@@ -44,6 +44,14 @@ final class Com_CstemplateintegrityInstallerScript
 
     public function postflight(string $type, InstallerAdapter $adapter): bool
     {
+        // Joomla also calls postflight() on uninstall. Without this guard
+        // the admin gets the "installed, click to open dashboard" card
+        // right after hitting Uninstall — at best confusing, at worst
+        // linking to a route that no longer exists.
+        if (!\in_array($type, ['install', 'update', 'discover_install'], true)) {
+            return true;
+        }
+
         try {
             $this->showPostInstallMessage($type);
         } catch (\Throwable $e) {

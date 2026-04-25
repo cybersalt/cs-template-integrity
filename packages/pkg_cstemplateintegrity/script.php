@@ -26,7 +26,15 @@ final class Pkg_CstemplateintegrityInstallerScript
 {
     public function postflight(string $type, InstallerAdapter $adapter): bool
     {
-        if ($type === 'install' || $type === 'update') {
+        // Joomla also calls postflight() on uninstall. Skip everything but
+        // install/update so we don't auto-enable a plugin that's about to
+        // be removed and don't render an "installed, click here" card on
+        // an uninstall.
+        if (!\in_array($type, ['install', 'update', 'discover_install'], true)) {
+            return true;
+        }
+
+        if ($type === 'install' || $type === 'update' || $type === 'discover_install') {
             $this->enableWebservicesPlugin();
         }
 
@@ -69,13 +77,17 @@ final class Pkg_CstemplateintegrityInstallerScript
             : 'PKG_CSTEMPLATEINTEGRITY_POSTINSTALL_INSTALLED';
         $url = 'index.php?option=com_cstemplateintegrity&view=dashboard';
 
+        // Translated language strings are echoed escaped — see the
+        // matching note in com_cstemplateintegrity/script.php.
+        $h = static fn (string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
         echo '<div class="card mb-3" style="margin: 20px 0;">'
             . '<div class="card-body">'
-            . '<h3 class="card-title">' . Text::_('PKG_CSTEMPLATEINTEGRITY') . '</h3>'
-            . '<p class="card-text">' . Text::_($messageKey) . '</p>'
-            . '<a href="' . $url . '" class="btn btn-primary text-white">'
+            . '<h3 class="card-title">' . $h(Text::_('PKG_CSTEMPLATEINTEGRITY')) . '</h3>'
+            . '<p class="card-text">' . $h(Text::_($messageKey)) . '</p>'
+            . '<a href="' . $h($url) . '" class="btn btn-primary text-white">'
             . '<span class="icon-dashboard" aria-hidden="true"></span> '
-            . Text::_('PKG_CSTEMPLATEINTEGRITY_POSTINSTALL_OPEN')
+            . $h(Text::_('PKG_CSTEMPLATEINTEGRITY_POSTINSTALL_OPEN'))
             . '</a>'
             . '</div></div>';
     }
