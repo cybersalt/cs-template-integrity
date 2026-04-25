@@ -15,6 +15,8 @@ defined('_JEXEC') or die;
 use Cybersalt\Component\Csintegrity\Administrator\Helper\SessionsHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 
 final class HtmlView extends BaseHtmlView
@@ -32,6 +34,12 @@ final class HtmlView extends BaseHtmlView
     private function addToolbar(): void
     {
         ToolbarHelper::title(Text::_('COM_CSINTEGRITY_SESSIONFORM_TITLE'), 'plus');
-        ToolbarHelper::cancel('sessionform.cancel', 'JTOOLBAR_CANCEL');
+
+        // The form on this page submits via its own button. Toolbar back
+        // button is a plain navigation link.
+        $toolbar = Toolbar::getInstance('toolbar');
+        $toolbar->linkButton('cancel', 'JCANCEL')
+            ->url(Route::_('index.php?option=com_csintegrity&view=sessions', false))
+            ->icon('icon-cancel');
     }
 }

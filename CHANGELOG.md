@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.4] — 2026-04-24
+
+### Fixed
+- "Back" toolbar button on session view (and "Cancel" on the new-session form) now actually navigates. Both were using `ToolbarHelper::cancel()` which submits an `adminForm` — those pages don't have one, so the button silently did nothing. Replaced with `Toolbar::linkButton()` so they're real navigation links.
+
+### Changed
+- Scan prompt rewritten to produce a client-facing report. Old prompt had Claude classify by pattern names (`escape-removed`, `logic-diverged-template-theming`) and produced developer-flavored output. New prompt explicitly tells Claude the audience is non-technical, asks for the report in this order — headline answer ("did anything bad happen?"), what-to-do-today action list, what-was-checked one-liner, findings table with 🔴/🟡/⚪ severity icons and plain-language "what it does" + "recommended action" columns, then technical detail at the bottom for developers. Voice guidance inlined: contractions OK, no boilerplate, ball-in-their-court close. Tim should now be able to forward the session report to a site owner directly without a translation pass.
+
 ## [0.6.3] — 2026-04-24
 
 ### Changed
