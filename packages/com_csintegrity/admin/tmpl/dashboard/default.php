@@ -210,7 +210,7 @@ $backupsUrl         = Route::_('index.php?option=com_csintegrity&view=backups', 
                     </p>
                     <p class="card-text mb-0">
                         <small class="text-body-secondary">
-                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.6.9
+                            <?php echo Text::_('COM_CSINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.6.10
                         </small>
                     </p>
                 </div>

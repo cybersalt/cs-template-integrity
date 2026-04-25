@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.10] — 2026-04-24
+
+### Changed
+- "New session" form intro rewritten to explain its actual purpose: it's the manual paste-in for browser-Claude users. The previous text was vague ("Save the report Claude produced…"). Now reads: "Manual paste-in for browser-Claude users. If you ran the scan prompt at claude.ai, copy Claude's reply and paste it here. If you used Claude Code in a terminal, you don't need this form — Claude posts the report back automatically."
+
 ## [0.6.9] — 2026-04-24
 
 ### Changed
