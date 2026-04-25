@@ -13,7 +13,45 @@
         wireCopyButton('csintegrity-copy-btn',     'csintegrity-prompt',     'btn-primary');
         wireCopyButton('csintegrity-fix-copy-btn', 'csintegrity-fix-prompt', 'btn-primary');
         wireMarkReviewedModal();
+        wireFullscreenButton();
     });
+
+    function wireFullscreenButton() {
+        var btn = document.getElementById('csintegrity-fullscreen-btn');
+        var pre = document.getElementById('csintegrity-report');
+
+        if (!btn || !pre) {
+            return;
+        }
+
+        if (!document.fullscreenEnabled) {
+            // Browser doesn't support the Fullscreen API — hide the button
+            // rather than leaving a button that does nothing.
+            btn.style.display = 'none';
+            return;
+        }
+
+        var enterLabel = btn.getAttribute('data-enter-label') || 'Fullscreen';
+        var exitLabel  = btn.getAttribute('data-exit-label')  || 'Exit fullscreen';
+
+        btn.addEventListener('click', function () {
+            if (document.fullscreenElement === pre) {
+                document.exitFullscreen();
+            } else {
+                pre.requestFullscreen().catch(function () { /* user dismissed */ });
+            }
+        });
+
+        document.addEventListener('fullscreenchange', function () {
+            if (document.fullscreenElement === pre) {
+                pre.classList.add('csintegrity-report-fullscreen');
+                btn.innerHTML = '<span class="icon-shrink" aria-hidden="true"></span> ' + exitLabel;
+            } else {
+                pre.classList.remove('csintegrity-report-fullscreen');
+                btn.innerHTML = '<span class="icon-expand" aria-hidden="true"></span> ' + enterLabel;
+            }
+        });
+    }
 
     function wireMarkReviewedModal() {
         var checkbox    = document.getElementById('csintegrity-mark-reviewed-confirm-check');

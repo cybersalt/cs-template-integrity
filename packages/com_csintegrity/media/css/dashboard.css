@@ -37,6 +37,27 @@
     resize: vertical;
 }
 
+/*
+ * Native HTML5 fullscreen styling. When the report enters fullscreen the
+ * browser also applies a default solid-black background to the element,
+ * which kills our theme-aware colors — restore them and pad generously.
+ */
+.csintegrity-report-fullscreen,
+.csintegrity-report:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    padding: 2.5rem 3rem;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    resize: none;
+    background-color: var(--bs-body-bg, #fff);
+    color: var(--bs-body-color, #212529);
+    font-size: 1em;
+    overflow: auto;
+}
+
 .csintegrity-codeblock code {
     background: transparent;
     color: inherit;

@@ -24,6 +24,10 @@ $session = $this->session;
             <span class="icon-arrow-left" aria-hidden="true"></span>
             <?php echo Text::_('COM_CSINTEGRITY_SESSION_BACK_TO_LIST'); ?>
         </a>
+        <a href="<?php echo $this->escape($this->downloadUrl); ?>" class="btn btn-info">
+            <span class="icon-download" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSINTEGRITY_SESSION_DOWNLOAD'); ?>
+        </a>
     </p>
 
     <div class="row">
@@ -44,11 +48,22 @@ $session = $this->session;
                         <p class="card-text"><strong><?php echo $this->escape($session->summary); ?></strong></p>
                     <?php endif; ?>
 
-                    <h4 class="mt-4"><?php echo Text::_('COM_CSINTEGRITY_SESSION_REPORT'); ?></h4>
+                    <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+                        <h4 class="mb-0"><?php echo Text::_('COM_CSINTEGRITY_SESSION_REPORT'); ?></h4>
+                        <?php if (!empty($session->report_markdown)) : ?>
+                            <button type="button" class="btn btn-sm btn-info" id="csintegrity-fullscreen-btn"
+                                    data-enter-label="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_SESSION_FULLSCREEN_ENTER')); ?>"
+                                    data-exit-label="<?php echo $this->escape(Text::_('COM_CSINTEGRITY_SESSION_FULLSCREEN_EXIT')); ?>">
+                                <span class="icon-expand" aria-hidden="true"></span>
+                                <?php echo Text::_('COM_CSINTEGRITY_SESSION_FULLSCREEN_ENTER'); ?>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+
                     <?php if (empty($session->report_markdown)) : ?>
                         <p class="text-body-secondary"><?php echo Text::_('COM_CSINTEGRITY_SESSION_REPORT_EMPTY'); ?></p>
                     <?php else : ?>
-                        <pre class="csintegrity-codeblock csintegrity-report"><?php echo $this->escape($session->report_markdown); ?></pre>
+                        <pre class="csintegrity-codeblock csintegrity-report" id="csintegrity-report"><?php echo $this->escape($session->report_markdown); ?></pre>
                     <?php endif; ?>
                 </div>
             </div>

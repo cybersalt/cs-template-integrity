@@ -31,6 +31,8 @@ final class HtmlView extends BaseHtmlView
 
     public string $backUrl = '';
 
+    public string $downloadUrl = '';
+
     public function display($tpl = null): void
     {
         $id = (int) Factory::getApplication()->getInput()->getInt('id', 0);
@@ -43,10 +45,12 @@ final class HtmlView extends BaseHtmlView
             throw new GenericDataException(Text::_('COM_CSINTEGRITY_SESSION_NOT_FOUND'), 404);
         }
 
-        $this->actions = ActionsHelper::listForSession($id);
-        $this->backUrl = Route::_('index.php?option=com_csintegrity&view=sessions', false);
+        $this->actions     = ActionsHelper::listForSession($id);
+        $this->backUrl     = Route::_('index.php?option=com_csintegrity&view=sessions', false);
+        $this->downloadUrl = Route::_('index.php?option=com_csintegrity&task=session.download&id=' . $id, false);
 
         HTMLHelper::_('stylesheet', 'com_csintegrity/dashboard.css', ['relative' => true, 'version' => 'auto']);
+        HTMLHelper::_('script', 'com_csintegrity/dashboard.js', ['relative' => true, 'version' => 'auto', 'defer' => true]);
 
         ToolbarHelper::title(
             Text::sprintf('COM_CSINTEGRITY_SESSION_TITLE', $this->escape($this->session->name)),

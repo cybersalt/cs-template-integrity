@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.7] — 2026-04-24
+
+### Added
+- **Fullscreen toggle** on the session report viewer. Button next to the "Report" heading uses the HTML5 Fullscreen API to expand the report `<pre>` to the full viewport. Click again to exit. Auto-hides if the browser doesn't support `document.fullscreenEnabled`. CSS keeps the theme-aware background and adds generous padding when in fullscreen so it isn't a wall of monochrome text.
+- **Download report button** on the session viewer. Streams the session's stored markdown as `csintegrity-<session-name>.md` (sanitized filename, fallback to `session-<id>.md` if the name has no safe characters). Implemented as a `session.download` task on `SessionController` — no extra view layer, just headers + echo.
+
 ## [0.6.6] — 2026-04-24
 
 ### Changed
