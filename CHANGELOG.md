@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.1] — 2026-04-25
+
+### Fixed
+
+- **Scan prompt now lists the write endpoints in the upfront *Endpoints* block, not only inside the workflow steps.** Live test on fairviewterracehoa.com (running pre-v0.11) hit the old shape: when asked to apply fixes inline, Claude scanned the *Endpoints* list, saw three GETs and concluded "the cstemplateintegrity REST API is read-only," then tried PATCH/PUT and made-up paths (`/state`, `/mark`, `/check`, `/override-file` write) before giving up and producing patched files for the user to SFTP up by hand. v0.11.0's step 6 already documents `apply-fix` / `dismiss` / `dismiss-all` further down the prompt, but if the AI never read past the endpoints block it never reached that step. The block now lists all read AND write endpoints with explicit "THIS IS HOW YOU APPLY A PATCH" / "THIS IS HOW YOU 'MARK AS CHECKED'" annotations, and the section heading itself says: *"do NOT fall back to producing a file for SFTP upload"*. Same treatment applied to the cross-session fix prompt.
+- Clarification added inline that *dismiss* is the canonical "mark as checked" action — there is no separate state flag, and dismissing the override row IS the reviewed-and-accepted decision. The fairview test had Claude trying to PATCH `state` on individual rows, which doesn't exist.
+
 ## [0.11.0] — 2026-04-25
 
 ### Changed

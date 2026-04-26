@@ -88,14 +88,49 @@ final class HtmlView extends BaseHtmlView
 
         DO NOT use Authorization: Bearer — Joomla rejects that.
 
-        Endpoints:
-          GET {$this->apiBase}/overrides
-              List of flagged overrides. The hash_id field is base64-encoded;
-              decode it to see the relative path beginning with /html/.
-          GET {$this->apiBase}/overrides/{id}/override-file
-              Returns the override file contents.
-          GET {$this->apiBase}/overrides/{id}/core-file
-              Returns the core source file the override is shadowing.
+        Endpoints (read AND write — the API can patch files directly,
+        do NOT fall back to "produce a file for SFTP upload"):
+
+          Read:
+          GET    {$this->apiBase}/overrides
+                 List of flagged overrides. The hash_id field is
+                 base64-encoded; decode it to see the relative path
+                 beginning with /html/.
+          GET    {$this->apiBase}/overrides/{id}/override-file
+                 Returns the override file contents.
+          GET    {$this->apiBase}/overrides/{id}/core-file
+                 Returns the core source file the override is shadowing.
+          GET    {$this->apiBase}/sessions/{id}
+                 Returns a previously-posted session report (for
+                 cross-chat continuation).
+
+          Write — these are the actions you'll use to apply fixes
+          and clear "checked" rows. They auto-back-up before any
+          file write and are fully reversible from the admin UI:
+          POST   {$this->apiBase}/sessions
+                 Save a review report for the audit log. Body:
+                 {"name": "<auto-named, format YYYY-MM-DD-HHMMSS>",
+                  "summary": "<one-liner>",
+                  "report_markdown": "<full report>",
+                  "source": "claude_code"}
+          POST   {$this->apiBase}/overrides/{id}/apply-fix
+                 Patch an override file IN PLACE. Body:
+                 {"contents": "<patched bytes>", "session_id": <id>}
+                 Auto-snapshots the current contents to a backup row
+                 first; the response includes pre_fix_backup_id so
+                 the user can roll back. THIS IS HOW YOU APPLY A
+                 PATCH — do not generate a file for the user to
+                 upload by hand.
+          POST   {$this->apiBase}/overrides/{id}/dismiss
+                 (or DELETE on the same URL) — clear a single row
+                 from #__template_overrides. THIS IS HOW YOU
+                 "MARK AS CHECKED" — there is no separate state
+                 flag; dismissing the row is the canonical
+                 reviewed-and-accepted action.
+          POST   {$this->apiBase}/overrides/dismiss-all
+                 Clear EVERY remaining override row in one call.
+                 Returns {"cleared": <count>}. Only run this on
+                 explicit user instruction.
 
         Workflow:
           1. List all flagged overrides. Note how many and on which templates.
@@ -214,6 +249,31 @@ final class HtmlView extends BaseHtmlView
             X-Joomla-Token: <token>
             Accept: application/vnd.api+json
             Content-Type: application/json   (on POSTs)
+
+        DO NOT use Authorization: Bearer — Joomla rejects that.
+
+        Endpoints (read AND write — this API patches files directly,
+        do NOT fall back to "produce a file for SFTP upload"):
+
+          GET    {$this->apiBase}/sessions/{id}
+                 Returns a prior review report.
+          GET    {$this->apiBase}/overrides
+                 List of remaining flagged overrides.
+          GET    {$this->apiBase}/overrides/{id}/override-file
+                 Override file contents.
+          GET    {$this->apiBase}/overrides/{id}/core-file
+                 Stock core file the override is shadowing.
+          POST   {$this->apiBase}/overrides/{id}/apply-fix
+                 Patch the override IN PLACE. Auto-backs up first.
+                 Body: {"contents": "<patched bytes>", "session_id": <id>}
+                 THIS IS HOW YOU APPLY A PATCH.
+          POST   {$this->apiBase}/overrides/{id}/dismiss
+                 (or DELETE) — clear one row. THIS IS HOW YOU
+                 "MARK AS CHECKED" — dismissing IS the canonical
+                 reviewed-and-accepted action; no state flag needed.
+          POST   {$this->apiBase}/overrides/dismiss-all
+                 Clear every remaining row at once. Returns
+                 {"cleared": <count>}. Only on explicit instruction.
 
         Workflow:
 
