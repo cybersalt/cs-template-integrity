@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\BackupDescriber;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 
@@ -41,7 +42,11 @@ $b = $this->backup;
                     <table class="table table-sm mb-0">
                         <tbody>
                             <tr>
-                                <th class="w-25"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_BACKUP_LABEL_PATH'); ?></th>
+                                <th class="w-25"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_BACKUP_LABEL_DESCRIPTION'); ?></th>
+                                <td><?php echo BackupDescriber::describe((string) $b->file_path); ?></td>
+                            </tr>
+                            <tr>
+                                <th><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_BACKUP_LABEL_PATH'); ?></th>
                                 <td><code><?php echo $this->escape($b->file_path); ?></code></td>
                             </tr>
                             <tr>

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\BackupDescriber;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
@@ -51,6 +52,7 @@ use Joomla\CMS\Session\Session;
                         </td>
                         <td>
                             <a href="<?php echo $this->escape($viewUrl); ?>"><small><code><?php echo $this->escape($row->file_path); ?></code></small></a>
+                            <br><small class="text-body-secondary"><?php echo BackupDescriber::describe((string) $row->file_path); ?></small>
                         </td>
                         <td><small><?php echo number_format((int) $row->file_size); ?> B</small></td>
                         <td><small class="text-body-secondary"><?php echo $this->escape(substr($row->file_hash, 0, 12)); ?>&hellip;</small></td>

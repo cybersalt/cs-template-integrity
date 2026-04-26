@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.2] — 2026-04-25
+
+### Added
+
+- **Plain-English description column on the backups list and detail view.** Each row now shows a one-liner under the path explaining what the file actually is — e.g. *"Featured articles — 'more articles' links list"* under `templates/.../html/com_content/featured/default_links.php`, or *"Article previous / next navigation links"* under `templates/.../html/plg_content_pagenavigation/default.php`. Surfaced when Tim test-restored on Rocky's site and three rows looked superficially identical (two were the same logical file in two parallel template directories with different casing — the descriptions plus the path now make that obvious at a glance, instead of having to scan three near-identical paths character-by-character).
+- New `BackupDescriber` helper does the mapping. Resolves in three tiers: exact-match whitelist of common Joomla core layouts (~30 entries), pattern-based derivation from the path's first segment after `/html/` (handles any `com_*`, `mod_*`, `plg_*`, `layouts/*` we don't have an explicit row for), and a generic fallback. No schema change, no API change — derived purely from the existing `file_path` column, so retroactive on every backup row.
+
 ## [0.11.1] — 2026-04-25
 
 ### Fixed
