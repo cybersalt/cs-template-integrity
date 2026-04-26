@@ -32,6 +32,8 @@ final class HtmlView extends BaseHtmlView
 
     public string $fixPrompt = '';
 
+    public string $componentVersion = '';
+
     /** @var list<\stdClass> */
     public array $recentSessions = [];
 
@@ -48,6 +50,7 @@ final class HtmlView extends BaseHtmlView
         $this->overridesEndpoint = $this->apiBase . '/overrides';
         $this->claudePrompt      = $this->buildClaudePrompt();
         $this->fixPrompt         = $this->buildFixPrompt();
+        $this->componentVersion  = $this->resolveComponentVersion();
         $this->recentSessions    = SessionsHelper::listRecent(5);
 
         HTMLHelper::_('stylesheet', 'com_cstemplateintegrity/dashboard.css', ['relative' => true, 'version' => 'auto']);
@@ -67,6 +70,29 @@ final class HtmlView extends BaseHtmlView
     private function addToolbar(): void
     {
         ToolbarHelper::title(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_TITLE'), 'check-circle');
+    }
+
+    /**
+     * Read the installed component's version from the on-disk manifest.
+     *
+     * Reads the manifest XML rather than the #__extensions
+     * manifest_cache so the source of truth is what the installer
+     * actually copied to disk — same file Joomla uses to decide
+     * whether the component is up-to-date.
+     */
+    private function resolveComponentVersion(): string
+    {
+        $manifestPath = JPATH_ADMINISTRATOR . '/components/com_cstemplateintegrity/cstemplateintegrity.xml';
+        if (!is_file($manifestPath)) {
+            return '';
+        }
+
+        $xml = @simplexml_load_file($manifestPath);
+        if ($xml === false) {
+            return '';
+        }
+
+        return (string) ($xml->version ?? '');
     }
 
     private function buildClaudePrompt(): string

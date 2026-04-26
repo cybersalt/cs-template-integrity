@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] — 2026-04-25
+
+First stable release. The core flow — *site owner pastes one prompt → Claude lists every flagged override on the site, classifies each one, writes a plain-English report, asks which to fix, applies the fixes the owner confirms, marks the rest as checked* — has been live-tested end-to-end on cybersalt.org and on a real client site (fairviewterracehoa.com) running Joomla 6.1 on a third-party template.
+
+### What's in 1.0
+
+- **Component (`com_cstemplateintegrity`)** — admin dashboard with copy-paste scan + cross-session fix prompts, sessions log, action log, file backups view with restore, all gated by `cstemplateintegrity.view` / `cstemplateintegrity.write` ACL actions defined in `admin/access.xml`.
+- **Web Services plugin (`plg_webservices_cstemplateintegrity`)** — registers the `/api/index.php/v1/cstemplateintegrity/...` routes; auto-enabled by the package installer.
+- **API endpoints** — `GET /overrides`, `GET /overrides/{id}/override-file`, `GET /overrides/{id}/core-file`, `GET /sessions/{id}`, `POST /sessions`, `POST /overrides/{id}/apply-fix`, `POST /overrides/{id}/dismiss`, `POST /overrides/dismiss-all`, `POST /backups/{id}/restore`.
+- **Auto-backup** before every file write — snapshot of current contents, sha256, full content stored in `#__cstemplateintegrity_backups`. Every patch reversible from the admin or via the API.
+- **Hardened against the v0.9 security review** — separator-anchored path containment (no prefix-collision bypass), PHP-extension write whitelist (only `templates/<tpl>/html/` — no other path under `JPATH_ROOT` accepts `.php` writes), `opcache_invalidate()` after every PHP write, GET-form CSRF tokens on download links, CRLF/header-injection sanitization on `Content-Disposition`, `htmlspecialchars()` on every `Text::_()` rendered into the installer frame, no free-form `file_path` accepted in any request body — backup paths are server-side derived from `#__template_overrides` rows.
+- **Same-chat conversational flow** — the scan prompt ends by asking the user which findings to fix and waits, then runs fetch → patch → apply-fix → dismiss inline. The cross-session fix prompt is opt-in for the rare case of starting a fresh chat to continue an earlier review.
+- **Claude.ai sandbox guidance** built into the dashboard prompt instructions — *"Host not in allowlist"* error gets a one-paragraph fix path (Settings → Capabilities → Code execution → Network access; then close the current chat, start a new one to pick up the updated allowlist).
+- **Plain-English descriptions** on backup rows so non-technical viewers can tell at a glance what each stored file actually is.
+- **Unknown-finding catch-all** — if a finding doesn't fit "code change" or "configuration question" (needs a database tweak, plugin reinstall, contact the third-party developer), Claude stops and explains in plain English instead of attempting a partial fix.
+
+### Cleanup before 1.0
+
+- Removed the `v0.1 exposes the native …` early-MVP wording from XML descriptions and language strings.
+- Dashboard's version display now reads from the on-disk component manifest (`cstemplateintegrity.xml`) at render time instead of being hardcoded — won't go stale on the next bump.
+- README rewritten for a release-state audience (what's in 1.0, how to install, where the API endpoints live, what the security model is).
+
+### Migration from 0.x
+
+There was no in-place upgrade path between 0.9 (`csintegrity`) and 0.10 (`cstemplateintegrity`) due to the rename, and 0.10/0.11 were quick iterations on top of 0.10.0's fresh-install schema. The 0.11 → 1.0 step IS in-place: install `pkg_cstemplateintegrity_v1.0.0_*.zip` over an existing 0.11.x install and Joomla will upgrade in place.
+
+If you're still on 0.9 (`csintegrity`): uninstall the old package first (drops the `#__csintegrity_*` tables), then install 1.0.
+
 ## [0.11.2] — 2026-04-25
 
 ### Added

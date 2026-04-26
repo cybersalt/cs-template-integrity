@@ -230,7 +230,7 @@ $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=ba
                     </p>
                     <p class="card-text mb-0">
                         <small class="text-body-secondary">
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: 0.8.5
+                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: <?php echo $this->escape($this->componentVersion ?: '?'); ?>
                         </small>
                     </p>
                 </div>

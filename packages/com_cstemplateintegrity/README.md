@@ -1,6 +1,6 @@
 # com_cstemplateintegrity
 
-Joomla 5+ admin component exposing `#__template_overrides` data through a read-only Web Services endpoint.
+Joomla 5+ admin component surfacing the native `#__template_overrides` tracker via a Joomla Web Services API. Pairs with Claude to review each flagged override, apply patches in place (auto-backed-up, reversible), and clear "checked" rows.
 
 ## Current scope (v0.1)
 
