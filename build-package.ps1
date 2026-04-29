@@ -25,6 +25,27 @@ if (-not (Test-Path $sevenZip)) {
     throw "7-Zip not found at $sevenZip. Install 7-Zip or update the path in build-package.ps1."
 }
 
+# UTF-8 BOM check across every PHP / XML / INI in the source tree.
+# A BOM in front of a `<?php` opener emits raw bytes before the PHP
+# parser starts, which breaks declare(strict_types=1) (Joomla Brain
+# warns about this). Set-Content -Encoding utf8 in Windows PS 5.1
+# adds BOM by default — one slip during the v1.0.2 build made the
+# whole release unusable. Fail the build here rather than discover
+# at install.
+$bomFiles = @()
+$packagesPath = Join-Path $scriptDir "packages"
+Get-ChildItem -Path $packagesPath -Recurse -Include "*.php", "*.xml", "*.ini" -File | ForEach-Object {
+    $head = [byte[]](Get-Content -LiteralPath $_.FullName -Encoding Byte -ReadCount 0 -TotalCount 3)
+    if ($head.Count -ge 3 -and $head[0] -eq 0xEF -and $head[1] -eq 0xBB -and $head[2] -eq 0xBF) {
+        $bomFiles += $_.FullName
+    }
+}
+if ($bomFiles.Count -gt 0) {
+    Write-Host "ABORT: UTF-8 BOM detected in the following file(s):" -ForegroundColor Red
+    $bomFiles | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+    throw "Strip the BOM and re-run. Set-Content -Encoding utf8 in Windows PowerShell 5.1 writes BOM by default. Use [System.IO.File]::WriteAllText with a UTF8Encoding(false), or pipe through `tail -c +4` from a unix shell to drop the leading 3 bytes."
+}
+
 $pkgDir         = Join-Path $scriptDir "packages\pkg_cstemplateintegrity"
 $pkgManifest    = Join-Path $pkgDir "pkg_cstemplateintegrity.xml"
 

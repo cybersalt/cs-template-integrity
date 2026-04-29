@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.3] — 2026-04-29
+
+### Fixed
+
+- **Hotfix: 1.0.2 produced an instant `Compile Error: strict_types declaration must be the very first statement in the script` 500 on every component view** — the Windows PowerShell pass that fixed up namespace backslashes in seven template files (during the v1.0.2 build) saved them with a UTF-8 BOM (`Set-Content -Encoding utf8` in Windows PowerShell 5.1 writes BOM by default). The BOM was emitted as raw bytes before `<?php` parsed, which made `declare(strict_types=1)` no longer the first statement and PHP fatalled at parse time. **All seven templates rewritten without BOM.** Joomla Brain's `PACKAGE-BUILD-NOTES.md` calls this out explicitly: "All files must be UTF-8 **without BOM**." Adding a check to the build script for next time so this can't slip through silently.
+
 ## [1.0.2] — 2026-04-29
 
 ### Added

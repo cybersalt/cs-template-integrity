@@ -2,6 +2,15 @@
     <h1>📋 Cybersalt Template Integrity — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v1.0.3</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <h3><span class="section-icon">🐛</span>Hotfix</h3>
+    <ul>
+        <li><strong>1.0.2 produced an immediate "Compile Error: strict_types declaration must be the very first statement" 500</strong> on every component view. The PowerShell pass during the 1.0.2 build saved seven template files with a UTF-8 BOM, which gets emitted as bytes before <code>&lt;?php</code> parses and breaks <code>declare(strict_types=1)</code>'s "first statement" rule. All seven templates rewritten without BOM. <strong>Strongly recommend upgrading from 1.0.2 → 1.0.3 immediately</strong>; 1.0.2 is unusable.</li>
+    </ul>
+
+    <h2>
         <span class="version-badge">v1.0.2</span>
         <span class="date">2026-04-29</span>
     </h2>
