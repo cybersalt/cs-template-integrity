@@ -204,20 +204,30 @@ final class BackupDescriber
     /**
      * "default_links.php" → "default links"
      * "blog_links.php"    → "blog links"
+     *
+     * The output is HTML-escaped before return because describe()
+     * renders unescaped into admin templates (it intentionally splices
+     * in literal `&mdash;` entities for layout). Today the only caller
+     * passes path components derived from realpath() of on-disk files,
+     * which can't contain `<`, but a future caller (or a hand-edited
+     * #__cstemplateintegrity_backups row) could change that — this is
+     * defense in depth, flagged as M-1 in the v2.0.0 security review.
      */
     private static function tidy(string $segment): string
     {
         $segment = (string) preg_replace('/\.php$/i', '', $segment);
         $segment = str_replace('_', ' ', $segment);
-        return $segment;
+        return htmlspecialchars($segment, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
     /**
      * "pagenavigation" → "Pagenavigation"
      * "content"        → "Content"
+     *
+     * Escaped on the way out — see tidy().
      */
     private static function titleCase(string $word): string
     {
-        return ucfirst(strtolower($word));
+        return htmlspecialchars(ucfirst(strtolower($word)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 }

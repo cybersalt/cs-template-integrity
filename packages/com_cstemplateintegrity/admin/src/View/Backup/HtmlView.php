@@ -13,6 +13,7 @@ namespace Cybersalt\Component\Cstemplateintegrity\Administrator\View\Backup;
 defined('_JEXEC') or die;
 
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\BackupsHelper;
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
@@ -42,6 +43,8 @@ final class HtmlView extends BaseHtmlView
 
     public function display($tpl = null): void
     {
+        PermissionHelper::requireView();
+
         $id = (int) Factory::getApplication()->getInput()->getInt('id', 0);
         if ($id <= 0) {
             throw new GenericDataException(Text::_('COM_CSTEMPLATEINTEGRITY_BACKUP_NOT_FOUND'), 404);

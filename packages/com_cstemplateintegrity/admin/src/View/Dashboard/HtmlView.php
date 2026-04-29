@@ -52,6 +52,11 @@ final class HtmlView extends BaseHtmlView
 
     public function display($tpl = null): void
     {
+        // ACL gate. Joomla's outer core.manage check lets admins from
+        // other components reach this URL — requireView() enforces
+        // cstemplateintegrity.view from admin/access.xml.
+        \Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper::requireView();
+
         $errors = $this->get('Errors');
 
         if (!empty($errors)) {

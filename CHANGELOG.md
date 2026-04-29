@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.1] — 2026-04-29
+
+Closes the three findings from the v2.0.0 security review. No new features; tightening of existing controls.
+
+### 🔍 Security
+
+- **Granular `cstemplateintegrity.view` ACL action is now actually enforced for admin browsing.** Previously the ACL action was declared in `admin/access.xml` and checked by every API controller and every admin write controller, but admin HtmlViews relied solely on Joomla's outer `core.manage` gate — meaning a backend user with `core.manage` on a *different* component could navigate directly to `index.php?option=com_cstemplateintegrity&view=session&id=N` and read sessions, backups, and the action log without holding `cstemplateintegrity.view`. Every admin view (`Dashboard`, `Sessions`, `Session`, `Sessionform`, `Actions`, `Backups`, `Backup`) now calls `PermissionHelper::requireView()` at the top of `display()`. Closes L-2.
+- **`BackupDescriber::tidy()` and `::titleCase()` now `htmlspecialchars` their output internally.** Templates render the helper's return value unescaped (it intentionally splices in literal `&mdash;` entities for layout), and the path-segment input could in theory contain HTML in a future code path or a hand-edited backup row. Today's data flow comes from `realpath()` of an actual on-disk file so the risk is theoretical, but defense in depth — the only way to safely mix variable text with literal HTML is to escape one side. Closes M-1.
+- **`display.acknowledgeDisclaimer` now calls `PermissionHelper::requireView()`** for consistency with every other controller method. The previous reasoning ("anyone who can SEE the modal must be able to dismiss it; we gate appearance, not action") was correct in practice but implicit; the explicit gate matches the rest of the codebase. Closes L-1.
+
+### Migration
+
+In-place upgrade from 2.0.0. No schema or data changes.
+
 ## [2.0.0] — 2026-04-29
 
 The whole automated-review-with-Claude path landed. v1.x exposed override data via REST and let your Claude session call back to apply fixes. v2.0 closes that loop: save your Anthropic API key, click *Run automated scan*, and the extension drives the entire review server-side — fetches every override, calls Claude, gets back a markdown report, saves it as a session. From the session view you can then chat with Claude inline and have it apply fixes, dismiss findings, or clear the tracker — Claude calls tool functions on the server, you watch the result render as the next chat bubble.

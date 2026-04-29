@@ -2,6 +2,18 @@
     <h1>📋 Cybersalt Template Integrity — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v2.0.1</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <p>Closes the three findings from the v2.0.0 security review. No new features; tightening of existing controls.</p>
+    <h3><span class="section-icon">🔍</span>Security</h3>
+    <ul>
+        <li><strong>Granular <code>cstemplateintegrity.view</code> ACL action is now actually enforced for admin browsing.</strong> Previously a backend user with <code>core.manage</code> on a different component could navigate directly to a session/backup URL and read the data without holding the granular action. Every admin <code>HtmlView::display()</code> now calls <code>PermissionHelper::requireView()</code>. (Closes L-2.)</li>
+        <li><strong><code>BackupDescriber</code> escapes path segments internally before splicing them with literal <code>&amp;mdash;</code> entities</strong>, so the helper's return value remains safe to render unescaped. Today's input flow is safe; this is defense in depth. (Closes M-1.)</li>
+        <li><strong><code>display.acknowledgeDisclaimer</code> now calls <code>PermissionHelper::requireView()</code></strong> for consistency with every other controller method. (Closes L-1.)</li>
+    </ul>
+
+    <h2>
         <span class="version-badge">v2.0.0</span>
         <span class="date">2026-04-29</span>
     </h2>

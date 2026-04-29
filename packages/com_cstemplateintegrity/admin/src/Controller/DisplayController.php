@@ -247,10 +247,12 @@ final class DisplayController extends BaseController
         // ACK row never lands. Use the GET-form check instead — same
         // pattern the download endpoints use.
         $this->checkToken('get');
-        // No PermissionHelper gate here on purpose — every authenticated
-        // admin who can SEE the modal must be able to dismiss it; we
-        // gate the modal's APPEARANCE on hasAcknowledged(), not on
-        // arbitrary permissions.
+        // Gate at view for consistency with every other controller
+        // method. The modal only renders for users who can see the
+        // component anyway, so this isn't a new restriction — it
+        // closes the L-1 finding from the v2.0 security review by
+        // making the rule explicit instead of implicit.
+        PermissionHelper::requireView();
 
         /** @var CMSApplication $app */
         $app  = $this->app;

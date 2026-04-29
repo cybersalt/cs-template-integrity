@@ -12,6 +12,7 @@ namespace Cybersalt\Component\Cstemplateintegrity\Administrator\View\Sessions;
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\SessionsHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
@@ -24,6 +25,8 @@ final class HtmlView extends BaseHtmlView
 
     public function display($tpl = null): void
     {
+        PermissionHelper::requireView();
+
         $this->items = SessionsHelper::listRecent(200);
         $this->addToolbar();
         parent::display($tpl);

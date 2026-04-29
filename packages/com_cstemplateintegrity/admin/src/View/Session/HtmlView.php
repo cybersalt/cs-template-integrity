@@ -13,6 +13,7 @@ namespace Cybersalt\Component\Cstemplateintegrity\Administrator\View\Session;
 defined('_JEXEC') or die;
 
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\ActionsHelper;
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\SessionsHelper;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
@@ -46,6 +47,8 @@ final class HtmlView extends BaseHtmlView
 
     public function display($tpl = null): void
     {
+        PermissionHelper::requireView();
+
         $id = (int) Factory::getApplication()->getInput()->getInt('id', 0);
         if ($id <= 0) {
             throw new GenericDataException(Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_NOT_FOUND'), 404);

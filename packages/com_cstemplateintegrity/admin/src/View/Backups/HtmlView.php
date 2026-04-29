@@ -13,6 +13,7 @@ namespace Cybersalt\Component\Cstemplateintegrity\Administrator\View\Backups;
 defined('_JEXEC') or die;
 
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\BackupsHelper;
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\ToolbarHelper;
@@ -24,6 +25,8 @@ final class HtmlView extends BaseHtmlView
 
     public function display($tpl = null): void
     {
+        PermissionHelper::requireView();
+
         $this->items = BackupsHelper::listRecent(200);
         $this->addToolbar();
         parent::display($tpl);

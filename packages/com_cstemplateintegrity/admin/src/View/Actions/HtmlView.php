@@ -13,6 +13,7 @@ namespace Cybersalt\Component\Cstemplateintegrity\Administrator\View\Actions;
 defined('_JEXEC') or die;
 
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\ActionsHelper;
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\ToolbarHelper;
@@ -24,6 +25,12 @@ final class HtmlView extends BaseHtmlView
 
     public function display($tpl = null): void
     {
+        // ACL gate. Joomla's outer core.manage check lets a user with
+        // admin access on another component reach this view by URL —
+        // requireView() enforces the granular cstemplateintegrity.view
+        // action declared in admin/access.xml.
+        PermissionHelper::requireView();
+
         $this->items = ActionsHelper::listRecent(500);
         $this->addToolbar();
         parent::display($tpl);

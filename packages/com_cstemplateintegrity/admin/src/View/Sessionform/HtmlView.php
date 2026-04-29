@@ -12,6 +12,7 @@ namespace Cybersalt\Component\Cstemplateintegrity\Administrator\View\Sessionform
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\SessionsHelper;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
@@ -27,6 +28,11 @@ final class HtmlView extends BaseHtmlView
 
     public function display($tpl = null): void
     {
+        // Form leads to a write, but a viewer should still be able to
+        // see what the form looks like — gate at view, the sessions.save
+        // controller already enforces requireWrite() on submit.
+        PermissionHelper::requireView();
+
         $this->defaultName = SessionsHelper::autoName();
         $this->backUrl     = Route::_('index.php?option=com_cstemplateintegrity&view=sessions', false);
 
