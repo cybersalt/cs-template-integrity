@@ -131,9 +131,9 @@ final class DisclaimerHelper
     padding: 1rem;
 }
 .csti-disclaimer-card {
-    background: var(--bs-body-bg, #fff);
+    background: var(--bs-body-bg, #ffffff);
     color: var(--bs-body-color, #212529);
-    border: 1px solid var(--bs-border-color, rgba(0,0,0,0.15));
+    border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.15));
     border-radius: 0.5rem;
     box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.4);
     max-width: 640px; width: 100%;
@@ -143,18 +143,65 @@ final class DisclaimerHelper
 .csti-disclaimer-title {
     margin: 0 0 1rem 0;
     font-size: 1.4rem;
+    color: inherit;
 }
-.csti-disclaimer-body p { margin-bottom: 0.85rem; }
-.csti-disclaimer-body strong { color: var(--bs-body-color); }
+.csti-disclaimer-body p     { margin-bottom: 0.85rem; }
+.csti-disclaimer-body strong { color: inherit; }
+.csti-disclaimer-body a {
+    color: var(--bs-link-color, #0d6efd);
+    text-decoration: underline;
+}
+.csti-disclaimer-body a:hover { color: var(--bs-link-hover-color, #0a58ca); }
 .csti-disclaimer-checkrow {
     margin: 1.25rem 0 1rem 0;
     padding: 0.75rem 1rem;
-    background: var(--bs-tertiary-bg, rgba(0,0,0,0.04));
+    background: var(--bs-tertiary-bg, rgba(0, 0, 0, 0.04));
+    border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.08));
     border-radius: 0.375rem;
+    color: inherit;
 }
 .csti-disclaimer-checkrow label { cursor: pointer; user-select: none; }
 .csti-disclaimer-checkrow input { margin-right: 0.5rem; }
 .csti-disclaimer-actions { text-align: right; }
+
+/* Dark-mode hooks. Atum sets EITHER data-bs-theme="dark" (modern
+   Bootstrap 5.3 mechanism) OR data-color-scheme="dark" (older Joomla
+   admin convention) on a parent — same dual-selector pattern the
+   bundled highlight-theme.css uses for the same reason. Hard-coded
+   fallback colors here in case --bs-* variables aren't propagating
+   into this scope on the host site. */
+[data-bs-theme="dark"]      .csti-disclaimer-card,
+[data-color-scheme="dark"]  .csti-disclaimer-card {
+    background: var(--bs-body-bg, #1a1d20) !important;
+    color: var(--bs-body-color, #dee2e6) !important;
+    border-color: var(--bs-border-color, rgba(255, 255, 255, 0.15));
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.6);
+}
+[data-bs-theme="dark"]      .csti-disclaimer-checkrow,
+[data-color-scheme="dark"]  .csti-disclaimer-checkrow {
+    background: var(--bs-tertiary-bg, rgba(255, 255, 255, 0.06)) !important;
+    border-color: var(--bs-border-color, rgba(255, 255, 255, 0.10));
+}
+[data-bs-theme="dark"]      .csti-disclaimer-body a,
+[data-color-scheme="dark"]  .csti-disclaimer-body a {
+    color: var(--bs-link-color, #6ea8fe) !important;
+}
+
+/* OS-preference final fallback: when neither attribute is set in the
+   ancestor chain (e.g. an admin template that doesn't ship dark mode
+   at all but the host OS prefers it), still honour the user. */
+@media (prefers-color-scheme: dark) {
+    .csti-disclaimer-card {
+        background: var(--bs-body-bg, #1a1d20);
+        color: var(--bs-body-color, #dee2e6);
+        border-color: var(--bs-border-color, rgba(255, 255, 255, 0.15));
+    }
+    .csti-disclaimer-checkrow {
+        background: var(--bs-tertiary-bg, rgba(255, 255, 255, 0.06));
+        border-color: var(--bs-border-color, rgba(255, 255, 255, 0.10));
+    }
+    .csti-disclaimer-body a { color: var(--bs-link-color, #6ea8fe); }
+}
 </style>
 
 <script>

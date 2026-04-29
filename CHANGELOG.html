@@ -2,6 +2,15 @@
     <h1>📋 Cybersalt Template Integrity — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v1.0.4</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <h3><span class="section-icon">🐛</span>Fixes</h3>
+    <ul>
+        <li><strong>Disclaimer modal in dark mode</strong>: card stayed white-on-bright in Atum dark mode because the CSS leaned only on Bootstrap CSS variables and didn't include explicit overrides for the <code>[data-bs-theme="dark"]</code> / <code>[data-color-scheme="dark"]</code> selector pair the rest of the extension uses. Modal now mirrors the dual-selector pattern from <code>highlight-theme.css</code>, plus a <code>prefers-color-scheme: dark</code> media-query fallback. Email link in the modal body also picks up Bootstrap's link colour so it stays readable on the dark card.</li>
+    </ul>
+
+    <h2>
         <span class="version-badge">v1.0.3</span>
         <span class="date">2026-04-29</span>
     </h2>

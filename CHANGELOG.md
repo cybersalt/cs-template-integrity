@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.4] — 2026-04-29
+
+### Fixed
+
+- **Disclaimer modal didn't render correctly in dark mode.** The original modal CSS leaned entirely on `var(--bs-body-bg)` / `var(--bs-body-color)` and assumed Bootstrap 5.3's `[data-bs-theme="dark"]` cascade would always reach it. On Atum installs that signal dark mode via `[data-color-scheme="dark"]` instead (or where the var isn't propagating into the inline `<style>` scope for whatever reason), the card stayed white-on-bright with poor contrast. Same dual-selector pattern the bundled `highlight-theme.css` already uses — explicit `[data-bs-theme="dark"]` AND `[data-color-scheme="dark"]` overrides with hard-coded dark fallback colors so the card is readable even when no var resolves. Added a `@media (prefers-color-scheme: dark)` block as a third-tier fallback for hosts whose admin template doesn't ship dark mode but whose user's OS prefers it.
+- Link in the modal body (`tim@cybersalt.com`) now picks up `var(--bs-link-color)` and switches to `#6ea8fe` in dark mode rather than the default browser blue that becomes near-invisible against `#1a1d20`.
+
 ## [1.0.3] — 2026-04-29
 
 ### Fixed
