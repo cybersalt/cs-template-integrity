@@ -26,8 +26,11 @@ final class SessionsHelper
     public const SOURCE_PASTE       = 'paste';
     public const SOURCE_API         = 'api';
     public const SOURCE_CLAUDE_CODE = 'claude_code';
+    public const SOURCE_AUTO        = 'auto';
 
     /**
+     * @param  array<int, array{role: string, content: mixed}>|null  $messages
+     *
      * @return int  Newly inserted session id
      */
     public static function create(
@@ -35,7 +38,8 @@ final class SessionsHelper
         ?string $summary,
         ?string $reportMarkdown,
         string $source = self::SOURCE_PASTE,
-        ?int $createdBy = null
+        ?int $createdBy = null,
+        ?array $messages = null
     ): int {
         $db  = Factory::getContainer()->get(DatabaseInterface::class);
         $now = Factory::getDate()->toSql();
@@ -43,10 +47,13 @@ final class SessionsHelper
         $row = (object) [
             'name'            => $name !== null && $name !== '' ? mb_substr($name, 0, 64) : self::autoName(),
             'summary'         => $summary !== null ? mb_substr($summary, 0, 500) : '',
-            'source'          => in_array($source, [self::SOURCE_PASTE, self::SOURCE_API, self::SOURCE_CLAUDE_CODE], true)
+            'source'          => in_array($source, [self::SOURCE_PASTE, self::SOURCE_API, self::SOURCE_CLAUDE_CODE, self::SOURCE_AUTO], true)
                 ? $source
                 : self::SOURCE_PASTE,
             'report_markdown' => $reportMarkdown,
+            'messages'        => $messages !== null
+                ? json_encode($messages, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+                : null,
             'state'           => 1,
             'created_by'      => $createdBy ?? self::currentUserId(),
             'created_at'      => $now,
@@ -120,6 +127,46 @@ final class SessionsHelper
         }
 
         return count($ids);
+    }
+
+    /**
+     * Decode the JSON-encoded messages column into an array. Returns
+     * an empty array if the session has no conversation history (older
+     * rows from before the chat feature shipped).
+     *
+     * @return array<int, array{role: string, content: mixed}>
+     */
+    public static function getMessages(\stdClass $session): array
+    {
+        $raw = isset($session->messages) ? (string) $session->messages : '';
+        if ($raw === '') {
+            return [];
+        }
+        $decoded = json_decode($raw, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * Persist an updated messages array back to the session row.
+     *
+     * @param array<int, array{role: string, content: mixed}> $messages
+     */
+    public static function saveMessages(int $sessionId, array $messages): void
+    {
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $json = json_encode($messages, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $now  = Factory::getDate()->toSql();
+
+        $query = $db->getQuery(true)
+            ->update($db->quoteName('#__cstemplateintegrity_sessions'))
+            ->set($db->quoteName('messages')    . ' = :msgs')
+            ->set($db->quoteName('modified_at') . ' = :now')
+            ->where($db->quoteName('id') . ' = :id')
+            ->bind(':msgs', $json)
+            ->bind(':now',  $now)
+            ->bind(':id',   $sessionId, ParameterType::INTEGER);
+
+        $db->setQuery($query)->execute();
     }
 
     public static function autoName(?\DateTimeInterface $when = null): string

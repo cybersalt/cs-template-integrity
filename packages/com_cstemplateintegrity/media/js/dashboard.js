@@ -9,6 +9,15 @@
 (function () {
     'use strict';
 
+    // Public API exposed under window.csti so other scripts/inline
+    // handlers can show the loading overlay or open the diagnostics
+    // modal without re-implementing them.
+    window.csti = window.csti || {};
+    window.csti.showLoading  = showLoading;
+    window.csti.hideLoading  = hideLoading;
+    window.csti.openDiag     = openDiagnostics;
+    window.csti.closeDiag    = closeDiagnostics;
+
     document.addEventListener('DOMContentLoaded', function () {
         wireCopyButton('cstemplateintegrity-copy-btn',     'cstemplateintegrity-prompt',     'btn-primary');
         wireCopyButton('cstemplateintegrity-fix-copy-btn', 'cstemplateintegrity-fix-prompt', 'btn-primary');
@@ -18,7 +27,174 @@
                               'cstemplateintegrity-restore-confirm-check',
                               'cstemplateintegrity-restore-confirm-btn');
         wireSyntaxHighlight();
+        wireRunScanForm();
+        wireDiagnosticsButton();
+        wireChatForm();
     });
+
+    /**
+     * Loading overlay — single instance per page; lazily injected on
+     * first call and reused on subsequent calls. Pass an optional
+     * heading + body text to customise the message ("Running scan…",
+     * "Asking Claude to apply fixes…").
+     */
+    var loadingTimer = null;
+    function showLoading(headingText, bodyText) {
+        var overlay = document.getElementById('csti-loading-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'csti-loading-overlay';
+            overlay.className = 'csti-loading-overlay';
+            overlay.setAttribute('role', 'dialog');
+            overlay.setAttribute('aria-modal', 'true');
+            overlay.innerHTML =
+                '<div class="csti-loading-card">'
+                + '<div class="csti-spinner" aria-hidden="true"></div>'
+                + '<h3 id="csti-loading-heading"></h3>'
+                + '<p  id="csti-loading-body"></p>'
+                + '<p class="csti-elapsed">Elapsed: <span id="csti-elapsed-counter">0s</span></p>'
+                + '</div>';
+            document.body.appendChild(overlay);
+        }
+        document.getElementById('csti-loading-heading').textContent = headingText || 'Working…';
+        document.getElementById('csti-loading-body').textContent    = bodyText    || 'This can take 30 to 90 seconds. Please don\'t close this window.';
+
+        var counter = document.getElementById('csti-elapsed-counter');
+        var secs = 0;
+        counter.textContent = '0s';
+        if (loadingTimer) clearInterval(loadingTimer);
+        loadingTimer = setInterval(function () {
+            secs++;
+            counter.textContent = secs + 's';
+        }, 1000);
+
+        overlay.classList.add('is-active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function hideLoading() {
+        var overlay = document.getElementById('csti-loading-overlay');
+        if (loadingTimer) { clearInterval(loadingTimer); loadingTimer = null; }
+        if (overlay) {
+            overlay.classList.remove('is-active');
+        }
+        document.body.style.overflow = '';
+    }
+
+    function wireRunScanForm() {
+        var form = document.querySelector('form[data-csti-runscan]');
+        if (!form) return;
+
+        form.addEventListener('submit', function (e) {
+            var confirmText = form.getAttribute('data-confirm-text');
+            if (confirmText && !window.confirm(confirmText)) {
+                e.preventDefault();
+                return false;
+            }
+            // Disable the button so a double-click doesn't fire a second scan.
+            var btn = form.querySelector('button[type="submit"]');
+            if (btn) btn.disabled = true;
+
+            showLoading(
+                form.getAttribute('data-loading-title') || 'Running automated scan…',
+                form.getAttribute('data-loading-body')  || ''
+            );
+            // Submit continues; overlay stays up until the page navigates.
+        });
+    }
+
+    /**
+     * Diagnostics modal — same vanilla-overlay pattern as the
+     * disclaimer. Opens via a button with [data-csti-open-diag];
+     * fetches /testApiConnection on demand to populate the result.
+     */
+    function wireDiagnosticsButton() {
+        var btn = document.querySelector('[data-csti-open-diag]');
+        if (!btn) return;
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            openDiagnostics();
+        });
+
+        var overlay = document.getElementById('csti-diag-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', function (e) {
+                if (e.target === overlay) closeDiagnostics();
+            });
+            var closeBtn = overlay.querySelector('[data-csti-diag-close]');
+            if (closeBtn) closeBtn.addEventListener('click', closeDiagnostics);
+        }
+
+        var testBtn = document.querySelector('[data-csti-test-conn]');
+        if (testBtn) {
+            testBtn.addEventListener('click', function () {
+                var url = testBtn.getAttribute('data-test-url');
+                if (!url) return;
+                var result = document.getElementById('csti-diag-test-result');
+                result.innerHTML = '<em>Testing…</em>';
+                testBtn.disabled = true;
+                fetch(url, { method: 'POST', credentials: 'same-origin' })
+                    .then(function (r) { return r.json().catch(function () { return null; }); })
+                    .then(function (j) {
+                        testBtn.disabled = false;
+                        if (j === null) {
+                            result.innerHTML = '<span class="csti-diag-result is-fail">Test failed: server returned non-JSON.</span>';
+                            return;
+                        }
+                        if (j.ok) {
+                            result.innerHTML = '<span class="csti-diag-result is-pass">PASS</span>'
+                                + ' &mdash; HTTP ' + (j.status || 200) + ', latency ' + (j.latency_ms || '?') + 'ms.'
+                                + ' Reply: <code>' + escapeHtml(j.sample_reply || '') + '</code>';
+                        } else {
+                            result.innerHTML = '<span class="csti-diag-result is-fail">FAIL</span>'
+                                + ' &mdash; ' + escapeHtml(j.error || 'unknown');
+                        }
+                    })
+                    .catch(function (e) {
+                        testBtn.disabled = false;
+                        result.innerHTML = '<span class="csti-diag-result is-fail">Test errored:</span> ' + escapeHtml(String(e));
+                    });
+            });
+        }
+    }
+    function openDiagnostics() {
+        var overlay = document.getElementById('csti-diag-overlay');
+        if (!overlay) return;
+        overlay.classList.add('is-active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDiagnostics() {
+        var overlay = document.getElementById('csti-diag-overlay');
+        if (!overlay) return;
+        overlay.classList.remove('is-active');
+        document.body.style.overflow = '';
+    }
+
+    /**
+     * Chat-with-Claude form on the session detail view. Shows the
+     * loading overlay during the synchronous server call and disables
+     * the submit button to prevent double-fires.
+     */
+    function wireChatForm() {
+        var form = document.querySelector('form[data-csti-chat]');
+        if (!form) return;
+        form.addEventListener('submit', function () {
+            var btn = form.querySelector('button[type="submit"]');
+            if (btn) btn.disabled = true;
+            showLoading(
+                form.getAttribute('data-loading-title') || 'Asking Claude…',
+                form.getAttribute('data-loading-body')  || 'Claude is reading your message and may run apply-fix or dismiss tools server-side. This can take a minute.'
+            );
+        });
+    }
+
+    function escapeHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
 
     function wireSyntaxHighlight() {
         var codeEl = document.getElementById('cstemplateintegrity-backup-contents-code');

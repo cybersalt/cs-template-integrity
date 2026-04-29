@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS `#__cstemplateintegrity_sessions` (
     `summary`         VARCHAR(500) NOT NULL DEFAULT '',
     `source`          VARCHAR(32)  NOT NULL DEFAULT 'paste',
     `report_markdown` LONGTEXT     NULL,
+    `messages`        LONGTEXT     NULL,
     `state`           TINYINT      NOT NULL DEFAULT 1,
     `created_by`      INT UNSIGNED NOT NULL DEFAULT 0,
     `created_at`      DATETIME     NOT NULL,

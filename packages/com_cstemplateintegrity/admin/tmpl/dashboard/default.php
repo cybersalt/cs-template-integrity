@@ -22,6 +22,7 @@ use Joomla\CMS\Router\Route;
 
 $rescanAction       = Route::_('index.php?option=com_cstemplateintegrity', false);
 $markReviewedAction = Route::_('index.php?option=com_cstemplateintegrity', false);
+$runScanAction      = Route::_('index.php?option=com_cstemplateintegrity', false);
 $siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=templates&client_id=0', false);
 $sessionsUrl        = Route::_('index.php?option=com_cstemplateintegrity&view=sessions', false);
 $newSessionUrl      = Route::_('index.php?option=com_cstemplateintegrity&view=sessionform', false);
@@ -38,6 +39,105 @@ $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=ba
             <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_STATUS_DESCRIPTION'); ?>
         </div>
     </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3" role="navigation" aria-label="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_QUICKNAV_LABEL')); ?>">
+        <a href="<?php echo $this->escape($newSessionUrl); ?>" class="btn btn-info">
+            <span class="icon-plus" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_SESSIONS_NEW'); ?>
+        </a>
+        <a href="<?php echo $this->escape($sessionsUrl); ?>" class="btn btn-secondary">
+            <span class="icon-list" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SUBMENU_SESSIONS'); ?>
+        </a>
+        <a href="<?php echo $this->escape($actionsUrl); ?>" class="btn btn-secondary">
+            <span class="icon-clock" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SUBMENU_ACTIONS'); ?>
+        </a>
+        <a href="<?php echo $this->escape($backupsUrl); ?>" class="btn btn-secondary">
+            <span class="icon-archive" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SUBMENU_BACKUPS'); ?>
+        </a>
+        <a href="<?php echo $this->escape($siteTemplatesUrl); ?>" class="btn btn-secondary">
+            <span class="icon-arrow-right" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_OPTION_A_BUTTON'); ?>
+        </a>
+        <button type="button" class="btn btn-info ms-auto" data-csti-open-diag>
+            <span class="icon-info" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_BUTTON'); ?>
+        </button>
+    </div>
+
+    <div class="card mb-3 border-warning">
+        <div class="card-body">
+            <h3 class="card-title">
+                <span class="icon-refresh" aria-hidden="true"></span>
+                <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_TITLE'); ?>
+            </h3>
+            <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_DESCRIPTION'); ?></p>
+            <p class="card-text">
+                <small class="text-body-secondary">
+                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_NOTE'); ?>
+                </small>
+            </p>
+            <form action="<?php echo $this->escape($rescanAction); ?>"
+                  method="post"
+                  onsubmit="return confirm('<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_CONFIRM'), 'JavaScript'); ?>');">
+                <?php echo HTMLHelper::_('form.token'); ?>
+                <input type="hidden" name="task" value="display.rescan">
+                <button type="submit" class="btn btn-warning">
+                    <span class="icon-refresh" aria-hidden="true"></span>
+                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_BUTTON'); ?>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <?php if ($this->hasApiKey) : ?>
+        <div class="card mb-3 border-success">
+            <div class="card-body">
+                <div class="alert alert-success d-flex align-items-center mb-3" role="alert">
+                    <span class="icon-flash me-2 fs-4" aria-hidden="true"></span>
+                    <div>
+                        <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_AVAILABLE_TITLE'); ?></strong>
+                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_AVAILABLE_BODY'); ?>
+                    </div>
+                </div>
+                <h3 class="card-title">
+                    <span class="icon-rocket" aria-hidden="true"></span>
+                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_TITLE'); ?>
+                </h3>
+                <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_INTRO'); ?></p>
+                <p class="card-text">
+                    <small class="text-body-secondary">
+                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_NOTE'); ?>
+                    </small>
+                </p>
+                <form action="<?php echo $this->escape($runScanAction); ?>"
+                      method="post"
+                      data-csti-runscan
+                      data-confirm-text="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_CONFIRM')); ?>"
+                      data-loading-title="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_LOADING_TITLE')); ?>"
+                      data-loading-body="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_LOADING_BODY')); ?>">
+                    <?php echo HTMLHelper::_('form.token'); ?>
+                    <input type="hidden" name="task" value="display.runScan">
+                    <button type="submit" class="btn btn-success">
+                        <span class="icon-rocket" aria-hidden="true"></span>
+                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_BUTTON'); ?>
+                    </button>
+                </form>
+            </div>
+        </div>
+    <?php else : ?>
+        <div class="card mb-3 border-secondary">
+            <div class="card-body">
+                <h3 class="card-title">
+                    <span class="icon-rocket" aria-hidden="true"></span>
+                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_TITLE'); ?>
+                </h3>
+                <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_NOKEY_BODY'); ?></p>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <div class="row">
         <div class="col-lg-8">
@@ -191,31 +291,6 @@ $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=ba
                 </div>
             </div>
 
-            <div class="card mb-3 border-warning">
-                <div class="card-body">
-                    <h3 class="card-title">
-                        <span class="icon-refresh" aria-hidden="true"></span>
-                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_TITLE'); ?>
-                    </h3>
-                    <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_DESCRIPTION'); ?></p>
-                    <p class="card-text">
-                        <small class="text-body-secondary">
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_NOTE'); ?>
-                        </small>
-                    </p>
-                    <form action="<?php echo $this->escape($rescanAction); ?>"
-                          method="post"
-                          onsubmit="return confirm('<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_CONFIRM'), 'JavaScript'); ?>');">
-                        <?php echo HTMLHelper::_('form.token'); ?>
-                        <input type="hidden" name="task" value="display.rescan">
-                        <button type="submit" class="btn btn-warning">
-                            <span class="icon-refresh" aria-hidden="true"></span>
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_BUTTON'); ?>
-                        </button>
-                    </form>
-                </div>
-            </div>
-
         </div>
 
         <div class="col-lg-4">
@@ -242,6 +317,71 @@ $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=ba
         </div>
     </div>
 
+</div>
+
+<div id="csti-diag-overlay" class="csti-diag-overlay" role="dialog" aria-modal="true" aria-labelledby="csti-diag-title">
+    <div class="csti-diag-card">
+        <h3 id="csti-diag-title">
+            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_TITLE'); ?>
+            <button type="button" class="btn btn-sm btn-secondary" data-csti-diag-close>
+                <?php echo Text::_('JCANCEL'); ?>
+            </button>
+        </h3>
+
+        <h4><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_API_KEY'); ?></h4>
+        <div class="csti-diag-row">
+            <span class="label"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_API_KEY_STATUS'); ?></span>
+            <span class="value">
+                <?php if ($this->hasApiKey) : ?>
+                    <span class="csti-diag-result is-pass"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_SAVED'); ?></span>
+                <?php else : ?>
+                    <span class="csti-diag-result is-fail"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_NOT_SAVED'); ?></span>
+                <?php endif; ?>
+            </span>
+        </div>
+        <?php if ($this->hasApiKey) : ?>
+            <div class="csti-diag-row">
+                <span class="label"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_FINGERPRINT'); ?></span>
+                <span class="value"><?php echo $this->escape($this->apiKeyFingerprint); ?></span>
+            </div>
+        <?php endif; ?>
+
+        <h4><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_TEST'); ?></h4>
+        <p class="text-body-secondary mb-2">
+            <small><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_TEST_INTRO'); ?></small>
+        </p>
+        <button type="button"
+                class="btn btn-primary"
+                data-csti-test-conn
+                data-test-url="<?php echo $this->escape($this->testConnectionUrl); ?>"
+                <?php if (!$this->hasApiKey) : ?>disabled<?php endif; ?>>
+            <span class="icon-flash" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_TEST_BUTTON'); ?>
+        </button>
+        <div id="csti-diag-test-result" class="mt-2"></div>
+
+        <h4><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_SYSTEM'); ?></h4>
+        <div class="csti-diag-row">
+            <span class="label"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_VERSION_LABEL'); ?></span>
+            <span class="value"><?php echo $this->escape($this->componentVersion ?: '?'); ?></span>
+        </div>
+        <div class="csti-diag-row">
+            <span class="label">Joomla</span>
+            <span class="value"><?php echo $this->escape(JVERSION); ?></span>
+        </div>
+        <div class="csti-diag-row">
+            <span class="label">PHP</span>
+            <span class="value"><?php echo $this->escape(PHP_VERSION); ?></span>
+        </div>
+        <div class="csti-diag-row">
+            <span class="label"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_API_BASE'); ?></span>
+            <span class="value"><?php echo $this->escape($this->apiBase); ?></span>
+        </div>
+        <div class="csti-diag-row">
+            <span class="label"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_AUTOSCAN_CAP'); ?></span>
+            <span class="value"><?php echo $this->escape($this->autoScanMaxOverrides); ?> overrides per call</span>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="cstemplateintegrity-mark-reviewed-modal" tabindex="-1" aria-labelledby="cstemplateintegrity-mark-reviewed-modal-title" aria-hidden="true">

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Component options for com_cstemplateintegrity.
+
+    Surfaced under the "Options" button on the dashboard toolbar
+    (registered via ToolbarHelper::preferences()). Joomla persists
+    these to #__extensions.params as an encrypted JSON blob and
+    exposes them via ComponentHelper::getParams('com_cstemplateintegrity').
+
+    The Anthropic API key field is stored as type="password" so the
+    admin form's input renders masked. It still persists in the DB
+    as plaintext inside the params JSON; site admins should rely on
+    file-system permissions on configuration.php / DB credentials
+    rather than this form rendering for secrecy.
+
+    Permission rules under <fieldset name="permissions"> map directly
+    to admin/access.xml's <action> entries.
+-->
+<config>
+    <fieldset
+        name="ai"
+        label="COM_CSTEMPLATEINTEGRITY_CONFIG_AI_FIELDSET_LABEL"
+        description="COM_CSTEMPLATEINTEGRITY_CONFIG_AI_FIELDSET_DESC">
+
+        <field
+            name="anthropic_api_key"
+            type="text"
+            label="COM_CSTEMPLATEINTEGRITY_CONFIG_ANTHROPIC_API_KEY_LABEL"
+            description="COM_CSTEMPLATEINTEGRITY_CONFIG_ANTHROPIC_API_KEY_DESC"
+            default=""
+            autocomplete="off"
+            spellcheck="false"
+            filter="raw"
+            size="80"
+            maxlength="500" />
+
+        <field
+            name="anthropic_api_key_note"
+            type="note"
+            class="alert alert-info"
+            description="COM_CSTEMPLATEINTEGRITY_CONFIG_ANTHROPIC_API_KEY_NOTE" />
+
+    </fieldset>
+
+    <fieldset
+        name="permissions"
+        label="JCONFIG_PERMISSIONS_LABEL"
+        description="JCONFIG_PERMISSIONS_DESC">
+
+        <field
+            name="rules"
+            type="rules"
+            label="JCONFIG_PERMISSIONS_LABEL"
+            translate_label="false"
+            filter="rules"
+            validate="rules"
+            component="com_cstemplateintegrity"
+            section="component" />
+
+    </fieldset>
+</config>

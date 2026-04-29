@@ -224,12 +224,24 @@ final class DisclaimerHelper
 
     okBtn.addEventListener('click', function () {
         if (checkbox.checked) {
-            // Fire-and-forget. If the persist call fails the worst
-            // outcome is the modal reappears next page load, which is
-            // a fine fallback.
+            // Persist the ACK before closing so future page loads
+            // don't re-show the modal. We log non-OK responses to the
+            // console so a misconfigured CSRF / permission check
+            // surfaces obviously rather than silently letting the
+            // modal reappear.
             try {
-                fetch(url, { method: 'POST', credentials: 'same-origin' });
-            } catch (e) { /* swallow */ }
+                fetch(url, { method: 'POST', credentials: 'same-origin' })
+                    .then(function (r) {
+                        if (!r.ok) {
+                            console.warn('csti disclaimer ACK failed:', r.status, r.statusText);
+                        }
+                    })
+                    .catch(function (e) {
+                        console.warn('csti disclaimer ACK error:', e);
+                    });
+            } catch (e) {
+                console.warn('csti disclaimer ACK threw:', e);
+            }
         }
         close();
     });

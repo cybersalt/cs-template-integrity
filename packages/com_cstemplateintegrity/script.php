@@ -10,9 +10,11 @@ declare(strict_types=1);
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Factory;
 use Joomla\CMS\Installer\InstallerAdapter;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Log\Log;
+use Joomla\Database\DatabaseInterface;
 
 final class Com_CstemplateintegrityInstallerScript
 {
@@ -52,12 +54,47 @@ final class Com_CstemplateintegrityInstallerScript
             return true;
         }
 
+        // Idempotent schema upgrades. install.mysql.utf8.sql carries
+        // the current schema for fresh installs; for existing rows,
+        // adding columns has to happen here so we don't depend on the
+        // version-comparison-driven <schemas> path running.
+        try {
+            $this->ensureSchemaUpToDate();
+        } catch (\Throwable $e) {
+            Log::add('cstemplateintegrity schema upgrade failed: ' . $e->getMessage(), Log::WARNING, 'jerror');
+        }
+
         try {
             $this->showPostInstallMessage($type);
         } catch (\Throwable $e) {
             // Never block install on a postflight UI failure.
         }
         return true;
+    }
+
+    /**
+     * Add columns we need that older installs are missing. Each
+     * upgrade step is guarded by a "does the column already exist?"
+     * check, so this is safe to run on every postflight regardless
+     * of which version we're upgrading from.
+     */
+    private function ensureSchemaUpToDate(): void
+    {
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+
+        // 1.0.5 (chat-with-Claude): #__cstemplateintegrity_sessions.messages
+        $sessionsTable = $db->replacePrefix('#__cstemplateintegrity_sessions');
+        $db->setQuery(
+            'SHOW COLUMNS FROM ' . $db->quoteName($sessionsTable) . ' LIKE ' . $db->quote('messages')
+        );
+        if ($db->loadResult() === null) {
+            $db->setQuery(
+                'ALTER TABLE ' . $db->quoteName($sessionsTable)
+                . ' ADD COLUMN ' . $db->quoteName('messages') . ' LONGTEXT NULL'
+                . ' AFTER ' . $db->quoteName('report_markdown')
+            );
+            $db->execute();
+        }
     }
 
     public function uninstall(InstallerAdapter $adapter): bool

@@ -12,11 +12,16 @@ namespace Cybersalt\Component\Cstemplateintegrity\Administrator\View\Dashboard;
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\AnthropicClient;
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\ScanRunnerHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\SessionsHelper;
+use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\GenericDataException;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Session\Session;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 use Joomla\CMS\Uri\Uri;
 
@@ -33,6 +38,14 @@ final class HtmlView extends BaseHtmlView
     public string $fixPrompt = '';
 
     public string $componentVersion = '';
+
+    public bool $hasApiKey = false;
+
+    public string $apiKeyFingerprint = '';
+
+    public string $testConnectionUrl = '';
+
+    public string $autoScanMaxOverrides = '';
 
     /** @var list<\stdClass> */
     public array $recentSessions = [];
@@ -51,6 +64,23 @@ final class HtmlView extends BaseHtmlView
         $this->claudePrompt      = $this->buildClaudePrompt();
         $this->fixPrompt         = $this->buildFixPrompt();
         $this->componentVersion  = $this->resolveComponentVersion();
+
+        $rawKey = (string) ComponentHelper::getParams('com_cstemplateintegrity')->get('anthropic_api_key', '');
+        $this->hasApiKey = trim($rawKey) !== '';
+        if ($this->hasApiKey) {
+            try {
+                $this->apiKeyFingerprint = (new AnthropicClient($rawKey))->keyFingerprint();
+            } catch (\Throwable $e) {
+                $this->apiKeyFingerprint = '(could not fingerprint: ' . $e->getMessage() . ')';
+            }
+        }
+
+        $this->testConnectionUrl    = Route::_(
+            'index.php?option=com_cstemplateintegrity&task=display.testApiConnection&' . Session::getFormToken() . '=1',
+            false
+        );
+        $this->autoScanMaxOverrides = (string) ScanRunnerHelper::MAX_OVERRIDES_PER_RUN;
+
         $this->recentSessions    = SessionsHelper::listRecent(5);
 
         HTMLHelper::_('stylesheet', 'com_cstemplateintegrity/dashboard.css', ['relative' => true, 'version' => 'auto']);
@@ -70,6 +100,11 @@ final class HtmlView extends BaseHtmlView
     private function addToolbar(): void
     {
         ToolbarHelper::title(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_TITLE'), 'check-circle');
+        // Wires up Joomla's standard Options dialog, populated from
+        // admin/config.xml. Surfaces the Anthropic API key field
+        // (and the component-permissions tab) without us having to
+        // build a settings view from scratch.
+        ToolbarHelper::preferences('com_cstemplateintegrity');
     }
 
     /**

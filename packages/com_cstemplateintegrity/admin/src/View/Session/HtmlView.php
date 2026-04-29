@@ -14,6 +14,7 @@ defined('_JEXEC') or die;
 
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\ActionsHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\SessionsHelper;
+use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
@@ -36,6 +37,13 @@ final class HtmlView extends BaseHtmlView
 
     public string $downloadUrl = '';
 
+    public string $continueAction = '';
+
+    public bool $hasApiKey = false;
+
+    /** @var array<int, array{role: string, content: mixed}> */
+    public array $messages = [];
+
     public function display($tpl = null): void
     {
         $id = (int) Factory::getApplication()->getInput()->getInt('id', 0);
@@ -48,8 +56,11 @@ final class HtmlView extends BaseHtmlView
             throw new GenericDataException(Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_NOT_FOUND'), 404);
         }
 
-        $this->actions     = ActionsHelper::listForSession($id);
-        $this->downloadUrl = Route::_('index.php?option=com_cstemplateintegrity&task=session.download&id=' . $id . '&' . Session::getFormToken() . '=1', false);
+        $this->actions        = ActionsHelper::listForSession($id);
+        $this->downloadUrl    = Route::_('index.php?option=com_cstemplateintegrity&task=session.download&id=' . $id . '&' . Session::getFormToken() . '=1', false);
+        $this->continueAction = Route::_('index.php?option=com_cstemplateintegrity', false);
+        $this->hasApiKey      = trim((string) ComponentHelper::getParams('com_cstemplateintegrity')->get('anthropic_api_key', '')) !== '';
+        $this->messages       = SessionsHelper::getMessages($this->session);
 
         // Back-button destination depends on where the user came from.
         // Pages that link to a session pass &from=<view> in the URL;

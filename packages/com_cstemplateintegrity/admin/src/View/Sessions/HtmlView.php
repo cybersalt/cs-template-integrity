@@ -33,6 +33,13 @@ final class HtmlView extends BaseHtmlView
     {
         ToolbarHelper::title(Text::_('COM_CSTEMPLATEINTEGRITY_SESSIONS_TITLE'), 'list');
         ToolbarHelper::addNew('sessionform.add', Text::_('COM_CSTEMPLATEINTEGRITY_SESSIONS_NEW'));
+        ToolbarHelper::custom(
+            'sessions.downloadSelected',
+            'download',
+            '',
+            Text::_('COM_CSTEMPLATEINTEGRITY_SESSIONS_DOWNLOAD_SELECTED'),
+            true   // requires at least one row to be checked
+        );
         ToolbarHelper::deleteList('', 'sessions.delete', 'JTOOLBAR_DELETE');
     }
 }

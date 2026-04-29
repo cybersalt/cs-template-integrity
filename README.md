@@ -19,7 +19,7 @@ Once installed, future versions show up under **System → Manage → Update** i
 
 Joomla's native "X Changes found" badge in Template Manager tells you that an override file's core ancestor has changed after a core update. It doesn't tell you whether anything bad happened — and after every Joomla point release, every template with overrides lights up at once. Signal-to-noise is zero when a site owner actually needs to know whether their site is compromised.
 
-This extension is template-literate. It surfaces the override tracker via a Joomla Web Services API, then a single Claude prompt does the work:
+This extension is template-literate. It pairs your site with Claude to do the work:
 
 1. **List** every flagged override on the site.
 2. **Fetch** both sides of each one — the override file and the stock core file it's shadowing.
@@ -28,18 +28,24 @@ This extension is template-literate. It surfaces the override tracker via a Joom
 5. **Apply patches** in place for findings the owner confirms — auto-backed-up, fully reversible from the admin.
 6. **Mark the rest as checked** so Joomla's "Changes found" badges go away for everything that's been reviewed.
 
-The whole loop runs in a single Claude conversation. Site owners don't see code, don't FTP anything, don't paste a second prompt unless they're picking up a previous review in a fresh chat.
+**Two ways to run it.** The manual workflow ships with the extension since v1.0: copy a prompt from the dashboard, paste into Claude, Claude calls back to the site's Web Services API to read overrides and apply fixes. **v2.0 added the automated workflow**: save your Anthropic API key in Options, click *Run automated scan*, and the extension drives the whole review server-side — no copy-paste, no second window. Once Claude has produced the report, a chat box on the session detail view lets you ask for actions (*"fix #1 and #3, dismiss the cosmetic ones"*) and Claude applies them via tool calls without you leaving the Joomla admin.
 
 ---
 
-## What ships in v1.0
+## What ships in v2.0
 
 | Extension | Role |
 |---|---|
-| `com_cstemplateintegrity` | Admin component — dashboard with copy-paste prompts, sessions log, action log, file backups (with restore), Web Services API endpoints |
+| `com_cstemplateintegrity` | Admin component — dashboard, sessions log, action log, file backups (with restore), Diagnostics modal, Run automated scan, chat-with-Claude on the session detail view, Options dialog (Anthropic API key), Web Services API endpoints |
 | `plg_webservices_cstemplateintegrity` | Registers the `/api/index.php/v1/cstemplateintegrity/...` routes for the component. Auto-enabled by the package installer. |
 
 Shipped together as `pkg_cstemplateintegrity`.
+
+### Two workflows
+
+**Manual (no API key required, no extra cost beyond your Claude subscription):** Dashboard → Copy scan prompt → paste into claude.ai or Claude Code → Claude calls back to the Joomla Web Services API using your Joomla API token → produces a report → asks what to fix → applies fixes back through the API.
+
+**Automated (requires Anthropic API key — pay-per-token):** Options → save Anthropic API key → Dashboard → Run automated scan. Server walks the override tracker, calls Anthropic, saves the report as a session. From the session view, chat box lets you ask Claude to apply fixes / dismiss findings — Claude calls server-side tool functions, you watch each turn render as a chat bubble. Auto-backups still apply; everything is reversible from File backups.
 
 ### API endpoints
 

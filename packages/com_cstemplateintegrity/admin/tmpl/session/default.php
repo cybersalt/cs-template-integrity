@@ -71,6 +71,117 @@ $session = $this->session;
                     <?php endif; ?>
                 </div>
             </div>
+
+            <?php
+            // Chat-with-Claude card. Visible iff the user has saved an API
+            // key. Renders any conversation turns BEYOND the original scan
+            // (we already showed the scan output above as the report) and
+            // gives the user a textarea to add the next turn.
+            //
+            // Skip the first 2 messages (the seeded scan prompt + assistant
+            // report) so they don't duplicate the report block above. For
+            // sessions that have NO seeded conversation (paste-in sessions
+            // or older auto-scan sessions before the messages column
+            // existed), render every available message.
+            $allMessages    = $this->messages;
+            $messagesToShow = (count($allMessages) > 2) ? array_slice($allMessages, 2) : [];
+            ?>
+            <div class="card mb-3 border-info">
+                <div class="card-body">
+                    <h3 class="card-title">
+                        <span class="icon-comments" aria-hidden="true"></span>
+                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_TITLE'); ?>
+                    </h3>
+
+                    <?php if (!$this->hasApiKey) : ?>
+                        <p class="text-body-secondary mb-0"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_NOKEY'); ?></p>
+                    <?php else : ?>
+                        <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_INTRO'); ?></p>
+
+                        <?php if (!empty($messagesToShow)) : ?>
+                            <div class="csti-chat-history">
+                                <?php foreach ($messagesToShow as $msg) :
+                                    $role    = (string) ($msg['role'] ?? '');
+                                    $content = $msg['content'] ?? '';
+
+                                    // Tool-result blocks (sent as role=user with array content) — render
+                                    // as small footnotes rather than full bubbles.
+                                    if ($role === 'user' && is_array($content)) {
+                                        $isToolResults = false;
+                                        foreach ($content as $b) {
+                                            if (is_array($b) && ($b['type'] ?? '') === 'tool_result') {
+                                                $isToolResults = true;
+                                                break;
+                                            }
+                                        }
+                                        if ($isToolResults) {
+                                            // Skip — we surface tool_use names from the assistant
+                                            // turn instead, which is more useful for the user.
+                                            continue;
+                                        }
+                                    }
+
+                                    // Pull text + any tool_use block names from the content.
+                                    $text     = '';
+                                    $toolUses = [];
+                                    if (is_string($content)) {
+                                        $text = $content;
+                                    } elseif (is_array($content)) {
+                                        foreach ($content as $b) {
+                                            if (is_array($b) && ($b['type'] ?? '') === 'text') {
+                                                $text .= (string) ($b['text'] ?? '');
+                                            } elseif (is_array($b) && ($b['type'] ?? '') === 'tool_use') {
+                                                $toolUses[] = (string) ($b['name'] ?? '?');
+                                            }
+                                        }
+                                    }
+
+                                    if ($text === '' && empty($toolUses)) {
+                                        continue;
+                                    }
+
+                                    $bubbleClass = $role === 'user' ? 'is-user' : 'is-assistant';
+                                ?>
+                                    <div class="csti-chat-msg <?php echo $bubbleClass; ?>">
+                                        <?php if ($text !== '') : ?>
+                                            <div><?php echo nl2br($this->escape($text)); ?></div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($toolUses)) : ?>
+                                            <div class="csti-chat-tools">
+                                                <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_CALLED'); ?></strong>
+                                                <?php foreach ($toolUses as $t) : ?>
+                                                    <code><?php echo $this->escape($t); ?>()</code>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <form action="<?php echo $this->escape($this->continueAction); ?>"
+                              method="post"
+                              data-csti-chat
+                              data-loading-title="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_LOADING_TITLE')); ?>"
+                              data-loading-body="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_LOADING_BODY')); ?>">
+                            <?php echo HTMLHelper::_('form.token'); ?>
+                            <input type="hidden" name="task" value="session.continueChat">
+                            <input type="hidden" name="id"   value="<?php echo (int) $session->id; ?>">
+                            <div class="mb-2">
+                                <textarea name="message"
+                                          class="form-control"
+                                          rows="3"
+                                          required
+                                          placeholder="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_PLACEHOLDER')); ?>"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="icon-share" aria-hidden="true"></span>
+                                <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_SEND'); ?>
+                            </button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
 
         <div class="col-lg-3">

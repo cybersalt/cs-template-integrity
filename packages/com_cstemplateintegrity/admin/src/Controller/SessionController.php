@@ -12,12 +12,15 @@ namespace Cybersalt\Component\Cstemplateintegrity\Administrator\Controller;
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\ConversationRunner;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\SessionsHelper;
 use Joomla\CMS\Application\CMSApplication;
+use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\Router\Route;
+use Throwable;
 
 final class SessionController extends BaseController
 {
@@ -64,5 +67,91 @@ final class SessionController extends BaseController
         $app->sendHeaders();
         echo $contents;
         $app->close();
+    }
+
+    /**
+     * Append the user's follow-up message to a session's conversation
+     * and run the Anthropic tool-use loop until Claude finishes.
+     * Saves the updated conversation back to the session row, then
+     * redirects back to the session view (so the new turns render).
+     */
+    public function continueChat(): void
+    {
+        $this->checkToken();
+        PermissionHelper::requireWrite();
+
+        /** @var CMSApplication $app */
+        $app  = $this->app;
+        $id   = (int) $app->getInput()->getInt('id', 0);
+        $msg  = trim((string) $app->getInput()->post->get('message', '', 'string'));
+        $back = Route::_('index.php?option=com_cstemplateintegrity&view=session&id=' . $id, false);
+
+        if ($id <= 0) {
+            $app->enqueueMessage(Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_BAD_ID'), 'error');
+            $this->setRedirect(Route::_('index.php?option=com_cstemplateintegrity&view=sessions', false));
+            return;
+        }
+
+        if ($msg === '') {
+            $app->enqueueMessage(Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_EMPTY'), 'warning');
+            $this->setRedirect($back);
+            return;
+        }
+
+        $session = SessionsHelper::find($id);
+        if ($session === null) {
+            $app->enqueueMessage(Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_NOT_FOUND'), 'error');
+            $this->setRedirect(Route::_('index.php?option=com_cstemplateintegrity&view=sessions', false));
+            return;
+        }
+
+        $params = ComponentHelper::getParams('com_cstemplateintegrity');
+        $apiKey = (string) $params->get('anthropic_api_key', '');
+        if (trim($apiKey) === '') {
+            $app->enqueueMessage(Text::_('COM_CSTEMPLATEINTEGRITY_RUN_SCAN_NO_KEY'), 'warning');
+            $this->setRedirect($back);
+            return;
+        }
+
+        $messages = SessionsHelper::getMessages($session);
+        if (empty($messages)) {
+            // Older sessions don't carry a stored conversation. Seed one
+            // from the existing report_markdown so the chat has something
+            // to anchor the system prompt against.
+            $messages = [
+                ['role' => 'user',      'content' => 'Initial scan report from this session.'],
+                ['role' => 'assistant', 'content' => (string) ($session->report_markdown ?? '')],
+            ];
+        } elseif (
+            isset($messages[0]['role'], $messages[0]['content'])
+            && $messages[0]['role'] === 'user'
+            && is_string($messages[0]['content'])
+            && strlen($messages[0]['content']) > 5000
+        ) {
+            // Sessions seeded by an older build of ScanRunnerHelper
+            // persisted the entire override-file dump (~60K input
+            // tokens) as the first user message. Resending that on
+            // every chat turn instantly trips Anthropic's
+            // 10K-tokens-per-minute rate limit. Replace with a short
+            // summary; Claude can re-fetch specific files via the
+            // get_override_file tool if a follow-up needs them.
+            $messages[0]['content'] = 'I asked you to review the flagged template overrides on my Joomla site. Your initial scan report is the next message. I may now ask you to apply fixes or dismiss findings — call tools (list_remaining_overrides, get_override_file, get_core_file, apply_fix, dismiss_override, dismiss_all) as needed.';
+        }
+
+        @set_time_limit(180);
+
+        try {
+            $result = ConversationRunner::continueConversation($apiKey, $messages, $msg, $id);
+            SessionsHelper::saveMessages($id, $result['messages']);
+
+            $app->enqueueMessage(Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_SUCCESS'), 'success');
+            $this->setRedirect($back);
+        } catch (Throwable $e) {
+            $app->enqueueMessage(
+                Text::sprintf('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_ERROR', $e->getMessage()),
+                'error'
+            );
+            $this->setRedirect($back);
+        }
     }
 }

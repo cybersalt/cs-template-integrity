@@ -2,6 +2,64 @@
     <h1>📋 Cybersalt Template Integrity — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v2.0.0</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <p>The whole automated-review-with-Claude path landed. v1.x exposed override data via REST and let your Claude session call back to apply fixes. v2.0 closes that loop: save your Anthropic API key, click <em>Run automated scan</em>, and the extension drives the entire review server-side &mdash; fetches every override, calls Claude, gets back a markdown report, saves it as a session. From the session view you can chat with Claude inline and have it apply fixes, dismiss findings, or clear the tracker.</p>
+
+    <h3><span class="section-icon">🚀</span>New</h3>
+    <ul>
+        <li><strong>Run automated scan</strong> &mdash; one click on the dashboard drives the entire override review server-side using your saved Anthropic API key. No copy-paste prompt required. Caps at 60 overrides per call to stay within Anthropic's per-minute input-token budget.</li>
+        <li><strong>Chat with Claude on the session detail view.</strong> Submit a follow-up like <em>&ldquo;fix #1 and #3, dismiss the cosmetic ones&rdquo;</em> and the server runs an Anthropic tool-use loop with six tools wired to existing helpers (<code>apply_fix</code>, <code>dismiss_override</code>, <code>dismiss_all</code>, etc.). Conversation persists turn-by-turn in a new <code>messages</code> column. Auto-backups still apply; everything Claude does is reversible.</li>
+        <li><strong>Component Options dialog</strong> on the dashboard toolbar &mdash; one field for now (Anthropic API key), with the standard Joomla Permissions tab.</li>
+        <li><strong>Diagnostics modal</strong> with API-key fingerprint, system info, and a one-click <em>Run test</em> button that fires a tiny <em>say PONG</em> request to verify the saved key works.</li>
+        <li><strong>Loading-overlay system</strong> with spinner and elapsed-seconds counter. Locks the page during the 30&ndash;90s synchronous Anthropic calls so users don't navigate away or double-submit. Tracks Atum dark mode automatically.</li>
+        <li><strong>First-run "Before you start" disclaimer modal</strong> &mdash; per-admin acknowledgment, persists in the action log, surfaces backup advice and Tim's contact email.</li>
+        <li><strong>Sessions bulk download</strong> &mdash; tick rows in the session list and grab a single zip with one Markdown file per selected session.</li>
+        <li><strong>Plain-English file-purpose descriptions</strong> on every backup row.</li>
+    </ul>
+
+    <h3><span class="section-icon">🔧</span>Improvements</h3>
+    <ul>
+        <li><strong>Dashboard layout reworked</strong> &mdash; quick-nav button row at the top, Reset overrides moved up from the bottom, both prompt cards now lead with an audience-naming alert banner.</li>
+        <li><strong>Prompt boxes restyled</strong> with explicit dark-mode rules (<code>#0d1117</code> background, GitHub-dark style), no-wrap so long lines scroll horizontally instead of leaving ragged hanging breaks, and a thicker border + slight inset shadow.</li>
+        <li><strong>Disclaimer modal CSS</strong> now uses the dual <code>[data-bs-theme="dark"]</code> / <code>[data-color-scheme="dark"]</code> selector pattern plus a <code>prefers-color-scheme: dark</code> fallback &mdash; reads correctly across every Joomla 5/6 admin template's flavor of dark mode.</li>
+        <li><strong>Dashboard version display</strong> reads from the on-disk component manifest at render time. No more hardcoded version strings going stale.</li>
+        <li><strong>Top-level README rewritten</strong> with a prominent <code>/releases/latest</code> download link at the top.</li>
+    </ul>
+
+    <h3><span class="section-icon">📦</span>Build</h3>
+    <ul>
+        <li><strong>UTF-8 BOM detection</strong> in <code>build-package.ps1</code>. Fails the build with a list of offending files if any <code>.php</code>/<code>.xml</code>/<code>.ini</code> under <code>packages/</code> has a BOM. Cannot ship a v1.0.2-style BOM regression again without going out of our way.</li>
+        <li><strong>Schema migration in postflight</strong> &mdash; idempotent <code>ALTER TABLE ADD COLUMN messages LONGTEXT</code> runs on every install/update, gated by a column-exists check.</li>
+        <li><strong>Joomla 5 + Joomla 6 native</strong> declared explicitly via <code>&lt;targetplatform name="joomla" version="5\.[0-9]+|6\.[0-9]+" /&gt;</code> in every manifest.</li>
+    </ul>
+
+    <h3><span class="section-icon">🐛</span>Fixes</h3>
+    <ul>
+        <li><strong>Disclaimer "don't show again"</strong> was failing silently &mdash; inline JS posted the form token via URL query string, but <code>$this-&gt;checkToken()</code> defaults to checking <code>$_POST</code>. Switched to <code>$this-&gt;checkToken('get')</code>.</li>
+        <li><strong>Anthropic API key was being truncated to 99 chars at save time</strong>. Joomla's <code>password</code> field type was the culprit; switched to <code>type="text"</code> with explicit <code>maxlength="500"</code> and <code>filter="raw"</code>.</li>
+        <li><strong>HTTP 400 "Input should be a valid dictionary"</strong> when chatting with Claude. PHP's <code>json_decode($body, true)</code> converts JSON <code>{}</code> to empty PHP arrays; re-encoding produces <code>[]</code>, but Anthropic requires <code>tool_use.input</code> to be an object. <code>ConversationRunner::fixEmptyToolInputs()</code> now walks every assistant turn and replaces empty arrays with <code>stdClass</code>.</li>
+        <li><strong>Anthropic 10K-tokens-per-minute rate limit</strong> blew on chat continue because persisted scan messages carried the full ~60K-token override-file dump. Replaced with a short summary + tool-fetch-on-demand model.</li>
+        <li><strong>HTML entities in language strings</strong> (<code>&amp;mdash;</code>, <code>&amp;ldquo;</code>, <code>&amp;hellip;</code>) replaced with literal UTF-8 characters; <code>htmlspecialchars()</code>-escaped strings were displaying <code>&amp;mdash;</code> literally.</li>
+        <li><strong>Dashboard prompt</strong> now lists write endpoints in the upfront <em>Endpoints</em> block with "THIS IS HOW YOU APPLY A PATCH" annotations &mdash; external Claude sessions had been reading the GET-only list and concluding the API was read-only.</li>
+        <li>Postflight no longer renders the install-success card on uninstall.</li>
+    </ul>
+
+    <h3><span class="section-icon">🔍</span>Security</h3>
+    <ul>
+        <li>Every new write endpoint (<code>display.runScan</code>, <code>display.testApiConnection</code>, <code>session.continueChat</code>) is CSRF + ACL gated.</li>
+        <li>Tool-use fixes from chat run through the same path-safety guards as direct apply-fix calls &mdash; separator-anchored containment, PHP-extension whitelist, <code>opcache_invalidate()</code> after every PHP write.</li>
+        <li>Anthropic API key never leaves the server. Read from <code>#__extensions.params</code> per call, sent as <code>x-api-key</code> header, discarded.</li>
+    </ul>
+
+    <h3><span class="section-icon">⬆️</span>Migration from 1.x</h3>
+    <ul>
+        <li>1.0.x &rarr; 2.0.0 is an in-place upgrade. Schema migration is idempotent.</li>
+        <li>Sessions saved by the v1.0.4 build of the auto-scan had an oversized first user message; the first chat against one of those auto-rewrites it to a short summary on the fly.</li>
+    </ul>
+
+    <h2>
         <span class="version-badge">v1.0.4</span>
         <span class="date">2026-04-29</span>
     </h2>
