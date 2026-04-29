@@ -24,7 +24,8 @@
 
         <field
             name="anthropic_api_key"
-            type="text"
+            type="apikey"
+            addfieldprefix="Cybersalt\Component\Cstemplateintegrity\Administrator\Field"
             label="COM_CSTEMPLATEINTEGRITY_CONFIG_ANTHROPIC_API_KEY_LABEL"
             description="COM_CSTEMPLATEINTEGRITY_CONFIG_ANTHROPIC_API_KEY_DESC"
             default=""

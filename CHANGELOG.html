@@ -2,6 +2,16 @@
     <h1>📋 Cybersalt Template Integrity — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v2.0.2</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <p>Closes the v2.0.0 audit's I-9 trade-off (Anthropic API key visible on screen in component Options).</p>
+    <h3><span class="section-icon">🔍</span>Security</h3>
+    <ul>
+        <li><strong>Anthropic API key is now blurred by default</strong> in the Options form, with a <em>Reveal</em> toggle to unmask. Custom form field <code>ApikeyField</code> extends Joomla's standard <code>TextField</code>, applies a CSS <code>filter: blur(5px)</code> to the input, and adds a Bootstrap input-group toggle button. Focusing the field also temporarily reveals it — useful for verifying a paste without committing to a sticky reveal. Underlying input stays <code>type="text"</code> so the key still round-trips at full length (the <code>password</code>-type truncation that bit us in v1.x doesn't come back). Avoids accidental shoulder-surfing exposure during screen shares, livestreams, or pair-debugging.</li>
+    </ul>
+
+    <h2>
         <span class="version-badge">v2.0.1</span>
         <span class="date">2026-04-29</span>
     </h2>

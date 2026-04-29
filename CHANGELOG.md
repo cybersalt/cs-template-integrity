@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.2] — 2026-04-29
+
+Closes the v2.0.0 audit's I-9 trade-off (Anthropic API key visible on screen in component Options).
+
+### 🔍 Security
+
+- **Anthropic API key field is now blurred by default** in the Options form, with a *Reveal* toggle to unmask. Custom Joomla form field (`Cybersalt\Component\Cstemplateintegrity\Administrator\Field\ApikeyField`) extends the standard text field, applies a CSS `filter: blur(5px)` to the input, and adds a Bootstrap input-group toggle button. Focusing the field also temporarily reveals it, so an admin can click in to visually verify what they pasted without committing to a sticky reveal. The underlying input stays `type="text"` (which avoided the `type="password"` truncation that bit us in v1.x), so the key still round-trips at full length. Avoids accidental shoulder-surfing exposure during screen shares, livestreams, or pair-debugging sessions.
+
+### Migration
+
+In-place upgrade from 2.0.x. No schema or data changes.
+
 ## [2.0.1] — 2026-04-29
 
 Closes the three findings from the v2.0.0 security review. No new features; tightening of existing controls.
