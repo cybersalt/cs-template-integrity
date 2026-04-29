@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] — 2026-04-29
+
+### 🚀 New
+
+- **Choose your Claude model** for the automated workflow. Two new dropdowns under *Components → CS Template Integrity → Options → AI provider*:
+  - **Scan model** — Claude model used for the one-shot *Run automated scan*. Default Sonnet 4.6 (good balance). Haiku 4.5 cuts the cost roughly 3× with no real quality loss for the alert/review/info classification job. Opus 4.7 is overkill for routine scans but useful if you want extra rigor on a security-sensitive site.
+  - **Chat model** — Claude model for the chat-with-Claude tool-use loop on the session detail page. Default Sonnet 4.6. Tool use is harder than classification; Sonnet is the recommended floor here even if you set the scan model to Haiku — tool calls Claude gets wrong cost more than the model price difference.
+- All three models (`claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-7`) selectable per slot. Both default to Sonnet.
+- A clear **cost-warning note** below the model dropdowns gives rough per-scan dollar estimates and a link to Anthropic's pricing page and usage console, so users new to the API have a concrete number to anchor on.
+
+### 🔧 Improvements
+
+- *Diagnostics → Run test* now uses Haiku unconditionally (cheapest model), regardless of what's configured for scan or chat. The test is a 16-token round-trip purely to verify the saved key authenticates and the network path works — no reason to burn Sonnet/Opus tokens on a verify-only call.
+
+### 🔍 Security
+
+- Model-id values from `#__extensions.params` are validated against the three-entry whitelist before being passed to the Anthropic API. If a future config-form bypass somehow stored an unexpected model id, calls fall through to Sonnet rather than echoing arbitrary user-controlled strings into the request payload.
+
+### Migration
+
+In-place upgrade from 2.0.x. No schema changes. Existing installs default to Sonnet for both scan and chat (matches v2.0.x behavior); change either dropdown in Options to switch.
+
 ## [2.0.2] — 2026-04-29
 
 Closes the v2.0.0 audit's I-9 trade-off (Anthropic API key visible on screen in component Options).

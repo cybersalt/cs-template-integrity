@@ -2,6 +2,30 @@
     <h1>📋 Cybersalt Template Integrity — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v2.1.0</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <h3><span class="section-icon">🚀</span>New</h3>
+    <ul>
+        <li><strong>Choose your Claude model</strong> for the automated workflow. Two new dropdowns under <em>Components &rarr; CS Template Integrity &rarr; Options &rarr; AI provider</em>:
+            <ul>
+                <li><strong>Scan model</strong> &mdash; for the one-shot <em>Run automated scan</em>. Default Sonnet 4.6. Haiku cuts cost ~3&times; with no real quality loss on classification; Opus is overkill for routine scans but useful for security-sensitive sites.</li>
+                <li><strong>Chat model</strong> &mdash; for the tool-use loop. Default Sonnet 4.6 &mdash; tool use is harder than classification, so even if you go Haiku for scan, stay on Sonnet here.</li>
+            </ul>
+        </li>
+        <li>All three models (Haiku 4.5, Sonnet 4.6, Opus 4.7) selectable per slot.</li>
+        <li>Cost-warning note below the dropdowns with rough per-scan dollar estimates and links to Anthropic's pricing + usage console.</li>
+    </ul>
+    <h3><span class="section-icon">🔧</span>Improvements</h3>
+    <ul>
+        <li><em>Diagnostics &rarr; Run test</em> uses Haiku unconditionally now (cheapest model) regardless of scan/chat settings &mdash; no reason to burn Sonnet/Opus tokens on a 16-token verify call.</li>
+    </ul>
+    <h3><span class="section-icon">🔍</span>Security</h3>
+    <ul>
+        <li>Model-id values from <code>#__extensions.params</code> are validated against the three-entry whitelist before being passed to the Anthropic API. If a future config-form bypass somehow stored an unexpected model id, calls fall through to Sonnet rather than echoing arbitrary user-controlled strings into the request payload.</li>
+    </ul>
+
+    <h2>
         <span class="version-badge">v2.0.2</span>
         <span class="date">2026-04-29</span>
     </h2>

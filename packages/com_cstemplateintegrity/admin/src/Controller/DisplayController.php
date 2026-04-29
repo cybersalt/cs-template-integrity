@@ -90,6 +90,22 @@ final class DisplayController extends BaseController
     }
 
     /**
+     * Validate a model id from component params against the small
+     * whitelist we expose in config.xml. Defends against a future
+     * config form bypass — if anything other than our three known
+     * model ids comes back from params, fall through to Sonnet.
+     */
+    private static function resolveModel(string $candidate): string
+    {
+        $allowed = [
+            'claude-haiku-4-5-20251001',
+            'claude-sonnet-4-6',
+            'claude-opus-4-7',
+        ];
+        return in_array($candidate, $allowed, true) ? $candidate : 'claude-sonnet-4-6';
+    }
+
+    /**
      * Run an automated scan against the saved Anthropic API key.
      * Walks the override tracker, builds one consolidated prompt,
      * sends it to Claude, saves the resulting markdown report as a
@@ -126,8 +142,10 @@ final class DisplayController extends BaseController
         // override list. Without this PHP would 504 mid-call.
         @set_time_limit(180);
 
+        $scanModel = self::resolveModel($params->get('scan_model', 'claude-sonnet-4-6'));
+
         try {
-            $result   = ScanRunnerHelper::run($apiKey);
+            $result   = ScanRunnerHelper::run($apiKey, $scanModel);
             $markdown = $result['markdown'];
 
             $summary = sprintf(
@@ -205,7 +223,11 @@ final class DisplayController extends BaseController
         }
 
         try {
-            $client = new AnthropicClient($apiKey);
+            // Always use Haiku for the test — cheapest possible
+            // round-trip just to verify the key authenticates and
+            // the network path works. No need to burn Sonnet/Opus
+            // tokens on a verify-only call.
+            $client = new AnthropicClient($apiKey, 'claude-haiku-4-5-20251001');
             $start  = microtime(true);
 
             // Smallest possible test prompt — explicit max_tokens cap

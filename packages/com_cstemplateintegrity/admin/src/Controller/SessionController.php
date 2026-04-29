@@ -140,8 +140,10 @@ final class SessionController extends BaseController
 
         @set_time_limit(180);
 
+        $chatModel = self::resolveModel($params->get('chat_model', 'claude-sonnet-4-6'));
+
         try {
-            $result = ConversationRunner::continueConversation($apiKey, $messages, $msg, $id);
+            $result = ConversationRunner::continueConversation($apiKey, $messages, $msg, $id, $chatModel);
             SessionsHelper::saveMessages($id, $result['messages']);
 
             $app->enqueueMessage(Text::_('COM_CSTEMPLATEINTEGRITY_SESSION_CHAT_SUCCESS'), 'success');
@@ -153,5 +155,21 @@ final class SessionController extends BaseController
             );
             $this->setRedirect($back);
         }
+    }
+
+    /**
+     * Whitelist a model id from component params against the same set
+     * config.xml exposes. Defends against a config-form bypass — if
+     * anything other than our three known model ids comes back from
+     * params, fall through to Sonnet.
+     */
+    private static function resolveModel(string $candidate): string
+    {
+        $allowed = [
+            'claude-haiku-4-5-20251001',
+            'claude-sonnet-4-6',
+            'claude-opus-4-7',
+        ];
+        return in_array($candidate, $allowed, true) ? $candidate : 'claude-sonnet-4-6';
     }
 }

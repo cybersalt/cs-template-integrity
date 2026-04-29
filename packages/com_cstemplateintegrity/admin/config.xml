@@ -41,6 +41,36 @@
             class="alert alert-info"
             description="COM_CSTEMPLATEINTEGRITY_CONFIG_ANTHROPIC_API_KEY_NOTE" />
 
+        <field
+            name="scan_model"
+            type="list"
+            label="COM_CSTEMPLATEINTEGRITY_CONFIG_SCAN_MODEL_LABEL"
+            description="COM_CSTEMPLATEINTEGRITY_CONFIG_SCAN_MODEL_DESC"
+            default="claude-sonnet-4-6"
+            filter="cmd">
+            <option value="claude-haiku-4-5-20251001">COM_CSTEMPLATEINTEGRITY_CONFIG_MODEL_HAIKU</option>
+            <option value="claude-sonnet-4-6">COM_CSTEMPLATEINTEGRITY_CONFIG_MODEL_SONNET</option>
+            <option value="claude-opus-4-7">COM_CSTEMPLATEINTEGRITY_CONFIG_MODEL_OPUS</option>
+        </field>
+
+        <field
+            name="chat_model"
+            type="list"
+            label="COM_CSTEMPLATEINTEGRITY_CONFIG_CHAT_MODEL_LABEL"
+            description="COM_CSTEMPLATEINTEGRITY_CONFIG_CHAT_MODEL_DESC"
+            default="claude-sonnet-4-6"
+            filter="cmd">
+            <option value="claude-haiku-4-5-20251001">COM_CSTEMPLATEINTEGRITY_CONFIG_MODEL_HAIKU</option>
+            <option value="claude-sonnet-4-6">COM_CSTEMPLATEINTEGRITY_CONFIG_MODEL_SONNET</option>
+            <option value="claude-opus-4-7">COM_CSTEMPLATEINTEGRITY_CONFIG_MODEL_OPUS</option>
+        </field>
+
+        <field
+            name="model_cost_warning"
+            type="note"
+            class="alert alert-warning"
+            description="COM_CSTEMPLATEINTEGRITY_CONFIG_MODEL_COST_WARNING" />
+
     </fieldset>
 
     <fieldset
