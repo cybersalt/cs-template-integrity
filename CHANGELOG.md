@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] — 2026-04-29
+
+### Improvements
+
+- **Explicit Joomla 5 + Joomla 6 compatibility** declared in every manifest. All three (`com_cstemplateintegrity`, `plg_webservices_cstemplateintegrity`, `pkg_cstemplateintegrity`) now carry `<targetplatform name="joomla" version="5\.[0-9]+|6\.[0-9]+" />`. The code itself was already 5/6-native — services/provider.php DI containers, `ApiController` + `JsonapiView`, namespaced `Factory`/`DatabaseInterface`, zero `JFactory`/`JHtml`/`JLog`/`JLoader` legacy calls — but the manifests didn't say so out loud, which can show "version not compatible" warnings on Joomla 6 even when everything works.
+- **Joomla update server wired up.** Package manifest now declares `<updateservers>` pointing at `updates.xml` on the main branch and `<changelogurl>` pointing at `CHANGELOG.html`. Once a site has 1.0.1 installed, future releases will surface in **System → Manage → Update** automatically — no manual zip download from GitHub.
+- New `updates.xml` and `CHANGELOG.html` at the repo root, kept in sync with `CHANGELOG.md`. SHA256 checksum included on every release so Joomla doesn't show the "no checksum" warning.
+
+### Why a 1.0.1 so soon after 1.0.0
+
+The targetplatform + update-server metadata was the missing piece between "v1.0 ships" and "site admins can keep up to date in one click." 1.0.0 was the milestone; 1.0.1 is what makes 1.0+ deployable at scale.
+
 ## [1.0.0] — 2026-04-25
 
 First stable release. The core flow — *site owner pastes one prompt → Claude lists every flagged override on the site, classifies each one, writes a plain-English report, asks which to fix, applies the fixes the owner confirms, marks the rest as checked* — has been live-tested end-to-end on cybersalt.org and on a real client site (fairviewterracehoa.com) running Joomla 6.1 on a third-party template.

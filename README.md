@@ -57,12 +57,18 @@ Every endpoint is gated by ACL actions defined in `admin/access.xml` (`cstemplat
 
 ## Install
 
-1. Download `pkg_cstemplateintegrity_v1.0.0_*.zip` from [Releases](https://github.com/cybersalt/cs-template-integrity/releases).
+1. Download the latest `pkg_cstemplateintegrity_v*.zip` from [Releases](https://github.com/cybersalt/cs-template-integrity/releases).
 2. **Extensions → Manage → Install** in your Joomla admin, upload the zip.
 3. The package script auto-enables the Web Services plugin — no extra step.
 4. Open **Components → CS Template Integrity** for the dashboard, copy the prompt, and paste it into Claude.
 
-Requires Joomla 5.0+ and PHP 8.1+.
+Requires Joomla 5.0+ or Joomla 6.0+ (native to both), and PHP 8.1+.
+
+### Updates
+
+The package manifest registers a Joomla update server, so once 1.0.1 or later is installed, future releases show up under **System → Manage → Update** like any first-party Joomla extension. No need to re-download from GitHub each time. The updater verifies a SHA256 checksum on every download.
+
+If you're upgrading from a release earlier than 1.0.1, install the latest zip manually once — the update server kicks in from then on.
 
 ---
 

@@ -8,11 +8,18 @@
     <license>GNU General Public License version 2 or later</license>
     <authorEmail>support@cybersalt.com</authorEmail>
     <authorUrl>https://cybersalt.com</authorUrl>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <url>https://github.com/cybersalt/cs-template-integrity</url>
     <packager>Cybersalt</packager>
     <packagerurl>https://cybersalt.com</packagerurl>
     <description>PKG_CSTEMPLATEINTEGRITY_XML_DESCRIPTION</description>
+
+    <targetplatform name="joomla" version="5\.[0-9]+|6\.[0-9]+" />
+
+    <changelogurl>https://raw.githubusercontent.com/cybersalt/cs-template-integrity/main/CHANGELOG.html</changelogurl>
+    <updateservers>
+        <server type="extension" name="CS Template Integrity Updates">https://raw.githubusercontent.com/cybersalt/cs-template-integrity/main/updates.xml</server>
+    </updateservers>
 
     <scriptfile>script.php</scriptfile>
 

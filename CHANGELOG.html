@@ -1,0 +1,41 @@
+<div class="changelog-container">
+    <h1>📋 Cybersalt Template Integrity — Changelog</h1>
+
+    <h2>
+        <span class="version-badge">v1.0.1</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <h3><span class="section-icon">🔧</span>Improvements</h3>
+    <ul>
+        <li><strong>Joomla 5 + Joomla 6 native</strong>: every manifest (component, webservices plugin, package) now declares <code>&lt;targetplatform name="joomla" version="5\.[0-9]+|6\.[0-9]+" /&gt;</code> so the Joomla updater knows the extension is compatible with both. The code itself was already 5/6-native (services/provider.php DI, ApiController, JsonapiView, namespaced Factory/DatabaseInterface, no JFactory/JLog/JHtml legacy calls); this just makes it explicit to the installer.</li>
+        <li><strong>Joomla update server wired up</strong>: <code>&lt;updateservers&gt;</code> + <code>&lt;changelogurl&gt;</code> in the package manifest now point at <code>updates.xml</code> and <code>CHANGELOG.html</code> on the repo's main branch. Once 1.0.1 is installed, every future release will surface in <em>System → Manage → Update</em> automatically — no re-download from GitHub needed.</li>
+    </ul>
+
+    <h2>
+        <span class="version-badge">v1.0.0</span>
+        <span class="date">2026-04-25</span>
+    </h2>
+    <h3><span class="section-icon">🚀</span>First stable release</h3>
+    <p>Core loop — site owner pastes one prompt → Claude lists every flagged override on the site, classifies each one, writes a plain-English report, asks which to fix, applies the fixes the owner confirms, marks the rest as checked — has been live-tested end-to-end on a real client site running Joomla 6.1 on a third-party template.</p>
+    <h3><span class="section-icon">📦</span>What's in 1.0</h3>
+    <ul>
+        <li><strong>com_cstemplateintegrity</strong> (admin) — dashboard, sessions log, action log, file backups with restore, gated by ACL actions in <code>admin/access.xml</code>.</li>
+        <li><strong>plg_webservices_cstemplateintegrity</strong> — registers the <code>/api/index.php/v1/cstemplateintegrity/*</code> routes; auto-enabled by the package installer.</li>
+        <li><strong>API endpoints</strong>: GET <code>/overrides</code>, <code>/overrides/{id}/override-file</code>, <code>/overrides/{id}/core-file</code>, <code>/sessions/{id}</code>; POST <code>/overrides/{id}/apply-fix</code>, <code>/dismiss</code>, <code>/overrides/dismiss-all</code>, <code>/sessions</code>, <code>/backups/{id}/restore</code>.</li>
+        <li><strong>Auto-backup before every file write</strong> — every patch reversible from the admin UI or via the API.</li>
+        <li><strong>Same-chat conversational flow</strong> as the default; cross-session fix prompt as the rare-case helper.</li>
+        <li><strong>Plain-English descriptions</strong> on backup rows so non-technical users can tell at a glance what each file is.</li>
+        <li><strong>Unknown-finding catch-all</strong> — if a finding doesn't fit "code change" or "configuration question", Claude stops and explains in plain English instead of attempting a partial fix.</li>
+        <li><strong>claude.ai sandbox guidance</strong> built into the dashboard prompt (Settings → Capabilities → Code execution → Network access; close current chat and start a new one to pick up the updated allowlist).</li>
+    </ul>
+    <h3><span class="section-icon">🔍</span>Security baseline</h3>
+    <ul>
+        <li><code>admin/access.xml</code> with <code>cstemplateintegrity.view</code> / <code>.write</code> actions — every endpoint, admin and API, gated.</li>
+        <li>Separator-anchored path containment (no <code>strpos</code> prefix-collision bypass).</li>
+        <li>PHP-extension write whitelist — <code>.php</code> writes only allowed under <code>templates/&lt;tpl&gt;/html/</code>.</li>
+        <li><code>opcache_invalidate()</code> after every PHP write so patches take effect immediately.</li>
+        <li>GET-form CSRF tokens on download links; CRLF/header-injection sanitization on <code>Content-Disposition</code>.</li>
+        <li><code>htmlspecialchars()</code> on every <code>Text::_()</code> rendered into the installer frame.</li>
+        <li>No free-form <code>file_path</code> accepted in any request body — all paths derived server-side from <code>#__template_overrides</code> rows.</li>
+    </ul>
+</div>
