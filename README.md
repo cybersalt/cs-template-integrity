@@ -2,7 +2,16 @@
 
 A Joomla 5/6 integrity monitor that pairs with Claude to review every flagged template override on your site, and apply the patches you confirm — auto-backed-up, reversible, no SFTP needed.
 
-> **Status:** v1.0.0 — first stable release, 2026-04-25.
+## 📥 Download
+
+**[➡ Download the latest release (always points at the newest version)](https://github.com/cybersalt/cs-template-integrity/releases/latest)**
+
+Or grab a specific version directly:
+
+- Always-latest zip: <https://github.com/cybersalt/cs-template-integrity/releases/latest>
+- Browse all versions: <https://github.com/cybersalt/cs-template-integrity/releases>
+
+Once installed, future versions show up under **System → Manage → Update** in your Joomla admin — no need to re-download.
 
 ---
 
