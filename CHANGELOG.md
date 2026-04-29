@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2] — 2026-04-29
+
+### Added
+
+- **First-run "before you start" disclaimer modal.** When a user opens any view of the extension for the first time, they get a modal that:
+  - Tells them to make a full-site backup before applying any changes (and recommends Akeeba Backup or their host's backup tool).
+  - Explains in one paragraph that the extension uses Claude (an AI) to review every flagged override and apply the patches the user confirms — and that auto-backups make individual patches reversible.
+  - Reminds them AI can make mistakes; always review proposals before saying "yes, apply" and test after.
+  - Offers `tim@cybersalt.com` for users who aren't comfortable doing the review themselves.
+  - Has a "Don't show this again" checkbox; when ticked and the user clicks "I understand — continue", the dismissal is persisted server-side per-user.
+- The dismissal state is stored as a row in the existing `#__cstemplateintegrity_actions` table (action key `disclaimer_acknowledged`), so each admin acknowledges separately. When you hand a site to a client and they log in for the first time, they still see the warning. To reset for a single user (e.g. for testing), delete that row.
+- New helper `DisclaimerHelper` and a single-line `<?php echo \…\DisclaimerHelper::renderModalIfNeeded(); ?>` call at the top of every component view template (dashboard, sessions list, session detail, sessionform, action log, backups list, backup detail).
+- New `display.acknowledgeDisclaimer` controller task — POST + CSRF token; called by the modal's inline JS via `fetch()` when the user ticks the box and confirms.
+- Modal is rendered with a vanilla CSS overlay + Bootstrap CSS variables (no Bootstrap modal asset required) so it works on every view without per-view JS asset wiring. Tracks Atum light/dark via `var(--bs-body-bg)` etc.
+
 ## [1.0.1] — 2026-04-29
 
 ### Improvements

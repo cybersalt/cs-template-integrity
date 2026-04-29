@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * @package     Cstemplateintegrity
@@ -11,6 +11,10 @@
 declare(strict_types=1);
 
 defined('_JEXEC') or die;
+
+// First-run disclaimer modal (rendered only if the current admin
+// user has not yet ticked "do not show again").
+echo \Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\DisclaimerHelper::renderModalIfNeeded();
 
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;

@@ -2,6 +2,17 @@
     <h1>📋 Cybersalt Template Integrity — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v1.0.2</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <h3><span class="section-icon">🚀</span>New</h3>
+    <ul>
+        <li><strong>First-run "before you start" disclaimer modal</strong>: opens once per admin user the first time they enter any view of the extension. Tells them to take a full-site backup first, explains in plain English that the extension uses an AI (Claude) to review overrides and apply the fixes they confirm, reminds them AI can make mistakes, and offers <code>tim@cybersalt.com</code> if they want help. "Don't show this again" checkbox persists per-user.</li>
+        <li>Per-user state is stored as a row in the existing <code>#__cstemplateintegrity_actions</code> table (action key <code>disclaimer_acknowledged</code>) — no schema migration. When you hand a site to a client and they log in, they still see the warning the first time.</li>
+        <li>Modal renders identically across every component view (dashboard, sessions, session detail, sessionform, action log, backups list, backup detail) via a single helper call at the top of each template.</li>
+    </ul>
+
+    <h2>
         <span class="version-badge">v1.0.1</span>
         <span class="date">2026-04-29</span>
     </h2>

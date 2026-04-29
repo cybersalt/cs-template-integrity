@@ -12,10 +12,12 @@ namespace Cybersalt\Component\Cstemplateintegrity\Administrator\Controller;
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\DisclaimerHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\MarkReviewedHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\RescanHelper;
 use Joomla\CMS\Application\CMSApplication;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\Router\Route;
@@ -81,5 +83,33 @@ final class DisplayController extends BaseController
         }
 
         $this->setRedirect(Route::_('index.php?option=com_cstemplateintegrity&view=dashboard', false));
+    }
+
+    /**
+     * Persist a "don't show again" click on the first-run disclaimer
+     * for the current logged-in user. Posted via fetch() from the
+     * modal's inline JS — no redirect, returns a tiny JSON payload.
+     */
+    public function acknowledgeDisclaimer(): void
+    {
+        $this->checkToken();
+        // No PermissionHelper gate here on purpose — every authenticated
+        // admin who can SEE the modal must be able to dismiss it; we
+        // gate the modal's APPEARANCE on hasAcknowledged(), not on
+        // arbitrary permissions.
+
+        /** @var CMSApplication $app */
+        $app  = $this->app;
+        $user = $app->getIdentity();
+        $uid  = $user ? (int) $user->id : 0;
+
+        if ($uid > 0) {
+            DisclaimerHelper::acknowledge($uid);
+        }
+
+        $app->setHeader('Content-Type', 'application/json; charset=utf-8', true);
+        $app->sendHeaders();
+        echo json_encode(['acknowledged' => $uid > 0]);
+        $app->close();
     }
 }
