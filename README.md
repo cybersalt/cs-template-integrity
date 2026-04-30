@@ -30,16 +30,20 @@ This extension is template-literate. It pairs your site with Claude to do the wo
 
 **Two ways to run it.** The manual workflow ships with the extension since v1.0: copy a prompt from the dashboard, paste into Claude, Claude calls back to the site's Web Services API to read overrides and apply fixes. **v2.0 added the automated workflow**: save your Anthropic API key in Options, click *Run automated scan*, and the extension drives the whole review server-side — no copy-paste, no second window. Once Claude has produced the report, a chat box on the session detail view lets you ask for actions (*"fix #1 and #3, dismiss the cosmetic ones"*) and Claude applies them via tool calls without you leaving the Joomla admin.
 
+For per-version details, see the full [CHANGELOG.md](CHANGELOG.md). The most recent release is always at the [Releases page](https://github.com/cybersalt/cs-template-integrity/releases/latest).
+
 ---
 
-## What ships in v2.0
+## What's in the box
 
 | Extension | Role |
 |---|---|
-| `com_cstemplateintegrity` | Admin component — dashboard, sessions log, action log, file backups (with restore), Diagnostics modal, Run automated scan, chat-with-Claude on the session detail view, Options dialog (Anthropic API key), Web Services API endpoints |
+| `com_cstemplateintegrity` | Admin component — dashboard, sessions log, action log, file backups (with restore), Diagnostics modal, Run automated scan, chat-with-Claude on the session detail view, Options dialog (Anthropic API key + model selection + Joomla API token), Web Services API endpoints |
 | `plg_webservices_cstemplateintegrity` | Registers the `/api/index.php/v1/cstemplateintegrity/...` routes for the component. Auto-enabled by the package installer. |
 
 Shipped together as `pkg_cstemplateintegrity`.
+
+**Multilingual since v2.3.** UI ships in 15 languages: en-GB, de-DE, fr-FR, es-ES, it-IT, pt-BR, nl-NL, ru-RU, pl-PL, ja-JP, zh-CN, tr-TR, el-GR, cs-CZ, sv-SE. Joomla picks the active language automatically based on the admin user's profile.
 
 ### Two workflows
 
@@ -66,7 +70,7 @@ Auth on every request: `X-Joomla-Token: <token>` + `Accept: application/vnd.api+
 
 ### Security
 
-Every endpoint is gated by ACL actions defined in `admin/access.xml` (`cstemplateintegrity.view` for reads, `cstemplateintegrity.write` for mutations). Until an admin grants those actions to a group in **System → Permissions → CS Template Integrity**, only Super Users can use the extension. Path-traversal containment is separator-anchored; PHP-extension writes are whitelisted to `templates/<tpl>/html/` only; `opcache_invalidate()` runs after every PHP write so patches take effect on the next request. Run the `security-review` skill before tagging any future release.
+Every endpoint is gated by ACL actions defined in `admin/access.xml` (`cstemplateintegrity.view` for reads, `cstemplateintegrity.write` for mutations). Until an admin grants those actions to a group in **System → Permissions → Cybersalt Template Integrity**, only Super Users can use the extension. Path-traversal containment is separator-anchored; the v2.2 hardening replaced the PHP-extension blocklist with a positive allow-list — every write must terminate inside `templates/<tpl>/html/` or `administrator/templates/<tpl>/html/` regardless of file extension. `opcache_invalidate()` runs after every PHP write so patches take effect on the next request. v2.2 also added a 4 MB cap on apply-fix / restore writes, a per-user 12-scans-per-hour soft cap on automated scans, and switched the Anthropic key fingerprint to a hash so no chars of the key leak in diagnostics. Run the `security-review` skill before tagging any future release.
 
 ---
 
@@ -75,7 +79,7 @@ Every endpoint is gated by ACL actions defined in `admin/access.xml` (`cstemplat
 1. Download the latest `pkg_cstemplateintegrity_v*.zip` from [Releases](https://github.com/cybersalt/cs-template-integrity/releases).
 2. **Extensions → Manage → Install** in your Joomla admin, upload the zip.
 3. The package script auto-enables the Web Services plugin — no extra step.
-4. Open **Components → CS Template Integrity** for the dashboard, copy the prompt, and paste it into Claude.
+4. Open **Components → Cybersalt Template Integrity** for the dashboard, copy the prompt, and paste it into Claude.
 
 Requires Joomla 5.0+ or Joomla 6.0+ (native to both), and PHP 8.1+.
 
