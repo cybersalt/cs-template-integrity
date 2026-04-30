@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Joomla extension changelog feed.
+
+    This file is fetched by Joomla's extension manager when the user clicks
+    the version-number badge next to an installed extension, AND by the
+    update flow when an admin checks System → Manage → Update.
+
+    Format reference: Joomla expects a <changelogs> root with one <changelog>
+    per version, identified by <element>+<type>+<version>. Categories:
+    <security> <fix> <language> <addition> <change> <remove> <maintenance> <note>.
+
+    Joomla parses this as XML, NOT as HTML. CHANGELOG.html (the human-readable
+    version) is not the right format here — pointing <changelogurl> at HTML
+    produced an empty modal in v2.0–v2.3.1.
+-->
+<changelogs>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>2.3.2</version>
+        <fix>
+            <item>Extension manager changelog modal now renders correctly. The &lt;changelogurl&gt; was pointing at CHANGELOG.html (human-readable HTML) instead of a Joomla-format changelog XML, so the modal opened blank when a user clicked the version badge. Both the package manifest and updates.xml now point at this file (changelog.xml), which is the schema Joomla actually parses.</item>
+        </fix>
+    </changelog>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>2.3.1</version>
+        <language>
+            <item>Full translations for all 14 non-English languages: fr-FR, es-ES, it-IT, pt-BR, nl-NL, sv-SE, ru-RU, pl-PL, cs-CZ, tr-TR, el-GR, ja-JP, zh-CN. Each language: 246 admin strings plus 5 system/api/package/plugin language files. Formal admin-tool register. Brand names, technical acronyms, code references, URLs, and printf placeholders preserved untranslated per Joomla extension convention. Native review recommended for ja-JP, zh-CN, cs-CZ, el-GR, tr-TR.</item>
+        </language>
+    </changelog>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>2.3.0</version>
+        <addition>
+            <item>Multilingual support: language packs registered for all 15 of Cybersalt's standard languages (en-GB, de-DE, fr-FR, es-ES, it-IT, pt-BR, nl-NL, ru-RU, pl-PL, ja-JP, zh-CN, tr-TR, el-GR, cs-CZ, sv-SE).</item>
+            <item>German (de-DE) fully translated. Other 13 languages registered with English-fallback content; full translations followed in 2.3.1.</item>
+        </addition>
+    </changelog>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>2.2.0</version>
+        <addition>
+            <item>Method 1 / Method 2 action shortcut buttons at the top of the dashboard with anchor-jump to the relevant action card.</item>
+            <item>Clear button on every API key / token field in Options. Get token button on the Joomla API token field that opens the current admin's profile in a new tab and auto-hides once a token is saved.</item>
+            <item>Empty-state blur skip on key/token inputs so admins can see where to paste on a fresh field.</item>
+            <item>Mode-aware Rescan button (light = solid yellow with dark text; dark = outline yellow on near-black).</item>
+        </addition>
+        <change>
+            <item>Dashboard restructure: status alert removed, sidebar moved to a footer, Recent sessions card removed (Sessions area covers it), Mark all as reviewed shortcut removed (Claude's dismiss_all tool covers it).</item>
+            <item>Cybersalt orange (#dc6b1a) + Bootstrap blue palette for the two action shortcut buttons. Navigation buttons neutral grey.</item>
+            <item>Top nav reordered alphabetically. Site Templates Management opens in a new tab so the dashboard stays open behind it.</item>
+            <item>Side menu reordered: Dashboard → Action log → File backups → Sessions.</item>
+            <item>Brand pass: every user-facing page title now reads "Cybersalt Template Integrity" (was "CS Template Integrity"). Code-side identifiers keep the cs short form.</item>
+            <item>Options tab renamed: "AI provider" → "Keys &amp; tokens".</item>
+        </change>
+        <security>
+            <item>H-1: Joomla API token plaintext exposure to view-tier (privilege escalation) closed — token now substituted only when current user holds write tier.</item>
+            <item>M-1: Backup restore positive allow-list (PathSafetyHelper::assertOverrideWriteAllowed) closes residual .htaccess / .user.ini / .css overwrite surface that survived v0.9.0's RCE hardening.</item>
+            <item>M-2: 4 MB upper cap on apply_fix / restore writes closes a disk-fill primitive.</item>
+            <item>M-3: Backup row size cap raised to 4 MB so apply_fix works on large overrides.</item>
+            <item>L-1: Anthropic key fingerprint switched from key-substring to SHA-256 prefix.</item>
+            <item>L-2: Web Services apply-fix validates session_id references an existing row.</item>
+            <item>L-3: simplexml_load_file passes LIBXML_NONET explicitly (defense-in-depth).</item>
+            <item>L-4: Per-user 12-scans-per-hour soft cap on Run automated scan.</item>
+            <item>L-5: Session download filename strips leading/trailing dots.</item>
+        </security>
+    </changelog>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>2.1.0</version>
+        <addition>
+            <item>Choose your Claude model for the automated workflow. Two new dropdowns under Options → AI provider: Scan model (default Sonnet 4.6) and Chat model (default Sonnet 4.6). All three Anthropic models selectable: Haiku 4.5, Sonnet 4.6, Opus 4.7.</item>
+            <item>Cost-warning note below the model dropdowns with rough per-scan dollar estimates and links to Anthropic's pricing and usage console.</item>
+        </addition>
+        <change>
+            <item>Diagnostics → Run test now uses Haiku unconditionally regardless of scan/chat settings — no reason to burn Sonnet/Opus tokens on a 16-token verify call.</item>
+        </change>
+        <security>
+            <item>Model-id values from #__extensions.params are validated against a three-entry whitelist before being passed to the Anthropic API.</item>
+        </security>
+    </changelog>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>2.0.2</version>
+        <security>
+            <item>Anthropic API key field is now blurred by default in the Options form, with a Reveal toggle to unmask. Custom Joomla form field (ApikeyField) extends the standard text field, applies a CSS blur filter to the input. Avoids accidental shoulder-surfing exposure during screen shares, livestreams, or pair-debugging.</item>
+        </security>
+    </changelog>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>2.0.1</version>
+        <security>
+            <item>L-1: display.acknowledgeDisclaimer now calls PermissionHelper::requireView() for consistency with every other controller method.</item>
+            <item>L-2: Granular cstemplateintegrity.view ACL action is now actually enforced for admin browsing. Every admin view (Dashboard, Sessions, Session, Sessionform, Actions, Backups, Backup) calls PermissionHelper::requireView() at the top of display().</item>
+            <item>M-1: BackupDescriber::tidy() and ::titleCase() now htmlspecialchars their output internally — defense-in-depth against future code paths where path segments could contain HTML.</item>
+        </security>
+    </changelog>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>2.0.0</version>
+        <addition>
+            <item>Run automated scan button on the Dashboard (visible when an Anthropic API key is saved). One click drives the entire override review server-side: walks #__template_overrides, reads override + core file pairs, sends them to Anthropic with a structured prompt, saves the markdown report as a new session, redirects to it.</item>
+            <item>Chat-with-Claude on the session detail view. Tool-use loop with six tools: list_remaining_overrides, get_override_file, get_core_file, apply_fix, dismiss_override, dismiss_all. Conversation persists turn-by-turn in a new messages LONGTEXT column on #__cstemplateintegrity_sessions.</item>
+            <item>Diagnostics modal with Test connection button (sends a tiny request to api.anthropic.com to verify the saved key authenticates and the network path works).</item>
+            <item>First-run disclaimer modal with "before you start" warning about backups and AI fallibility.</item>
+            <item>File backups view with restore action — every override patch is auto-backed-up to #__cstemplateintegrity_backups before the write, fully reversible.</item>
+        </addition>
+    </changelog>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>1.0.4</version>
+        <fix>
+            <item>Dark-mode-friendly disclaimer modal — the modal styling now respects Atum's dark theme.</item>
+        </fix>
+    </changelog>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>1.0.3</version>
+        <fix>
+            <item>Hotfix: strip BOM that broke v1.0.2 install. PowerShell's Set-Content -Encoding utf8 adds a BOM by default in PS 5.1; the build script now detects BOM and fails the build before producing a broken zip.</item>
+        </fix>
+    </changelog>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>1.0.2</version>
+        <addition>
+            <item>First-run disclaimer modal explaining the AI workflow and emphasizing the need for a recent backup.</item>
+        </addition>
+    </changelog>
+
+    <changelog>
+        <element>pkg_cstemplateintegrity</element>
+        <type>package</type>
+        <version>1.0.1</version>
+        <addition>
+            <item>Joomla 5+6 native support and a full Joomla update server (updates.xml on GitHub raw, downloads from GitHub release assets, SHA-256 verification on every download).</item>
+        </addition>
+    </changelog>
+
+</changelogs>

@@ -18,6 +18,6 @@
         <maintainerurl>https://cybersalt.com</maintainerurl>
         <targetplatform name="joomla" version="5\.[0-9]+|6\.[0-9]+" />
         <php_minimum>8.1</php_minimum>
-        <changelogurl>https://raw.githubusercontent.com/cybersalt/cs-template-integrity/main/CHANGELOG.html</changelogurl>
+        <changelogurl>https://raw.githubusercontent.com/cybersalt/cs-template-integrity/main/changelog.xml</changelogurl>
     </update>
 </updates>
