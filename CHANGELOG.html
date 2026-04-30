@@ -2,6 +2,18 @@
     <h1>📋 Cybersalt Template Integrity — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v2.3.2</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <p>Single-purpose patch release: fixes the empty-changelog-modal in Joomla's Extension Manager.</p>
+    <h3><span class="section-icon">🐛</span>Fixes</h3>
+    <ul>
+        <li><strong>Extension Manager changelog modal now renders correctly.</strong> Joomla's <code>&lt;changelogurl&gt;</code> expects a Joomla-format XML feed (<code>&lt;changelogs&gt;</code> root with versioned <code>&lt;changelog&gt;</code> entries containing <code>&lt;addition&gt;</code>/<code>&lt;fix&gt;</code>/<code>&lt;security&gt;</code>/<code>&lt;language&gt;</code> etc.), not human-readable HTML. From v2.0 onwards the manifest pointed at <code>CHANGELOG.html</code>, so clicking the version badge in <em>Extensions &rarr; Manage</em> opened an empty modal for the entire 2.x series. Added <code>changelog.xml</code> at the repo root in the format Joomla actually parses, and switched both the package manifest and <code>updates.xml</code> to point at it. <code>CHANGELOG.html</code> and <code>CHANGELOG.md</code> remain as the human-readable pair, linked from the README.</li>
+    </ul>
+    <h3>Migration</h3>
+    <p>In-place upgrade from 2.3.1. No schema changes; no settings changes. The fix takes effect on this install &mdash; sites running 2.3.1 or earlier continue to see an empty changelog modal until they upgrade to 2.3.2 (the <code>&lt;changelogurl&gt;</code> is baked into <code>manifest_cache</code> at install time).</p>
+
+    <h2>
         <span class="version-badge">v2.3.1</span>
         <span class="date">2026-04-29</span>
     </h2>

@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.2] — 2026-04-29
+
+Single-purpose patch release: fixes the empty-changelog-modal in Joomla's Extension Manager.
+
+### 🐛 Fixes
+
+- **Extension Manager changelog modal now renders correctly.** Joomla's `<changelogurl>` expects a Joomla-format XML feed (`<changelogs>` root with versioned `<changelog>` entries containing `<addition>`/`<fix>`/`<security>`/`<language>` etc.), not human-readable HTML. From v2.0 onwards the manifest pointed at `CHANGELOG.html`, so clicking the version badge in *Extensions → Manage* opened an empty modal for the entire 2.x series. Added [`changelog.xml`](changelog.xml) at the repo root in the format Joomla actually parses, and switched both the package manifest and `updates.xml` to point at it. `CHANGELOG.html` and `CHANGELOG.md` remain as the human-readable pair, linked from the README.
+
+### Migration
+
+In-place upgrade from 2.3.1. No schema changes; no settings changes. The fix takes effect on this install — sites running 2.3.1 or earlier continue to see an empty changelog modal until they upgrade to 2.3.2 (the `<changelogurl>` is baked into `manifest_cache` at install time).
+
+### Internal
+
+Joomla Brain `JOOMLA5-CHECKLIST.md` corrected so future Cybersalt extensions don't repeat the mistake.
+
 ## [2.3.1] — 2026-04-29
 
 Completes the multilingual rollout started in 2.3.0: all 14 non-English language packs are now fully translated (no more English fallback for any string).
