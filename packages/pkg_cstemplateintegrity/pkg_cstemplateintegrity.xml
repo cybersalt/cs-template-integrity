@@ -8,7 +8,7 @@
     <license>GNU General Public License version 2 or later</license>
     <authorEmail>support@cybersalt.com</authorEmail>
     <authorUrl>https://cybersalt.com</authorUrl>
-    <version>2.2.0</version>
+    <version>2.3.0</version>
     <url>https://github.com/cybersalt/cs-template-integrity</url>
     <packager>Cybersalt</packager>
     <packagerurl>https://cybersalt.com</packagerurl>
@@ -30,5 +30,19 @@
 
     <languages folder="language">
         <language tag="en-GB">en-GB/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="de-DE">de-DE/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="fr-FR">fr-FR/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="es-ES">es-ES/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="it-IT">it-IT/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="pt-BR">pt-BR/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="nl-NL">nl-NL/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="ru-RU">ru-RU/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="pl-PL">pl-PL/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="ja-JP">ja-JP/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="zh-CN">zh-CN/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="tr-TR">tr-TR/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="el-GR">el-GR/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="cs-CZ">cs-CZ/pkg_cstemplateintegrity.sys.ini</language>
+        <language tag="sv-SE">sv-SE/pkg_cstemplateintegrity.sys.ini</language>
     </languages>
 </extension>

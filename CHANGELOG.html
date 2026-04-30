@@ -2,6 +2,20 @@
     <h1>📋 Cybersalt Template Integrity — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v2.3.0</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <p>Multilingual support: language pack registered for all 15 of Cybersalt's standard languages.</p>
+    <h3><span class="section-icon">🌍</span>New</h3>
+    <ul>
+        <li><strong>Language packs registered</strong> for <code>en-GB</code>, <code>de-DE</code>, <code>fr-FR</code>, <code>es-ES</code>, <code>it-IT</code>, <code>pt-BR</code>, <code>nl-NL</code>, <code>ru-RU</code>, <code>pl-PL</code>, <code>ja-JP</code>, <code>zh-CN</code>, <code>tr-TR</code>, <code>el-GR</code>, <code>cs-CZ</code>, <code>sv-SE</code>. All 6 language files (admin .ini + .sys.ini, api .ini, package .sys.ini, plugin .ini + .sys.ini) ship in every language. Joomla picks the active language automatically based on the admin user's preference.</li>
+        <li><strong>German (de-DE) fully translated</strong> &mdash; every one of the 246 admin strings, plus all 5 system/API/package/plugin language files. Real translations, not machine output. Uses formal &ldquo;Sie&rdquo; register appropriate for admin tooling.</li>
+        <li><strong>Other 13 languages</strong> &mdash; language directories registered with English fallback content (so the language pack installs cleanly and Joomla resolves to English wherever a translation isn't yet shipped). Real translations rolling out in 2.3.x patch releases.</li>
+    </ul>
+    <h3>Migration</h3>
+    <p>In-place upgrade from 2.2.x. No schema changes; no settings changes. After install, an admin user whose Joomla language is set to <code>de-DE</code> will see Cybersalt Template Integrity in German throughout. Other configured languages will continue to display English admin copy until their patch release lands.</p>
+
+    <h2>
         <span class="version-badge">v2.2.0</span>
         <span class="date">2026-04-29</span>
     </h2>

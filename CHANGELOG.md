@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.0] — 2026-04-29
+
+Multilingual support: language pack registered for all 15 of Cybersalt's standard languages.
+
+### 🌍 New
+
+- **Language packs registered** for `en-GB`, `de-DE`, `fr-FR`, `es-ES`, `it-IT`, `pt-BR`, `nl-NL`, `ru-RU`, `pl-PL`, `ja-JP`, `zh-CN`, `tr-TR`, `el-GR`, `cs-CZ`, `sv-SE`. All 6 language files (admin .ini + .sys.ini, api .ini, package .sys.ini, plugin .ini + .sys.ini) ship in every language. Joomla picks the active language automatically based on the admin user's preference.
+- **German (de-DE) fully translated** — every one of the 246 admin strings, plus all 5 system/API/package/plugin language files. Real translations, not machine output. Uses formal "Sie" register appropriate for admin tooling.
+- **Other 13 languages** — language directories registered with English fallback content (so the language pack installs cleanly and Joomla resolves to English wherever a translation isn't yet shipped). Real translations rolling out in 2.3.x patch releases over the coming weeks.
+
+### Migration
+
+In-place upgrade from 2.2.x. No schema changes; no settings changes. After install, an admin user whose Joomla language is set to `de-DE` will see Cybersalt Template Integrity in German throughout. Other configured languages will continue to display English admin copy until their patch release lands.
+
 ## [2.2.0] — 2026-04-29
 
 UX rework on the dashboard: clearer "what do you want to do today" path-finding with two action shortcuts and a Cybersalt orange + Bootstrap blue palette; nicer key/token Options UX with Reveal / Clear / Get-token buttons; brand pass on every user-facing title; full-component security review with eight findings closed.

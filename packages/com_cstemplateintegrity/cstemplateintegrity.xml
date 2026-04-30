@@ -7,7 +7,7 @@
     <license>GNU General Public License version 2 or later</license>
     <authorEmail>support@cybersalt.com</authorEmail>
     <authorUrl>https://cybersalt.com</authorUrl>
-    <version>2.2.0</version>
+    <version>2.3.0</version>
     <description>COM_CSTEMPLATEINTEGRITY_XML_DESCRIPTION</description>
 
     <targetplatform name="joomla" version="5\.[0-9]+|6\.[0-9]+" />
@@ -46,6 +46,34 @@
         <languages folder="admin/language">
             <language tag="en-GB">en-GB/com_cstemplateintegrity.ini</language>
             <language tag="en-GB">en-GB/com_cstemplateintegrity.sys.ini</language>
+            <language tag="de-DE">de-DE/com_cstemplateintegrity.ini</language>
+            <language tag="de-DE">de-DE/com_cstemplateintegrity.sys.ini</language>
+            <language tag="fr-FR">fr-FR/com_cstemplateintegrity.ini</language>
+            <language tag="fr-FR">fr-FR/com_cstemplateintegrity.sys.ini</language>
+            <language tag="es-ES">es-ES/com_cstemplateintegrity.ini</language>
+            <language tag="es-ES">es-ES/com_cstemplateintegrity.sys.ini</language>
+            <language tag="it-IT">it-IT/com_cstemplateintegrity.ini</language>
+            <language tag="it-IT">it-IT/com_cstemplateintegrity.sys.ini</language>
+            <language tag="pt-BR">pt-BR/com_cstemplateintegrity.ini</language>
+            <language tag="pt-BR">pt-BR/com_cstemplateintegrity.sys.ini</language>
+            <language tag="nl-NL">nl-NL/com_cstemplateintegrity.ini</language>
+            <language tag="nl-NL">nl-NL/com_cstemplateintegrity.sys.ini</language>
+            <language tag="ru-RU">ru-RU/com_cstemplateintegrity.ini</language>
+            <language tag="ru-RU">ru-RU/com_cstemplateintegrity.sys.ini</language>
+            <language tag="pl-PL">pl-PL/com_cstemplateintegrity.ini</language>
+            <language tag="pl-PL">pl-PL/com_cstemplateintegrity.sys.ini</language>
+            <language tag="ja-JP">ja-JP/com_cstemplateintegrity.ini</language>
+            <language tag="ja-JP">ja-JP/com_cstemplateintegrity.sys.ini</language>
+            <language tag="zh-CN">zh-CN/com_cstemplateintegrity.ini</language>
+            <language tag="zh-CN">zh-CN/com_cstemplateintegrity.sys.ini</language>
+            <language tag="tr-TR">tr-TR/com_cstemplateintegrity.ini</language>
+            <language tag="tr-TR">tr-TR/com_cstemplateintegrity.sys.ini</language>
+            <language tag="el-GR">el-GR/com_cstemplateintegrity.ini</language>
+            <language tag="el-GR">el-GR/com_cstemplateintegrity.sys.ini</language>
+            <language tag="cs-CZ">cs-CZ/com_cstemplateintegrity.ini</language>
+            <language tag="cs-CZ">cs-CZ/com_cstemplateintegrity.sys.ini</language>
+            <language tag="sv-SE">sv-SE/com_cstemplateintegrity.ini</language>
+            <language tag="sv-SE">sv-SE/com_cstemplateintegrity.sys.ini</language>
         </languages>
     </administration>
 
@@ -56,6 +84,20 @@
         </files>
         <languages folder="api/language">
             <language tag="en-GB">en-GB/com_cstemplateintegrity.ini</language>
+            <language tag="de-DE">de-DE/com_cstemplateintegrity.ini</language>
+            <language tag="fr-FR">fr-FR/com_cstemplateintegrity.ini</language>
+            <language tag="es-ES">es-ES/com_cstemplateintegrity.ini</language>
+            <language tag="it-IT">it-IT/com_cstemplateintegrity.ini</language>
+            <language tag="pt-BR">pt-BR/com_cstemplateintegrity.ini</language>
+            <language tag="nl-NL">nl-NL/com_cstemplateintegrity.ini</language>
+            <language tag="ru-RU">ru-RU/com_cstemplateintegrity.ini</language>
+            <language tag="pl-PL">pl-PL/com_cstemplateintegrity.ini</language>
+            <language tag="ja-JP">ja-JP/com_cstemplateintegrity.ini</language>
+            <language tag="zh-CN">zh-CN/com_cstemplateintegrity.ini</language>
+            <language tag="tr-TR">tr-TR/com_cstemplateintegrity.ini</language>
+            <language tag="el-GR">el-GR/com_cstemplateintegrity.ini</language>
+            <language tag="cs-CZ">cs-CZ/com_cstemplateintegrity.ini</language>
+            <language tag="sv-SE">sv-SE/com_cstemplateintegrity.ini</language>
         </languages>
     </api>
 

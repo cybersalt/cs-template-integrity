@@ -7,7 +7,7 @@
     <license>GNU General Public License version 2 or later</license>
     <authorEmail>support@cybersalt.com</authorEmail>
     <authorUrl>https://cybersalt.com</authorUrl>
-    <version>2.1.0</version>
+    <version>2.3.0</version>
     <description>PLG_WEBSERVICES_CSTEMPLATEINTEGRITY_XML_DESCRIPTION</description>
 
     <targetplatform name="joomla" version="5\.[0-9]+|6\.[0-9]+" />
@@ -22,5 +22,33 @@
     <languages>
         <language tag="en-GB">language/en-GB/plg_webservices_cstemplateintegrity.ini</language>
         <language tag="en-GB">language/en-GB/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="de-DE">language/de-DE/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="de-DE">language/de-DE/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="fr-FR">language/fr-FR/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="fr-FR">language/fr-FR/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="es-ES">language/es-ES/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="es-ES">language/es-ES/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="it-IT">language/it-IT/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="it-IT">language/it-IT/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="pt-BR">language/pt-BR/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="pt-BR">language/pt-BR/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="nl-NL">language/nl-NL/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="nl-NL">language/nl-NL/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="ru-RU">language/ru-RU/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="ru-RU">language/ru-RU/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="pl-PL">language/pl-PL/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="pl-PL">language/pl-PL/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="ja-JP">language/ja-JP/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="ja-JP">language/ja-JP/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="zh-CN">language/zh-CN/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="zh-CN">language/zh-CN/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="tr-TR">language/tr-TR/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="tr-TR">language/tr-TR/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="el-GR">language/el-GR/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="el-GR">language/el-GR/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="cs-CZ">language/cs-CZ/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="cs-CZ">language/cs-CZ/plg_webservices_cstemplateintegrity.sys.ini</language>
+        <language tag="sv-SE">language/sv-SE/plg_webservices_cstemplateintegrity.ini</language>
+        <language tag="sv-SE">language/sv-SE/plg_webservices_cstemplateintegrity.sys.ini</language>
     </languages>
 </extension>
