@@ -28,8 +28,15 @@ use Joomla\Database\ParameterType;
 
 final class BackupsHelper
 {
-    /** Cap on a single backup row's contents. 1 MB. */
-    public const MAX_SIZE = 1048576;
+    /**
+     * Cap on a single backup row's contents. Aligned with
+     * PathSafetyHelper::MAX_WRITE_SIZE (4 MB) so apply_fix can both
+     * snapshot the current contents AND write the new contents on a
+     * legitimately large override file. v2.1 capped at 1 MB which
+     * silently failed apply_fix on real-world overrides bigger than
+     * that.
+     */
+    public const MAX_SIZE = 4194304;
 
     public static function createFromContents(
         string $filePath,
@@ -176,17 +183,30 @@ final class BackupsHelper
 
         $absolute = JPATH_ROOT . '/' . $relativePath;
 
-        // Separator-anchored containment check + PHP-write whitelist.
-        // assertWithinRoot's strpos predecessor was bypassable when
-        // JPATH_ROOT had a sibling directory whose name began with the
-        // same prefix (e.g. /var/www/joomla and /var/www/joomla-bak).
+        // Two complementary checks:
+        //   1. assertWithinRoot — realpath containment, defends against
+        //      .. / symlink escape (separator-anchored str_starts_with
+        //      so /var/www/joomla vs /var/www/joomla-bak doesn't bypass).
+        //   2. assertOverrideWriteAllowed — positive allow-list, refuses
+        //      writes outside templates/<tpl>/html/ regardless of
+        //      extension. Closes the .htaccess / .user.ini / .css overwrite
+        //      surface that survived v0.9.0's RCE hardening: archival
+        //      backup rows from pre-v0.9.0 (or seeded via DB-level access)
+        //      with arbitrary file_path values are now refused at restore.
         PathSafetyHelper::assertWithinRoot($absolute);
-        PathSafetyHelper::assertPhpWriteAllowed($absolute);
+        PathSafetyHelper::assertOverrideWriteAllowed($absolute);
 
         $restoredContents = self::decodeContents($row);
         if ($restoredContents === '') {
             throw new \RuntimeException('Backup is empty; nothing to restore.');
         }
+
+        // Cap on the bytes about to be written to disk. Belt-and-braces
+        // — backup rows are already capped at MAX_SIZE on creation, but
+        // pre-v2.2 rows were stored at 1 MB cap and the field type
+        // (LONGTEXT) accepts up to ~4 GB. A row could in principle
+        // contain more bytes than MAX_WRITE_SIZE; refuse before write.
+        PathSafetyHelper::assertSizeAllowed($restoredContents);
 
         // Pre-restore safety backup of the current file state, so this
         // restore is itself reversible.

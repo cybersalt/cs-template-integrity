@@ -76,15 +76,24 @@ final class SessionsHelper
     /**
      * @return list<\stdClass>
      */
-    public static function listRecent(int $limit = 50): array
+    public static function listRecent(int $limit = 50, string $order = 'created_at', string $dir = 'DESC'): array
     {
         $db    = Factory::getContainer()->get(DatabaseInterface::class);
         $limit = max(1, min(200, $limit));
 
+        // Whitelist sortable columns so the user-supplied order param
+        // can't be smuggled through quoteName as something unexpected.
+        // (quoteName escapes properly anyway, but defense in depth.)
+        $allowedOrder = ['id', 'name', 'source', 'created_at'];
+        if (!in_array($order, $allowedOrder, true)) {
+            $order = 'created_at';
+        }
+        $dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
+
         $query = $db->getQuery(true)
             ->select($db->quoteName(['id', 'name', 'summary', 'source', 'state', 'created_by', 'created_at']))
             ->from($db->quoteName('#__cstemplateintegrity_sessions'))
-            ->order($db->quoteName('created_at') . ' DESC');
+            ->order($db->quoteName($order) . ' ' . $dir);
 
         $db->setQuery($query, 0, $limit);
 

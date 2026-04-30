@@ -23,6 +23,7 @@ use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\MarkReviewedHel
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\OverridesHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PathResolver;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\SessionsHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Filter\InputFilter;
 use Joomla\CMS\MVC\Controller\ApiController;
@@ -111,6 +112,21 @@ final class OverridesController extends ApiController
             if ($contents === '') {
                 $this->sendJsonApiError(400, 'MISSING_CONTENTS', 'Body must include a non-empty contents field.');
                 return;
+            }
+
+            // session_id is optional, but if provided it must reference
+            // an existing session row — otherwise the audit trail (and
+            // the resulting backup row's session linkage) points at a
+            // session that doesn't exist. Coerce a 0/negative value to
+            // null so the helper treats it as "no session"; reject a
+            // positive id that doesn't match any row.
+            if ($sessionId !== null && $sessionId > 0) {
+                if (SessionsHelper::find($sessionId) === null) {
+                    $this->sendJsonApiError(400, 'INVALID_SESSION_ID', 'session_id does not reference an existing session.');
+                    return;
+                }
+            } else {
+                $sessionId = null;
             }
 
             $result = OverridesHelper::applyFix($id, $contents, $sessionId);

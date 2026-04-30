@@ -7,7 +7,7 @@
     <license>GNU General Public License version 2 or later</license>
     <authorEmail>support@cybersalt.com</authorEmail>
     <authorUrl>https://cybersalt.com</authorUrl>
-    <version>2.1.0</version>
+    <version>2.2.0</version>
     <description>COM_CSTEMPLATEINTEGRITY_XML_DESCRIPTION</description>
 
     <targetplatform name="joomla" version="5\.[0-9]+|6\.[0-9]+" />
@@ -30,9 +30,9 @@
         <menu img="class:check-circle" link="option=com_cstemplateintegrity&amp;view=dashboard">COM_CSTEMPLATEINTEGRITY</menu>
         <submenu>
             <menu link="option=com_cstemplateintegrity&amp;view=dashboard">COM_CSTEMPLATEINTEGRITY_SUBMENU_DASHBOARD</menu>
-            <menu link="option=com_cstemplateintegrity&amp;view=sessions">COM_CSTEMPLATEINTEGRITY_SUBMENU_SESSIONS</menu>
             <menu link="option=com_cstemplateintegrity&amp;view=actions">COM_CSTEMPLATEINTEGRITY_SUBMENU_ACTIONS</menu>
             <menu link="option=com_cstemplateintegrity&amp;view=backups">COM_CSTEMPLATEINTEGRITY_SUBMENU_BACKUPS</menu>
+            <menu link="option=com_cstemplateintegrity&amp;view=sessions">COM_CSTEMPLATEINTEGRITY_SUBMENU_SESSIONS</menu>
         </submenu>
         <files folder="admin">
             <filename>access.xml</filename>

@@ -60,9 +60,16 @@ final class AnthropicClient
     }
 
     /**
-     * Non-secret fingerprint of the key for diagnostics — length plus
-     * a few chars from each end. Lets the user verify the key wasn't
-     * truncated or mangled without us logging the whole thing.
+     * Non-secret fingerprint of the key for diagnostics. Returns the
+     * length plus a 12-char SHA-256 hash prefix — enough to verify
+     * "yes I'm looking at the same key as before" without leaking any
+     * actual chars of the key.
+     *
+     * Earlier versions returned `starts="<first 8>", ends="<last 4>"`,
+     * which narrowed brute-force search space if combined with any
+     * other channel that leaked middle bytes. SHA-256 reveals nothing
+     * about the input, so the fingerprint is safe to display to any
+     * tier that can reach the diagnostics modal.
      *
      * Anthropic API keys are typically 108 characters (sk-ant-api03-
      * prefix plus 96 alphanumerics plus a short trailer). A length
@@ -88,11 +95,10 @@ final class AnthropicClient
         }
 
         return sprintf(
-            'len=%d%s, starts="%s", ends="%s"%s',
+            'len=%d%s, fingerprint=sha256:%s%s',
             $len,
             $rawSuffix,
-            substr($this->apiKey, 0, 8),
-            substr($this->apiKey, -4),
+            substr(hash('sha256', $this->apiKey), 0, 12),
             $expectationSuffix
         );
     }
@@ -116,20 +122,42 @@ final class AnthropicClient
         ];
 
         $http = HttpFactory::getHttp();
+        $body = $headers = $status = null;
 
-        $response = $http->post(
-            self::ENDPOINT,
-            json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-            [
-                'x-api-key'         => $this->apiKey,
-                'anthropic-version' => self::API_VERSION,
-                'content-type'      => 'application/json',
-            ],
-            $timeoutSecs
-        );
+        // Retry-once-with-backoff on 429 (rate limit). Anthropic's
+        // lower account tiers cap input tokens per minute; if a recent
+        // call ate the budget, this single sleep+retry usually bridges
+        // back into the next minute window. Cap at 60s to keep the
+        // page responsive.
+        for ($attempt = 0; $attempt <= 1; $attempt++) {
+            $response = $http->post(
+                self::ENDPOINT,
+                json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                [
+                    'x-api-key'         => $this->apiKey,
+                    'anthropic-version' => self::API_VERSION,
+                    'content-type'      => 'application/json',
+                ],
+                $timeoutSecs
+            );
 
-        $status = (int) $response->code;
-        $body   = (string) $response->body;
+            $status  = (int) $response->code;
+            $body    = (string) $response->body;
+            $headers = is_array($response->headers ?? null) ? $response->headers : [];
+
+            if ($status !== 429 || $attempt > 0) {
+                break;
+            }
+
+            // Anthropic returns retry-after in seconds. Cap at 60s
+            // so we don't sit on a single page for minutes.
+            $retryAfter = isset($headers['retry-after'])
+                ? (int) (is_array($headers['retry-after']) ? $headers['retry-after'][0] : $headers['retry-after'])
+                : 30;
+            $retryAfter = max(5, min(60, $retryAfter));
+            @set_time_limit($timeoutSecs + $retryAfter + 30);
+            sleep($retryAfter);
+        }
 
         if ($status < 200 || $status >= 300) {
             // Try to surface Anthropic's structured error message; fall back to the raw body.
@@ -149,6 +177,10 @@ final class AnthropicClient
                     ' — Diagnostics: %s. Compare against your Anthropic console; if they do not match, re-paste the key in Options.',
                     $this->keyFingerprint()
                 );
+            } elseif ($status === 429) {
+                // Auto-retry already happened once; if we are still
+                // here the per-minute budget is fully consumed.
+                $hint = ' — The extension waited and retried once already, so the per-minute budget is fully consumed. Wait 1–2 minutes before trying again. If this happens often, lower Overrides per scan in Options, or upgrade your Anthropic tier at https://console.anthropic.com/settings/limits';
             }
             throw new \RuntimeException(
                 sprintf('Anthropic API returned HTTP %d: %s%s', $status, mb_substr($detail, 0, 800), $hint)

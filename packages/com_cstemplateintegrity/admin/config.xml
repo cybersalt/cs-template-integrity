@@ -42,6 +42,21 @@
             description="COM_CSTEMPLATEINTEGRITY_CONFIG_ANTHROPIC_API_KEY_NOTE" />
 
         <field
+            name="joomla_api_token"
+            type="apikey"
+            addfieldprefix="Cybersalt\Component\Cstemplateintegrity\Administrator\Field"
+            label="COM_CSTEMPLATEINTEGRITY_CONFIG_JOOMLA_API_TOKEN_LABEL"
+            description="COM_CSTEMPLATEINTEGRITY_CONFIG_JOOMLA_API_TOKEN_DESC"
+            helplink="index.php?option=com_users&amp;view=user&amp;layout=edit&amp;id={user_id}"
+            helplinklabel="COM_CSTEMPLATEINTEGRITY_FIELD_GET_JOOMLA_TOKEN"
+            default=""
+            autocomplete="off"
+            spellcheck="false"
+            filter="raw"
+            size="80"
+            maxlength="500" />
+
+        <field
             name="scan_model"
             type="list"
             label="COM_CSTEMPLATEINTEGRITY_CONFIG_SCAN_MODEL_LABEL"
@@ -64,6 +79,17 @@
             <option value="claude-sonnet-4-6">COM_CSTEMPLATEINTEGRITY_CONFIG_MODEL_SONNET</option>
             <option value="claude-opus-4-7">COM_CSTEMPLATEINTEGRITY_CONFIG_MODEL_OPUS</option>
         </field>
+
+        <field
+            name="scan_max_overrides"
+            type="number"
+            label="COM_CSTEMPLATEINTEGRITY_CONFIG_SCAN_MAX_OVERRIDES_LABEL"
+            description="COM_CSTEMPLATEINTEGRITY_CONFIG_SCAN_MAX_OVERRIDES_DESC"
+            default="10"
+            min="1"
+            max="100"
+            step="1"
+            filter="integer" />
 
         <field
             name="model_cost_warning"

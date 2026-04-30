@@ -21,34 +21,21 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 
 $rescanAction       = Route::_('index.php?option=com_cstemplateintegrity', false);
-$markReviewedAction = Route::_('index.php?option=com_cstemplateintegrity', false);
 $runScanAction      = Route::_('index.php?option=com_cstemplateintegrity', false);
 $siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=templates&client_id=0', false);
 $sessionsUrl        = Route::_('index.php?option=com_cstemplateintegrity&view=sessions', false);
-$newSessionUrl      = Route::_('index.php?option=com_cstemplateintegrity&view=sessionform', false);
 $actionsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=actions', false);
 $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=backups', false);
 ?>
 
 <div class="container-fluid cstemplateintegrity-dashboard">
 
-    <div class="alert alert-success d-flex align-items-center" role="alert">
-        <span class="icon-publish me-2" aria-hidden="true"></span>
-        <div>
-            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_STATUS_ACTIVE'); ?>.</strong>
-            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_STATUS_DESCRIPTION'); ?>
-        </div>
-    </div>
-
-    <div class="d-flex flex-wrap gap-2 mb-3" role="navigation" aria-label="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_QUICKNAV_LABEL')); ?>">
-        <a href="<?php echo $this->escape($newSessionUrl); ?>" class="btn btn-info">
-            <span class="icon-plus" aria-hidden="true"></span>
-            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_SESSIONS_NEW'); ?>
-        </a>
-        <a href="<?php echo $this->escape($sessionsUrl); ?>" class="btn btn-secondary">
-            <span class="icon-list" aria-hidden="true"></span>
-            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SUBMENU_SESSIONS'); ?>
-        </a>
+    <!-- Navigation row — "where do I go" buttons. Alphabetical so the
+         user can hunt by name; ms-auto removed because flex-wrap was
+         occasionally hiding the button to its right on narrow widths
+         (Action log was vanishing). All items now flow left-to-right
+         in one line; on narrow screens they wrap predictably. -->
+    <div class="d-flex flex-wrap gap-2 mb-2 align-items-center" role="navigation" aria-label="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_QUICKNAV_LABEL')); ?>">
         <a href="<?php echo $this->escape($actionsUrl); ?>" class="btn btn-secondary">
             <span class="icon-clock" aria-hidden="true"></span>
             <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SUBMENU_ACTIONS'); ?>
@@ -57,59 +44,158 @@ $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=ba
             <span class="icon-archive" aria-hidden="true"></span>
             <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SUBMENU_BACKUPS'); ?>
         </a>
-        <a href="<?php echo $this->escape($siteTemplatesUrl); ?>" class="btn btn-secondary">
+        <a href="<?php echo $this->escape($siteTemplatesUrl); ?>"
+           class="btn btn-secondary"
+           target="_blank"
+           rel="noopener noreferrer">
             <span class="icon-arrow-right" aria-hidden="true"></span>
             <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_OPTION_A_BUTTON'); ?>
         </a>
-        <button type="button" class="btn btn-info ms-auto" data-csti-open-diag>
+        <a href="<?php echo $this->escape($sessionsUrl); ?>" class="btn btn-secondary">
+            <span class="icon-list" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_SUBMENU_SESSIONS'); ?>
+        </a>
+        <form action="<?php echo $this->escape($rescanAction); ?>"
+              method="post"
+              class="d-inline m-0"
+              onsubmit="return confirm('<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_CONFIRM'), 'JavaScript'); ?>');">
+            <?php echo HTMLHelper::_('form.token'); ?>
+            <input type="hidden" name="task" value="display.rescan">
+            <button type="submit" class="btn csti-rescan-btn"
+                    title="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_TOOLTIP')); ?>">
+                <span class="icon-refresh" aria-hidden="true"></span>
+                <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_BUTTON'); ?>
+            </button>
+        </form>
+        <button type="button" class="btn btn-info" data-csti-open-diag>
             <span class="icon-info" aria-hidden="true"></span>
             <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_BUTTON'); ?>
         </button>
     </div>
 
-    <div class="card mb-3 border-warning">
+    <!--
+        Action shortcuts row — the two "what do you want to do today"
+        method buttons. Method 1 (claude.ai / Code copy-paste) is left,
+        works without an API key. Method 2 (server-side automated scan)
+        is right; it renders as an outlined-secondary button when no
+        Anthropic API key is saved (anchor-link still works and drops
+        the user on the Method 2 card, which explains the missing key).
+    -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <a href="#csti-manual-card" class="btn csti-method-1-btn btn-lg"
+           title="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ACTION_MANUAL_TOOLTIP')); ?>">
+            <span class="icon-copy" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ACTION_MANUAL'); ?>
+        </a>
+        <?php if ($this->hasApiKey) : ?>
+            <a href="#csti-autoscan-card" class="btn btn-primary btn-lg"
+               title="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ACTION_AUTOSCAN_TOOLTIP_OK')); ?>">
+                <span class="icon-rocket" aria-hidden="true"></span>
+                <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ACTION_AUTOSCAN'); ?>
+            </a>
+        <?php else : ?>
+            <a href="#csti-autoscan-card" class="btn btn-outline-secondary btn-lg"
+               title="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ACTION_AUTOSCAN_TOOLTIP_NOKEY')); ?>">
+                <span class="icon-rocket" aria-hidden="true"></span>
+                <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ACTION_AUTOSCAN'); ?>
+            </a>
+        <?php endif; ?>
+    </div>
+
+    <!-- Method 1: copy-paste prompt into Claude.ai or Claude Code. -->
+    <div id="csti-manual-card" class="card mb-3 border-info cstemplateintegrity-prompt-card" style="scroll-margin-top: 80px;">
         <div class="card-body">
             <h3 class="card-title">
-                <span class="icon-refresh" aria-hidden="true"></span>
-                <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_TITLE'); ?>
+                <span class="icon-flash" aria-hidden="true"></span>
+                <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_TITLE'); ?>
             </h3>
-            <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_DESCRIPTION'); ?></p>
-            <p class="card-text">
-                <small class="text-body-secondary">
-                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_NOTE'); ?>
-                </small>
+            <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_INTRO'); ?></p>
+
+            <ol class="mb-3">
+                <li class="mb-2">
+                    <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP1_TITLE'); ?></strong>
+                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP1_BODY'); ?>
+                </li>
+                <li class="mb-2">
+                    <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP2_TITLE'); ?></strong>
+                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP2_BODY'); ?>
+                </li>
+                <li class="mb-2">
+                    <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP3_TITLE'); ?></strong>
+                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP3_BODY'); ?>
+                </li>
+                <li class="mb-2">
+                    <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP4_TITLE'); ?></strong>
+                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP4_BODY'); ?>
+                </li>
+            </ol>
+
+            <p class="card-text mb-2">
+                <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_PROMPT_LABEL'); ?></strong>
             </p>
-            <form action="<?php echo $this->escape($rescanAction); ?>"
-                  method="post"
-                  onsubmit="return confirm('<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_CONFIRM'), 'JavaScript'); ?>');">
-                <?php echo HTMLHelper::_('form.token'); ?>
-                <input type="hidden" name="task" value="display.rescan">
-                <button type="submit" class="btn btn-warning">
-                    <span class="icon-refresh" aria-hidden="true"></span>
-                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_RESCAN_BUTTON'); ?>
-                </button>
-            </form>
+            <pre class="cstemplateintegrity-codeblock mb-2"><code id="cstemplateintegrity-prompt"><?php echo $this->escape($this->claudePrompt); ?></code></pre>
+            <button type="button"
+                    class="btn btn-primary"
+                    id="cstemplateintegrity-copy-btn"
+                    data-default-label="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_COPY_BUTTON')); ?>"
+                    data-copied-label="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_COPIED')); ?>">
+                <span class="icon-copy" aria-hidden="true"></span>
+                <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_COPY_BUTTON'); ?>
+            </button>
         </div>
     </div>
 
+    <!-- Continue-previous-review prompt — still part of the Method 1
+         (copy-paste) family, so it sits directly under the Method 1
+         card and *above* Method 2. -->
+    <div class="card mb-3 border-warning cstemplateintegrity-prompt-card">
+        <div class="card-body">
+            <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+                <span class="icon-warning me-2 fs-4" aria-hidden="true"></span>
+                <div>
+                    <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_AUDIENCE_TITLE'); ?></strong>
+                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_AUDIENCE_BODY'); ?>
+                </div>
+            </div>
+
+            <h3 class="card-title">
+                <span class="icon-wrench" aria-hidden="true"></span>
+                <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_TITLE'); ?>
+            </h3>
+            <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_INTRO'); ?></p>
+            <pre class="cstemplateintegrity-codeblock mb-2"><code id="cstemplateintegrity-fix-prompt"><?php echo $this->escape($this->fixPrompt); ?></code></pre>
+            <button type="button"
+                    class="btn btn-primary"
+                    id="cstemplateintegrity-fix-copy-btn"
+                    data-default-label="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_COPY_BUTTON')); ?>"
+                    data-copied-label="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_COPIED')); ?>">
+                <span class="icon-copy" aria-hidden="true"></span>
+                <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_COPY_BUTTON'); ?>
+            </button>
+        </div>
+    </div>
+
+    <!-- Method 2: server-side automated scan via saved Anthropic API key.
+         Lives at the bottom so the Method 2 anchor link from the top
+         scrolls all the way past the copy-paste section to land here. -->
     <?php if ($this->hasApiKey) : ?>
-        <div class="card mb-3 border-success">
+        <div id="csti-autoscan-card" class="card mb-3 border-primary" style="scroll-margin-top: 80px;">
             <div class="card-body">
-                <div class="alert alert-success d-flex align-items-center mb-3" role="alert">
+                <h3 class="card-title">
+                    <span class="icon-rocket" aria-hidden="true"></span>
+                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_TITLE'); ?>
+                </h3>
+                <div class="alert alert-primary d-flex align-items-center mb-3" role="alert">
                     <span class="icon-flash me-2 fs-4" aria-hidden="true"></span>
                     <div>
                         <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_AVAILABLE_TITLE'); ?></strong>
                         <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_AVAILABLE_BODY'); ?>
                     </div>
                 </div>
-                <h3 class="card-title">
-                    <span class="icon-rocket" aria-hidden="true"></span>
-                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_TITLE'); ?>
-                </h3>
                 <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_INTRO'); ?></p>
                 <p class="card-text">
                     <small class="text-body-secondary">
-                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_NOTE'); ?>
+                        <?php echo Text::sprintf('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_NOTE', (int) $this->autoScanMaxOverrides, (int) $this->autoScanMaxOverrides); ?>
                     </small>
                 </p>
                 <form action="<?php echo $this->escape($runScanAction); ?>"
@@ -120,7 +206,7 @@ $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=ba
                       data-loading-body="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_LOADING_BODY')); ?>">
                     <?php echo HTMLHelper::_('form.token'); ?>
                     <input type="hidden" name="task" value="display.runScan">
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-primary btn-lg">
                         <span class="icon-rocket" aria-hidden="true"></span>
                         <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_BUTTON'); ?>
                     </button>
@@ -128,188 +214,45 @@ $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=ba
             </div>
         </div>
     <?php else : ?>
-        <div class="card mb-3 border-secondary">
+        <div id="csti-autoscan-card" class="card mb-3 border-warning" style="scroll-margin-top: 80px;">
             <div class="card-body">
                 <h3 class="card-title">
                     <span class="icon-rocket" aria-hidden="true"></span>
                     <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_TITLE'); ?>
                 </h3>
-                <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_NOKEY_BODY'); ?></p>
+                <div class="alert alert-warning d-flex align-items-center mb-0" role="alert">
+                    <span class="icon-warning me-2 fs-4" aria-hidden="true"></span>
+                    <div>
+                        <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_NOKEY_TITLE'); ?></strong>
+                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_AUTOSCAN_NOKEY_BODY'); ?>
+                    </div>
+                </div>
             </div>
         </div>
     <?php endif; ?>
 
-    <div class="row">
-        <div class="col-lg-8">
-
-            <div class="card mb-3 border-info">
-                <div class="card-body">
-                    <div class="alert alert-success d-flex align-items-center mb-3" role="alert">
-                        <span class="icon-checkmark-circle me-2 fs-4" aria-hidden="true"></span>
-                        <div>
-                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_AUDIENCE_TITLE'); ?></strong>
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_AUDIENCE_BODY'); ?>
-                        </div>
-                    </div>
-
-                    <h3 class="card-title">
-                        <span class="icon-flash" aria-hidden="true"></span>
-                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_TITLE'); ?>
-                    </h3>
-                    <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_INTRO'); ?></p>
-
-                    <ol class="mb-3">
-                        <li class="mb-2">
-                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP1_TITLE'); ?></strong>
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP1_BODY'); ?>
-                        </li>
-                        <li class="mb-2">
-                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP2_TITLE'); ?></strong>
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP2_BODY'); ?>
-                        </li>
-                        <li class="mb-2">
-                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP3_TITLE'); ?></strong>
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP3_BODY'); ?>
-                        </li>
-                        <li class="mb-2">
-                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP4_TITLE'); ?></strong>
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_STEP4_BODY'); ?>
-                        </li>
-                    </ol>
-
-                    <p class="card-text mb-2">
-                        <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_PROMPT_LABEL'); ?></strong>
+    <!-- About / endpoint / version footer. Was a right-column sidebar
+         until v2.1; moved here so the action methods get full width. -->
+    <div class="card mb-0 border-secondary cstemplateintegrity-about-footer">
+        <div class="card-body py-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-1"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ABOUT_TITLE'); ?></h5>
+                    <p class="card-text mb-0">
+                        <small class="text-body-secondary"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ABOUT_DESCRIPTION'); ?></small>
                     </p>
-                    <pre class="cstemplateintegrity-codeblock mb-2"><code id="cstemplateintegrity-prompt"><?php echo $this->escape($this->claudePrompt); ?></code></pre>
-                    <button type="button"
-                            class="btn btn-primary"
-                            id="cstemplateintegrity-copy-btn"
-                            data-default-label="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_COPY_BUTTON')); ?>"
-                            data-copied-label="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_COPIED')); ?>">
-                        <span class="icon-copy" aria-hidden="true"></span>
-                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_COPY_BUTTON'); ?>
-                    </button>
                 </div>
-            </div>
-
-            <div class="card mb-3 border-warning">
-                <div class="card-body">
-                    <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
-                        <span class="icon-warning me-2 fs-4" aria-hidden="true"></span>
-                        <div>
-                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_AUDIENCE_TITLE'); ?></strong>
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_AUDIENCE_BODY'); ?>
-                        </div>
-                    </div>
-
-                    <h3 class="card-title">
-                        <span class="icon-wrench" aria-hidden="true"></span>
-                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_TITLE'); ?>
-                    </h3>
-                    <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_INTRO'); ?></p>
-                    <pre class="cstemplateintegrity-codeblock mb-2"><code id="cstemplateintegrity-fix-prompt"><?php echo $this->escape($this->fixPrompt); ?></code></pre>
-                    <button type="button"
-                            class="btn btn-primary"
-                            id="cstemplateintegrity-fix-copy-btn"
-                            data-default-label="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_COPY_BUTTON')); ?>"
-                            data-copied-label="<?php echo $this->escape(Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_USAGE_COPIED')); ?>">
-                        <span class="icon-copy" aria-hidden="true"></span>
-                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_FIX_COPY_BUTTON'); ?>
-                    </button>
-                </div>
-            </div>
-
-            <div class="card mb-3 border-info">
-                <div class="card-body">
-                    <h3 class="card-title">
-                        <span class="icon-list" aria-hidden="true"></span>
-                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_SESSIONS_TITLE'); ?>
-                    </h3>
-                    <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_SESSIONS_INTRO'); ?></p>
-
-                    <?php if (empty($this->recentSessions)) : ?>
-                        <p class="text-body-secondary"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_SESSIONS_EMPTY'); ?></p>
-                    <?php else : ?>
-                        <ul class="list-unstyled mb-3">
-                            <?php foreach ($this->recentSessions as $row) : ?>
-                                <li class="mb-2">
-                                    <a href="<?php echo $this->escape(Route::_('index.php?option=com_cstemplateintegrity&view=session&id=' . (int) $row->id . '&from=dashboard', false)); ?>">
-                                        <?php echo $this->escape($row->name); ?>
-                                    </a>
-                                    <span class="badge bg-secondary ms-2"><?php echo $this->escape($row->source); ?></span>
-                                    <?php if (!empty($row->summary)) : ?>
-                                        <br><small class="text-body-secondary"><?php echo $this->escape($row->summary); ?></small>
-                                    <?php endif; ?>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php endif; ?>
-
-                    <a href="<?php echo $this->escape($newSessionUrl); ?>" class="btn btn-info">
-                        <span class="icon-plus" aria-hidden="true"></span>
-                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_SESSIONS_NEW'); ?>
-                    </a>
-                    <a href="<?php echo $this->escape($sessionsUrl); ?>" class="btn btn-secondary">
-                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_SESSIONS_ALL'); ?>
-                    </a>
-                </div>
-            </div>
-
-            <div class="card mb-3 border-success">
-                <div class="card-body">
-                    <h3 class="card-title">
-                        <span class="icon-checkmark" aria-hidden="true"></span>
-                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_TITLE'); ?>
-                    </h3>
-                    <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_INTRO'); ?></p>
-
-                    <div class="mb-3">
-                        <p class="card-text mb-2">
-                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_OPTION_A_LABEL'); ?></strong>
-                        </p>
-                        <p class="card-text mb-2"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_OPTION_A_BODY'); ?></p>
-                        <a href="<?php echo $this->escape($siteTemplatesUrl); ?>" class="btn btn-secondary">
-                            <span class="icon-arrow-right" aria-hidden="true"></span>
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_OPTION_A_BUTTON'); ?>
-                        </a>
-                    </div>
-
-                    <hr>
-
-                    <div>
-                        <p class="card-text mb-2">
-                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_OPTION_B_LABEL'); ?></strong>
-                        </p>
-                        <p class="card-text mb-2"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_OPTION_B_BODY'); ?></p>
-                        <button type="button" class="btn btn-success"
-                                data-bs-toggle="modal"
-                                data-bs-target="#cstemplateintegrity-mark-reviewed-modal">
-                            <span class="icon-checkmark-circle" aria-hidden="true"></span>
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_OPTION_B_BUTTON'); ?>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h3 class="card-title"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ABOUT_TITLE'); ?></h3>
-                    <p class="card-text"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ABOUT_DESCRIPTION'); ?></p>
-                    <hr>
-                    <p class="card-text mb-1">
-                        <small class="text-body-secondary">
-                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ENDPOINT_LABEL'); ?></strong>
+                <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                    <p class="card-text mb-1" style="word-break: break-all;">
+                        <small>
+                            <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_ENDPOINT_LABEL'); ?>:</strong>
+                            <code><?php echo $this->escape($this->overridesEndpoint); ?></code>
                         </small>
-                    </p>
-                    <p class="card-text mb-2" style="word-break: break-all;">
-                        <small><code><?php echo $this->escape($this->overridesEndpoint); ?></code></small>
                     </p>
                     <p class="card-text mb-0">
                         <small class="text-body-secondary">
-                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>: <?php echo $this->escape($this->componentVersion ?: '?'); ?>
+                            <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_VERSION_LABEL'); ?>:
+                            <?php echo $this->escape($this->componentVersion ?: '?'); ?>
                         </small>
                     </p>
                 </div>
@@ -380,45 +323,6 @@ $backupsUrl         = Route::_('index.php?option=com_cstemplateintegrity&view=ba
         <div class="csti-diag-row">
             <span class="label"><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_DIAGNOSTICS_AUTOSCAN_CAP'); ?></span>
             <span class="value"><?php echo $this->escape($this->autoScanMaxOverrides); ?> overrides per call</span>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="cstemplateintegrity-mark-reviewed-modal" tabindex="-1" aria-labelledby="cstemplateintegrity-mark-reviewed-modal-title" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="cstemplateintegrity-mark-reviewed-modal-title">
-                    <span class="icon-warning" aria-hidden="true"></span>
-                    <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_MODAL_TITLE'); ?>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?php echo $this->escape(Text::_('JCANCEL')); ?>"></button>
-            </div>
-            <div class="modal-body">
-                <p><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_MODAL_BODY'); ?></p>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="cstemplateintegrity-mark-reviewed-confirm-check">
-                    <label class="form-check-label" for="cstemplateintegrity-mark-reviewed-confirm-check">
-                        <strong><?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_MODAL_AGREE'); ?></strong>
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <?php echo Text::_('JCANCEL'); ?>
-                </button>
-                <form action="<?php echo $this->escape($markReviewedAction); ?>" method="post" class="d-inline">
-                    <?php echo HTMLHelper::_('form.token'); ?>
-                    <input type="hidden" name="task" value="display.markReviewed">
-                    <button type="submit"
-                            class="btn btn-success"
-                            id="cstemplateintegrity-mark-reviewed-confirm-btn"
-                            disabled>
-                        <span class="icon-checkmark-circle" aria-hidden="true"></span>
-                        <?php echo Text::_('COM_CSTEMPLATEINTEGRITY_DASHBOARD_REVIEWED_MODAL_CONFIRM'); ?>
-                    </button>
-                </form>
-            </div>
         </div>
     </div>
 </div>

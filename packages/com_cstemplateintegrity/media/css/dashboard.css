@@ -19,6 +19,74 @@
 }
 
 /*
+ * The Method 1 (Use Claude.ai/Code) and Continue-previous-review cards
+ * default to --bs-body-bg, which in Atum dark mode is the same near-black
+ * as the page background — the cards visually disappear. Lift them by a
+ * couple of percent of white so the card edge reads as a real container,
+ * but only in dark mode. Light mode already has good contrast.
+ */
+[data-bs-theme="dark"] .cstemplateintegrity-prompt-card,
+[data-color-scheme="dark"] .cstemplateintegrity-prompt-card {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+/*
+ * Method 1 action shortcut — Cybersalt orange with white text.
+ * Bootstrap's btn-warning was too yellow ("looks like caution") and
+ * fought visually with the rescan button, which is the actual warning.
+ * Solid orange reads as "primary path you can use right now". Tim can
+ * refine the hex; this is a reasonable Cybersalt orange.
+ */
+.btn.csti-method-1-btn {
+    background-color: #dc6b1a;
+    border-color: #dc6b1a;
+    color: #ffffff;
+}
+.btn.csti-method-1-btn:hover,
+.btn.csti-method-1-btn:focus,
+.btn.csti-method-1-btn:active {
+    background-color: #b85614;
+    border-color: #b85614;
+    color: #ffffff;
+}
+.btn.csti-method-1-btn:focus-visible {
+    box-shadow: 0 0 0 0.25rem rgba(220, 107, 26, 0.35);
+}
+
+/*
+ * Rescan button — mode-aware so the warning intent reads in dark mode
+ * AND stays legible in light mode. Bootstrap's btn-outline-warning is
+ * yellow-on-white in light mode (low contrast) but yellow-on-black in
+ * dark mode (high contrast, looks like a proper warning). So:
+ *   - Light mode: solid yellow background with default dark text.
+ *   - Dark mode: outline look (transparent bg, yellow text + border).
+ */
+.btn.csti-rescan-btn {
+    background-color: var(--bs-warning, #ffc107);
+    border-color: var(--bs-warning, #ffc107);
+    color: #212529;
+}
+.btn.csti-rescan-btn:hover,
+.btn.csti-rescan-btn:focus,
+.btn.csti-rescan-btn:active {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #212529;
+}
+[data-bs-theme="dark"] .btn.csti-rescan-btn,
+[data-color-scheme="dark"] .btn.csti-rescan-btn {
+    background-color: transparent;
+    color: var(--bs-warning, #ffc107);
+    border-color: var(--bs-warning, #ffc107);
+}
+[data-bs-theme="dark"] .btn.csti-rescan-btn:hover,
+[data-color-scheme="dark"] .btn.csti-rescan-btn:hover {
+    background-color: rgba(255, 193, 7, 0.12);
+    color: var(--bs-warning, #ffc107);
+    border-color: var(--bs-warning, #ffc107);
+}
+
+/*
  * Tall code blocks (the prompt cards on the dashboard) are capped to
  * a scrollable height so they don't push the rest of the page down.
  * The session-report and backup-contents blocks use the same base

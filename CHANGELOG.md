@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0] — 2026-04-29
+
+UX rework on the dashboard: clearer "what do you want to do today" path-finding with two action shortcuts and a Cybersalt orange + Bootstrap blue palette; nicer key/token Options UX with Reveal / Clear / Get-token buttons; brand pass on every user-facing title; full-component security review with eight findings closed.
+
+### 🚀 New
+
+- **Method 1 / Method 2 action shortcuts** at the top of the dashboard. *Method 1: Use Claude.ai or Code* (Cybersalt orange) anchor-jumps to the copy-paste prompt below; *Method 2: Run automated scan* (Bootstrap blue, or grey-outlined when no API key is saved) jumps to the auto-scan card. Two clearly-named paths replace the old "everything's at the bottom" layout.
+- **Clear button** on every API-key / token field in *Options → Keys & tokens* (the old *AI provider* tab — renamed). Click to empty the field; save persists. Joomla API token field also sprouts a *Get token* button that opens the current admin's profile in a new tab; the button auto-hides once a token is entered and reappears the moment the field is cleared.
+- **Empty-state blur skip** on key/token inputs — the input no longer renders blurred when it's empty, so admins can see where to paste on a fresh field.
+- **Mode-aware Rescan button** — solid yellow with dark text in light mode, outline-yellow on near-black in dark mode. Reads as a "warning" intent in both modes without the contrast trap of `btn-outline-warning` in light mode.
+
+### 🔧 Improvements
+
+- **Dashboard restructure.** Removed the *API endpoint active* status alert, the *Recent sessions* card (the Sessions menu covers it), and the *Mark all as reviewed* shortcut (Claude's `dismiss_all` tool covers that path). The right-hand About sidebar moved to a full-width footer so the action methods get the full canvas. Section reading order is now Method 1 → Continue Previous Review → Method 2, so the Method 2 anchor lands at the bottom where the action button lives.
+- **Cybersalt action-button palette.** Method 1 uses `#dc6b1a` Cybersalt orange with white text; Method 2 (with API key) uses Bootstrap blue. Navigation buttons (Sessions / File backups / Site Templates Management / Action log) are neutral grey — they're "go fetch data" buttons, not primary actions. Recipes documented in Joomla Brain § 12 for reuse across Cybersalt extensions.
+- **Top nav reordered alphabetically** — Action log → File backups → Open Site Templates Management → Sessions → Rescan → Diagnostics. Site Templates Management opens in a new tab so the dashboard stays open behind it.
+- **Side-menu reorder** — Dashboard → Action log → File backups → Sessions inside the component admin sidebar.
+- **Brand pass.** Every user-facing page title now reads *Cybersalt Template Integrity* (was *CS Template Integrity*) — Sessions / Action log / File backups / extension manager / API component label / update server name. Code-side identifiers (namespaces, language string keys, file paths, DB tables) keep the `cs` short form. Convention recorded in Joomla Brain `company-info.md`.
+- **Get token link** lands on the current admin's user-edit form (`view=user&layout=edit&id={current admin}`) instead of falling through to the user list. `{user_id}` substitution in the field's `helplink` attribute resolves to `Factory::getApplication()->getIdentity()->id` at render time. Route URLs are single-encoded (no more double `&amp;amp;` in the rendered href).
+- **Dark-mode prompt cards** are now slightly elevated (`rgba(255,255,255,0.04)`) so the card edge reads as a real container instead of blending into the page background. Light mode unchanged.
+
+### 🔍 Security
+
+Eight findings from the v2.0–v2.2 retroactive review closed in this release:
+
+- **H-1 — Joomla API token plaintext exposure (privilege escalation).** A user with `cstemplateintegrity.view` could read the higher-privileged admin's saved Joomla API token off the dashboard's prompt block, and then authenticate against the *entire* Joomla Web Services API as the issuer (full privilege escalation outside cstemplateintegrity's scope). The dashboard view now substitutes the token into the prompt only when the *current* user holds the write tier — view-tier users see the `<PASTE YOUR JOOMLA API TOKEN HERE>` placeholder, identical to a fresh install. New `PermissionHelper::hasWrite()` non-throwing check.
+- **M-1 — Backup restore path-safety hardening.** v0.9.0 closed the live RCE primitive (free-form `file_path` on the backup POST endpoint) but the restore-side guard still permitted writes anywhere under `JPATH_ROOT` for any non-PHP extension — `.htaccess`, `.user.ini`, or template `.css`/`.js` referenced by the active layout could be overwritten via a write-tier user with seeded archival backup rows. `PathSafetyHelper::assertOverrideWriteAllowed()` (replacing `assertPhpWriteAllowed()`) is now a positive allow-list: every write must terminate inside `<root>/templates/<tpl>/html/` or `<root>/administrator/templates/<tpl>/html/`, regardless of file extension. Updated callers: `OverridesHelper::applyFix`, `BackupsHelper::restore`, `api/Controller/BackupsController::create`.
+- **M-2 — Disk-fill primitive on apply_fix and restore.** Neither write path capped the size of the *new* contents being written (the previous 1 MB cap applied only to the pre-write *snapshot*). New `PathSafetyHelper::assertSizeAllowed()` enforces a 4 MB upper cap before `file_put_contents()` in both paths.
+- **M-3 — apply_fix silently failed on >1 MB legitimate overrides.** `BackupsHelper::MAX_SIZE` raised from 1 MB to 4 MB, aligned with `PathSafetyHelper::MAX_WRITE_SIZE`, so apply_fix can both snapshot the current contents and write the new contents on a real-world large override.
+- **L-1 — Anthropic API key fingerprint narrowed brute-force search.** The diagnostics fingerprint previously rendered `starts="<first 8>", ends="<last 4>"` of the saved key. The last 4 chars are real entropy — combined with any other channel that leaked middle bytes, the disclosure compounds. Replaced with `fingerprint=sha256:<12 hex>` — admins can still verify "this is the key I think it is" but no chars of the actual key leak.
+- **L-2 — Web Services apply-fix accepted nonexistent session_id.** The `/v1/cstemplateintegrity/overrides/{id}/apply-fix` endpoint accepted any integer `session_id`; the resulting backup row and audit-log entry would reference a session that never existed. Audit-trail integrity bug. Added `SessionsHelper::find($sessionId)` validation; non-existent ids are rejected with 400 `INVALID_SESSION_ID`. 0 / negative / null are normalized to "no session".
+- **L-3 — Defense-in-depth on `simplexml_load_file()`.** `Dashboard\HtmlView::resolveComponentVersion()` now passes `LIBXML_NONET` explicitly. Not currently exploitable on PHP 8.1+ (default disables external entity loading) — belt-and-braces for older PHP and future libxml default changes.
+- **L-4 — Per-user soft cap on automated scans.** `runScan` now refuses if the current user has logged 12+ `auto_scan_run` actions in the past hour. Defends against accidental click-spam and against a CSRF-coerced admin (or compromised account) burning the saved Anthropic key's spend quota in a tight loop. The cap counts attempts, not successes — a failed scan still counts. New `ActionLogHelper::countActionsByCurrentUserSince()` helper.
+- **L-5 — Session-download filename consistency.** A session named `..` or `.` produced cosmetically odd download filenames (`cstemplateintegrity-..md`). `SessionController::download` now strips leading/trailing dots after sanitization and falls back to `session-<id>` when empty, matching the existing `SessionsController::downloadSelected` behavior.
+
+### 📝 Docs
+
+- **Joomla Brain UI patterns** — added § 12 *"Cybersalt action-button palette (Tim's preferred colors)"* documenting the Cybersalt orange + Bootstrap blue combo, the role/class/color table, the "avoid" list, and CSS recipes for `.csti-method-1-btn` and the mode-aware `.csti-rescan-btn`. Future Cybersalt extensions can copy-paste from there.
+- **Joomla Brain company-info** — added a *"Naming convention: `cs` prefix vs. 'Cybersalt' full name"* section so the next extension doesn't drift between the technical short form (in code) and the brand name (in user-facing strings).
+- **Joomla Brain version-bump checklist** — security review is now a hard prerequisite before any version bump. New "Review depth by bump type" matrix: 0.7 confidence threshold for routine bumps (default `/security-review`); 0.5 threshold + PHPStan required for major releases.
+
+### Migration
+
+In-place upgrade from 2.1.x. No schema changes; no settings changes. `BackupsHelper::MAX_SIZE` bump from 1 MB to 4 MB doesn't affect existing rows. Side menu reorder takes effect on next admin cache clear. View-tier users who previously saw the saved Joomla API token in the dashboard's prompt block will now see the placeholder instead — restore the convenience by ensuring those admins also hold `cstemplateintegrity.write` (or `core.manage`).
+
 ## [2.1.0] — 2026-04-29
 
 ### 🚀 New

@@ -31,7 +31,35 @@ use Joomla\Database\DatabaseInterface;
 
 final class ScanRunnerHelper
 {
-    public const MAX_OVERRIDES_PER_RUN = 60;
+    /**
+     * Default cap when the caller doesn't pass one. Site admin can
+     * override via the `scan_max_overrides` component option.
+     *
+     * Why so low? Each override sends both the override file and the
+     * matching core file inline. The full scan call can fit ~60
+     * overrides comfortably inside Anthropic's context window — but
+     * the trouble shows up AFTER the scan, when the user chats back
+     * to apply fixes. The conversation history persists the report
+     * Claude wrote (which is proportional to the override count), and
+     * each chat turn re-sends that history. With Anthropic's 10K-input-
+     * tokens-per-minute rate limit on the lower tiers, a 60-override
+     * scan + an immediate chat turn within the same minute will 429.
+     * 10 keeps the chat headroom comfortable for everyone.
+     */
+    public const DEFAULT_MAX_OVERRIDES = 10;
+
+    /**
+     * Hard ceiling regardless of what the user sets — we will never
+     * send more than this in one call. Defends against a config-form
+     * bypass that stored an absurdly high value.
+     */
+    public const MAX_OVERRIDES_CEILING = 100;
+
+    /**
+     * Backwards-compat alias for callers that still reference the old
+     * constant. Returns the ceiling, not the default.
+     */
+    public const MAX_OVERRIDES_PER_RUN = self::MAX_OVERRIDES_CEILING;
 
     /** Cap each file's content sent to Claude (avoid blowing context on a single 100KB file). */
     private const MAX_FILE_BYTES = 32_000;
@@ -48,15 +76,25 @@ final class ScanRunnerHelper
      *   - skipped:     int       Overrides skipped (couldn't resolve / oversized).
      *   - truncated:   bool      Whether MAX_OVERRIDES_PER_RUN clipped the list.
      *
-     * @return array{markdown: string, messages: array<int, array{role: string, content: mixed}>, count: int, skipped: int, truncated: bool}
+     * @return array{markdown: string, messages: array<int, array{role: string, content: mixed}>, count: int, skipped: int, truncated: bool, cap: int}
      */
-    public static function run(string $apiKey, string $model = 'claude-sonnet-4-6'): array
+    public static function run(string $apiKey, string $model = 'claude-sonnet-4-6', ?int $maxOverrides = null): array
     {
+        // Resolve and clamp the cap. Defends against a config form
+        // bypass storing a number outside the documented range.
+        $cap = $maxOverrides ?? self::DEFAULT_MAX_OVERRIDES;
+        if ($cap < 1) {
+            $cap = 1;
+        }
+        if ($cap > self::MAX_OVERRIDES_CEILING) {
+            $cap = self::MAX_OVERRIDES_CEILING;
+        }
+
         $rows = self::loadOverrides();
         $totalAvailable = count($rows);
-        $truncated = $totalAvailable > self::MAX_OVERRIDES_PER_RUN;
+        $truncated = $totalAvailable > $cap;
         if ($truncated) {
-            $rows = array_slice($rows, 0, self::MAX_OVERRIDES_PER_RUN);
+            $rows = array_slice($rows, 0, $cap);
         }
 
         $items   = [];
@@ -83,6 +121,7 @@ final class ScanRunnerHelper
                 'count'     => 0,
                 'skipped'   => $skipped,
                 'truncated' => $truncated,
+                'cap'       => $cap,
             ];
         }
 
@@ -118,6 +157,7 @@ final class ScanRunnerHelper
             'count'     => count($items),
             'skipped'   => $skipped,
             'truncated' => $truncated,
+            'cap'       => $cap,
         ];
     }
 
@@ -303,6 +343,6 @@ final class ScanRunnerHelper
             . "**What you should do today:** Nothing — every flagged override row points at a file that no longer exists on disk.\n\n"
             . "**What I checked:** $totalAvailable override row(s); $skipped of them couldn't be matched to a file on disk and were skipped.\n\n"
             . "**Findings table:** *(none)*\n\n"
-            . "**Technical detail:** The override-tracker rows are stale. Open *Components → CS Template Integrity → Action log* and run *Reset overrides for review* if you want the tracker rebuilt against the current filesystem.";
+            . "**Technical detail:** The override-tracker rows are stale. Open *Components → Cybersalt Template Integrity → Action log* and run *Reset overrides for review* if you want the tracker rebuilt against the current filesystem.";
     }
 }

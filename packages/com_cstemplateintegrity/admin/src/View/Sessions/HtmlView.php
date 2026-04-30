@@ -14,6 +14,7 @@ defined('_JEXEC') or die;
 
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\SessionsHelper;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\ToolbarHelper;
@@ -23,11 +24,23 @@ final class HtmlView extends BaseHtmlView
     /** @var list<\stdClass> */
     public array $items = [];
 
+    public string $listOrder = 'created_at';
+
+    public string $listDir = 'DESC';
+
     public function display($tpl = null): void
     {
         PermissionHelper::requireView();
 
-        $this->items = SessionsHelper::listRecent(200);
+        // Sortable columns. Both `order` and `dir` are validated again
+        // inside SessionsHelper::listRecent against an explicit
+        // whitelist; this read just normalises the values for the
+        // template's column-header link rendering.
+        $input = Factory::getApplication()->getInput();
+        $this->listOrder = (string) $input->getCmd('order', 'created_at');
+        $this->listDir   = strtoupper((string) $input->getCmd('dir', 'DESC')) === 'ASC' ? 'ASC' : 'DESC';
+
+        $this->items = SessionsHelper::listRecent(200, $this->listOrder, $this->listDir);
         $this->addToolbar();
         parent::display($tpl);
     }

@@ -22,6 +22,7 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 use Joomla\Database\DatabaseInterface;
+use Joomla\Database\ParameterType;
 use Throwable;
 
 final class ActionLogHelper
@@ -38,6 +39,7 @@ final class ActionLogHelper
     public const ACTION_FIX_APPLIED      = 'fix_applied';
     public const ACTION_OVERRIDE_DISMISSED = 'override_dismissed';
     public const ACTION_DISCLAIMER_ACKNOWLEDGED = 'disclaimer_acknowledged';
+    public const ACTION_AUTO_SCAN_RUN    = 'auto_scan_run';
 
     /**
      * @param  array<string,mixed>  $details  arbitrary metadata; JSON-encoded into the row
@@ -58,6 +60,44 @@ final class ActionLogHelper
             $db->insertObject('#__cstemplateintegrity_actions', $row);
         } catch (Throwable $e) {
             // Logging must never crash the parent operation. Swallow.
+        }
+    }
+
+    /**
+     * Count how many times the current user has logged a given action
+     * within the last $secondsAgo seconds. Used by the per-hour scan
+     * cap on `runScan` to prevent a write-tier user (or a CSRF-coerced
+     * admin who somehow passes the form-token check) from rapid-firing
+     * the Anthropic API.
+     *
+     * Returns 0 on database error or when the current user can't be
+     * resolved — this is a soft cap, not an authentication gate.
+     */
+    public static function countActionsByCurrentUserSince(string $action, int $secondsAgo): int
+    {
+        try {
+            $userId = self::currentUserId();
+            if ($userId <= 0) {
+                return 0;
+            }
+
+            $secondsAgo = max(1, $secondsAgo);
+            $cutoff = Factory::getDate('-' . $secondsAgo . ' seconds')->toSql();
+
+            $db    = Factory::getContainer()->get(DatabaseInterface::class);
+            $query = $db->getQuery(true)
+                ->select('COUNT(*)')
+                ->from($db->quoteName('#__cstemplateintegrity_actions'))
+                ->where($db->quoteName('action')     . ' = :action')
+                ->where($db->quoteName('user_id')    . ' = :uid')
+                ->where($db->quoteName('created_at') . ' >= :cutoff')
+                ->bind(':action', $action)
+                ->bind(':uid',    $userId, ParameterType::INTEGER)
+                ->bind(':cutoff', $cutoff);
+
+            return (int) $db->setQuery($query)->loadResult();
+        } catch (Throwable $e) {
+            return 0;
         }
     }
 

@@ -189,7 +189,7 @@ final class BackupsController extends ApiController
             // applies the same checks, and we want the create step to
             // refuse paths a restore could not write to.
             PathSafetyHelper::assertWithinRoot($absolute);
-            PathSafetyHelper::assertPhpWriteAllowed($absolute);
+            PathSafetyHelper::assertOverrideWriteAllowed($absolute);
 
             if (!is_file($absolute)) {
                 $this->sendJsonApi(

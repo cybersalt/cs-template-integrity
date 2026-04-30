@@ -58,7 +58,14 @@ final class SessionController extends BaseController
         }
 
         $contents = (string) ($session->report_markdown ?? '');
+        // Strip any chars outside [A-Za-z0-9._-], then trim leading /
+        // trailing dots so a session named "." or ".." (or after the
+        // regex strips everything but a leading dot) doesn't produce
+        // "cstemplateintegrity-..md" or worse on disk. Empty after
+        // sanitization falls back to the session id, matching the
+        // SessionsController::downloadSelected fallback.
         $safeName = preg_replace('/[^A-Za-z0-9._-]/', '-', (string) $session->name);
+        $safeName = trim((string) $safeName, '.');
         $filename = 'cstemplateintegrity-' . ($safeName !== '' ? $safeName : 'session-' . $id) . '.md';
 
         $app->setHeader('Content-Type', 'text/markdown; charset=utf-8', true);

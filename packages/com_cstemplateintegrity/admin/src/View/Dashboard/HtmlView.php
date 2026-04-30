@@ -13,8 +13,8 @@ namespace Cybersalt\Component\Cstemplateintegrity\Administrator\View\Dashboard;
 defined('_JEXEC') or die;
 
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\AnthropicClient;
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\ScanRunnerHelper;
-use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\SessionsHelper;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
@@ -47,9 +47,6 @@ final class HtmlView extends BaseHtmlView
 
     public string $autoScanMaxOverrides = '';
 
-    /** @var list<\stdClass> */
-    public array $recentSessions = [];
-
     public function display($tpl = null): void
     {
         // ACL gate. Joomla's outer core.manage check lets admins from
@@ -66,11 +63,30 @@ final class HtmlView extends BaseHtmlView
         $this->siteUrl           = rtrim(Uri::root(), '/');
         $this->apiBase           = $this->siteUrl . '/api/index.php/v1/cstemplateintegrity';
         $this->overridesEndpoint = $this->apiBase . '/overrides';
-        $this->claudePrompt      = $this->buildClaudePrompt();
-        $this->fixPrompt         = $this->buildFixPrompt();
         $this->componentVersion  = $this->resolveComponentVersion();
 
-        $rawKey = (string) ComponentHelper::getParams('com_cstemplateintegrity')->get('anthropic_api_key', '');
+        $params = ComponentHelper::getParams('com_cstemplateintegrity');
+
+        // Saved Joomla API token is only substituted into the rendered
+        // prompt when the *current* user holds the write tier. View-tier
+        // users see the <PASTE YOUR JOOMLA API TOKEN HERE> placeholder
+        // even if a token is saved on the site.
+        //
+        // Why: a Joomla API token authenticates against the entire Joomla
+        // Web Services API as the issuing user, not just cstemplateintegrity.
+        // If a senior admin saves their token here for convenience, a
+        // junior user with cstemplateintegrity.view (which the dashboard
+        // requires) would otherwise read the senior's token off the
+        // dashboard prompt and impersonate them across com_users,
+        // com_content, com_config, etc. Gating at write tier collapses
+        // the audience back to "users who already have token-using
+        // power on this component".
+        $savedJoomlaToken     = trim((string) $params->get('joomla_api_token', ''));
+        $tokenForPrompt       = PermissionHelper::hasWrite() ? $savedJoomlaToken : '';
+        $this->claudePrompt   = $this->buildClaudePrompt($tokenForPrompt);
+        $this->fixPrompt      = $this->buildFixPrompt($tokenForPrompt);
+
+        $rawKey = (string) $params->get('anthropic_api_key', '');
         $this->hasApiKey = trim($rawKey) !== '';
         if ($this->hasApiKey) {
             try {
@@ -84,18 +100,16 @@ final class HtmlView extends BaseHtmlView
             'index.php?option=com_cstemplateintegrity&task=display.testApiConnection&' . Session::getFormToken() . '=1',
             false
         );
-        $this->autoScanMaxOverrides = (string) ScanRunnerHelper::MAX_OVERRIDES_PER_RUN;
 
-        $this->recentSessions    = SessionsHelper::listRecent(5);
+        // Resolve the configured cap so every surface (autoscan card
+        // note, diagnostics modal) shows the actual number that will
+        // apply on the next scan, not the hardcoded ceiling.
+        $configuredCap = (int) $params->get('scan_max_overrides', ScanRunnerHelper::DEFAULT_MAX_OVERRIDES);
+        $configuredCap = max(1, min(ScanRunnerHelper::MAX_OVERRIDES_CEILING, $configuredCap));
+        $this->autoScanMaxOverrides = (string) $configuredCap;
 
         HTMLHelper::_('stylesheet', 'com_cstemplateintegrity/dashboard.css', ['relative' => true, 'version' => 'auto']);
         HTMLHelper::_('script', 'com_cstemplateintegrity/dashboard.js', ['relative' => true, 'version' => 'auto', 'defer' => true]);
-
-        // Explicit modal asset for the Mark-all-reviewed confirmation
-        // modal — was working incidentally because Atum was loading
-        // Bootstrap's modal asset for other reasons; requesting it
-        // explicitly so we don't depend on that.
-        $this->getDocument()->getWebAssetManager()->useScript('bootstrap.modal');
 
         $this->addToolbar();
 
@@ -127,7 +141,12 @@ final class HtmlView extends BaseHtmlView
             return '';
         }
 
-        $xml = @simplexml_load_file($manifestPath);
+        // LIBXML_NONET disables network fetches for any external
+        // entity references — defense-in-depth. The manifest is a
+        // Cybersalt-shipped file (not user-controllable) and PHP 8.1+
+        // disables external entity loading by default, so this is
+        // belt-and-braces, not closing an active vulnerability.
+        $xml = @simplexml_load_file($manifestPath, 'SimpleXMLElement', LIBXML_NONET);
         if ($xml === false) {
             return '';
         }
@@ -135,8 +154,12 @@ final class HtmlView extends BaseHtmlView
         return (string) ($xml->version ?? '');
     }
 
-    private function buildClaudePrompt(): string
+    private function buildClaudePrompt(string $savedToken = ''): string
     {
+        $tokenLine = $savedToken !== ''
+            ? 'API token:   ' . $savedToken
+            : 'API token:   <PASTE YOUR JOOMLA API TOKEN HERE>';
+
         return <<<PROMPT
         Scan the template-override findings on my Joomla site and produce a
         security review report I can forward to the site owner. The audience
@@ -146,7 +169,7 @@ final class HtmlView extends BaseHtmlView
 
         Site:        {$this->siteUrl}
         API base:    {$this->apiBase}
-        API token:   <PASTE YOUR JOOMLA API TOKEN HERE>
+        {$tokenLine}
 
         Authenticate every request with this header:
             X-Joomla-Token: <token>
@@ -297,8 +320,12 @@ final class HtmlView extends BaseHtmlView
         PROMPT;
     }
 
-    private function buildFixPrompt(): string
+    private function buildFixPrompt(string $savedToken = ''): string
     {
+        $tokenLine = $savedToken !== ''
+            ? 'API token:      ' . $savedToken
+            : 'API token:      <PASTE YOUR JOOMLA API TOKEN HERE>';
+
         return <<<PROMPT
         I'm picking up an earlier security review of my Joomla site's
         template overrides — the original chat is gone (or I'm a different
@@ -308,7 +335,7 @@ final class HtmlView extends BaseHtmlView
 
         Site:           {$this->siteUrl}
         API base:       {$this->apiBase}
-        API token:      <PASTE YOUR JOOMLA API TOKEN HERE>
+        {$tokenLine}
         Review session: <PASTE THE SESSION ID FROM THE EARLIER SCAN, e.g. 3>
 
         Auth on every request:

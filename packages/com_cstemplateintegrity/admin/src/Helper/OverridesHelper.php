@@ -41,6 +41,12 @@ final class OverridesHelper
             throw new \RuntimeException('Refusing to apply an empty fix; provide new contents.');
         }
 
+        // Hard byte cap on the patched contents. BackupsHelper's MAX_SIZE
+        // capped the *current* state being snapshotted, not the new
+        // bytes being written — without this, a write-tier user could
+        // POST multi-GB JSON to /apply-fix and have it land on disk.
+        PathSafetyHelper::assertSizeAllowed($newContents);
+
         $row = self::loadOverride($overrideId);
         if ($row === null) {
             throw new \RuntimeException(sprintf('Override #%d not found.', $overrideId));
@@ -55,13 +61,17 @@ final class OverridesHelper
             throw new \RuntimeException('Could not resolve the override file path from this row.');
         }
 
-        // Separator-anchored containment check + PHP-write whitelist.
-        // The whitelist allows .php only inside templates/.../html/, so
-        // a hostile #__template_overrides row that decoded to e.g.
-        // /html/../../../administrator/components/com_users/foo.php
-        // would still be refused even after passing assertWithinRoot.
+        // Two complementary checks:
+        //   1. assertWithinRoot — realpath containment, defends against
+        //      symlink/.. escape from JPATH_ROOT.
+        //   2. assertOverrideWriteAllowed — positive allow-list, refuses
+        //      anything outside templates/<tpl>/html/ regardless of
+        //      extension. So a hostile #__template_overrides row that
+        //      decoded to e.g. /html/../../../components/com_foo/bar.css
+        //      is refused, even though .css would have passed the v2.1
+        //      extension-only check.
         $safety   = PathSafetyHelper::assertWithinRoot($absolute);
-        PathSafetyHelper::assertPhpWriteAllowed($absolute);
+        PathSafetyHelper::assertOverrideWriteAllowed($absolute);
         $rootReal = $safety['rootReal'];
 
         if (!is_file($absolute)) {

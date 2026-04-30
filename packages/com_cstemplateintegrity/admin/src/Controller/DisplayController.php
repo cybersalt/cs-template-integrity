@@ -12,9 +12,9 @@ namespace Cybersalt\Component\Cstemplateintegrity\Administrator\Controller;
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\ActionLogHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\AnthropicClient;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\DisclaimerHelper;
-use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\MarkReviewedHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\RescanHelper;
 use Cybersalt\Component\Cstemplateintegrity\Administrator\Helper\ScanRunnerHelper;
@@ -30,6 +30,15 @@ use Throwable;
 final class DisplayController extends BaseController
 {
     protected $default_view = 'dashboard';
+
+    /**
+     * Per-user cap on automated scans started within a rolling 60-min
+     * window. 12 = one every five minutes — comfortably above legitimate
+     * iterative use, low enough to keep accidental click-spam (or a
+     * compromised admin's runaway loop) from burning the Anthropic key's
+     * spend quota. Cap counts attempts, not successes.
+     */
+    private const SCAN_HOURLY_CAP = 12;
 
     public function rescan(): void
     {
@@ -53,35 +62,6 @@ final class DisplayController extends BaseController
         } catch (Throwable $e) {
             $app->enqueueMessage(
                 Text::sprintf('COM_CSTEMPLATEINTEGRITY_RESCAN_ERROR', $e->getMessage()),
-                'error'
-            );
-        }
-
-        $this->setRedirect(Route::_('index.php?option=com_cstemplateintegrity&view=dashboard', false));
-    }
-
-    public function markReviewed(): void
-    {
-        $this->checkToken();
-        PermissionHelper::requireWrite();
-
-        /** @var CMSApplication $app */
-        $app = $this->app;
-
-        try {
-            $cleared = MarkReviewedHelper::clearAllOverrides();
-
-            if ($cleared === 0) {
-                $app->enqueueMessage(Text::_('COM_CSTEMPLATEINTEGRITY_MARK_REVIEWED_NONE'), 'info');
-            } else {
-                $app->enqueueMessage(
-                    Text::sprintf('COM_CSTEMPLATEINTEGRITY_MARK_REVIEWED_SUCCESS', $cleared),
-                    'success'
-                );
-            }
-        } catch (Throwable $e) {
-            $app->enqueueMessage(
-                Text::sprintf('COM_CSTEMPLATEINTEGRITY_MARK_REVIEWED_ERROR', $e->getMessage()),
                 'error'
             );
         }
@@ -138,20 +118,52 @@ final class DisplayController extends BaseController
             return;
         }
 
+        // Per-user soft cap: refuse if this user has already started
+        // SCAN_HOURLY_CAP automated scans in the past hour. Defends
+        // against accidental click-spam and against a write-tier user
+        // (or a CSRF-coerced admin who somehow passed checkToken)
+        // burning the saved Anthropic key's spend quota in a tight
+        // loop. The check counts ATTEMPTS, not successes — log entry
+        // happens before the call below, so even failed scans count.
+        $recentScans = ActionLogHelper::countActionsByCurrentUserSince(
+            ActionLogHelper::ACTION_AUTO_SCAN_RUN,
+            3600
+        );
+        if ($recentScans >= self::SCAN_HOURLY_CAP) {
+            $app->enqueueMessage(
+                Text::sprintf(
+                    'COM_CSTEMPLATEINTEGRITY_RUN_SCAN_RATE_LIMITED',
+                    self::SCAN_HOURLY_CAP
+                ),
+                'warning'
+            );
+            $this->setRedirect($back);
+            return;
+        }
+
         // Anthropic Messages calls take real time on a meaningful
         // override list. Without this PHP would 504 mid-call.
         @set_time_limit(180);
 
-        $scanModel = self::resolveModel($params->get('scan_model', 'claude-sonnet-4-6'));
+        $scanModel    = self::resolveModel($params->get('scan_model', 'claude-sonnet-4-6'));
+        $maxOverrides = (int) $params->get('scan_max_overrides', ScanRunnerHelper::DEFAULT_MAX_OVERRIDES);
+
+        // Log the attempt BEFORE executing so the cap counts in-flight
+        // scans too — otherwise a user could fire two requests in
+        // quick succession and both would pass the cap.
+        ActionLogHelper::log(
+            ActionLogHelper::ACTION_AUTO_SCAN_RUN,
+            ['model' => $scanModel, 'cap' => $maxOverrides]
+        );
 
         try {
-            $result   = ScanRunnerHelper::run($apiKey, $scanModel);
+            $result   = ScanRunnerHelper::run($apiKey, $scanModel, $maxOverrides);
             $markdown = $result['markdown'];
 
             $summary = sprintf(
                 'Automated scan: %d override(s) reviewed%s.',
                 $result['count'],
-                $result['truncated'] ? sprintf(' (first %d only)', ScanRunnerHelper::MAX_OVERRIDES_PER_RUN) : ''
+                $result['truncated'] ? sprintf(' (first %d only)', $result['cap']) : ''
             );
 
             $name = gmdate('Y-m-d-His');
@@ -175,7 +187,7 @@ final class DisplayController extends BaseController
                 $app->enqueueMessage(
                     Text::sprintf(
                         'COM_CSTEMPLATEINTEGRITY_RUN_SCAN_TRUNCATED',
-                        ScanRunnerHelper::MAX_OVERRIDES_PER_RUN
+                        $result['cap']
                     ),
                     'warning'
                 );

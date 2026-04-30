@@ -56,6 +56,30 @@ final class PermissionHelper
     }
 
     /**
+     * Non-throwing variant of requireWrite() — returns true if the
+     * current user holds the write tier. Use this when the caller
+     * needs to *conditionally* render write-only content (e.g. a saved
+     * Joomla API token in the dashboard's prompt) rather than gate the
+     * whole page. View-tier users get a placeholder; write-tier users
+     * get the real value.
+     */
+    public static function hasWrite(): bool
+    {
+        $user = self::currentUser();
+        if ($user === null || $user->guest) {
+            return false;
+        }
+
+        foreach ([self::ACTION_WRITE, 'core.manage', 'core.admin'] as $action) {
+            if ($user->authorise($action, self::COMPONENT)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param list<string> $actions
      */
     private static function requireAny(array $actions): User

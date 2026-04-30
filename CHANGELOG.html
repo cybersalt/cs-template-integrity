@@ -2,6 +2,55 @@
     <h1>📋 Cybersalt Template Integrity — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v2.2.0</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <p>UX rework on the dashboard: clearer "what do you want to do today" path-finding with two action shortcuts and a Cybersalt orange + Bootstrap blue palette; nicer key/token Options UX with Reveal / Clear / Get-token buttons; brand pass on every user-facing title; full-component security review with eight findings closed.</p>
+
+    <h3><span class="section-icon">🚀</span>New</h3>
+    <ul>
+        <li><strong>Method 1 / Method 2 action shortcuts</strong> at the top of the dashboard. <em>Method 1: Use Claude.ai or Code</em> (Cybersalt orange) anchor-jumps to the copy-paste prompt below; <em>Method 2: Run automated scan</em> (Bootstrap blue, or grey-outlined when no API key is saved) jumps to the auto-scan card. Two clearly-named paths replace the old "everything's at the bottom" layout.</li>
+        <li><strong>Clear button</strong> on every API-key / token field in <em>Options &rarr; Keys &amp; tokens</em> (the old <em>AI provider</em> tab &mdash; renamed). Click to empty the field; save persists. Joomla API token field also sprouts a <em>Get token</em> button that opens the current admin's profile in a new tab; the button auto-hides once a token is entered and reappears the moment the field is cleared.</li>
+        <li><strong>Empty-state blur skip</strong> on key/token inputs &mdash; the input no longer renders blurred when it's empty, so admins can see where to paste on a fresh field.</li>
+        <li><strong>Mode-aware Rescan button</strong> &mdash; solid yellow with dark text in light mode, outline-yellow on near-black in dark mode. Reads as a "warning" intent in both modes without the contrast trap of <code>btn-outline-warning</code> in light mode.</li>
+    </ul>
+
+    <h3><span class="section-icon">🔧</span>Improvements</h3>
+    <ul>
+        <li><strong>Dashboard restructure.</strong> Removed the <em>API endpoint active</em> status alert, the <em>Recent sessions</em> card (the Sessions menu covers it), and the <em>Mark all as reviewed</em> shortcut (Claude's <code>dismiss_all</code> tool covers that path). Right-hand About sidebar moved to a full-width footer so the action methods get the full canvas. Section reading order: Method 1 &rarr; Continue Previous Review &rarr; Method 2.</li>
+        <li><strong>Cybersalt action-button palette.</strong> Method 1 uses <code>#dc6b1a</code> Cybersalt orange with white text; Method 2 (with API key) uses Bootstrap blue. Navigation buttons (Sessions / File backups / Site Templates Management / Action log) are neutral grey &mdash; "go fetch data" buttons, not primary actions.</li>
+        <li><strong>Top nav reordered alphabetically</strong> &mdash; Action log &rarr; File backups &rarr; Open Site Templates Management &rarr; Sessions &rarr; Rescan &rarr; Diagnostics. Site Templates Management opens in a new tab.</li>
+        <li><strong>Side-menu reorder</strong> &mdash; Dashboard &rarr; Action log &rarr; File backups &rarr; Sessions inside the component admin sidebar.</li>
+        <li><strong>Brand pass.</strong> Every user-facing page title now reads <em>Cybersalt Template Integrity</em> (was <em>CS Template Integrity</em>) &mdash; Sessions / Action log / File backups / extension manager / API component label / update server name. Code-side identifiers (namespaces, language string keys, file paths, DB tables) keep the <code>cs</code> short form.</li>
+        <li><strong>Get token link</strong> lands on the current admin's user-edit form (<code>view=user&amp;layout=edit&amp;id={current admin}</code>) instead of falling through to the user list. Route URLs are single-encoded (no more double <code>&amp;amp;amp;</code> in the rendered href).</li>
+        <li><strong>Dark-mode prompt cards</strong> are slightly elevated so the card edge reads as a real container instead of blending into the page background. Light mode unchanged.</li>
+    </ul>
+
+    <h3><span class="section-icon">🔒</span>Security</h3>
+    <p>Eight findings from the v2.0&ndash;v2.2 retroactive review closed in this release:</p>
+    <ul>
+        <li><strong>H-1 &mdash; Joomla API token plaintext exposure (privilege escalation).</strong> A user with <code>cstemplateintegrity.view</code> could read the higher-privileged admin's saved Joomla API token off the dashboard's prompt block, and then authenticate against the <em>entire</em> Joomla Web Services API as the issuer (full privilege escalation outside cstemplateintegrity's scope). The dashboard view now substitutes the token only when the <em>current</em> user holds the write tier &mdash; view-tier users see the <code>&lt;PASTE YOUR JOOMLA API TOKEN HERE&gt;</code> placeholder.</li>
+        <li><strong>M-1 &mdash; Backup restore path-safety hardening.</strong> v0.9.0 closed the live RCE primitive but the restore-side guard still permitted writes anywhere under <code>JPATH_ROOT</code> for any non-PHP extension &mdash; <code>.htaccess</code>, <code>.user.ini</code>, or template <code>.css</code>/<code>.js</code> could be overwritten via a write-tier user with seeded archival backup rows. <code>PathSafetyHelper::assertOverrideWriteAllowed()</code> is now a positive allow-list: every write must terminate inside <code>&lt;root&gt;/templates/&lt;tpl&gt;/html/</code> or <code>&lt;root&gt;/administrator/templates/&lt;tpl&gt;/html/</code> regardless of file extension.</li>
+        <li><strong>M-2 &mdash; Disk-fill primitive on apply_fix and restore.</strong> Neither write path capped the size of the <em>new</em> contents being written. New 4 MB upper cap enforced before <code>file_put_contents()</code> in both paths.</li>
+        <li><strong>M-3 &mdash; apply_fix silently failed on &gt;1 MB legitimate overrides.</strong> Backup row size cap raised from 1 MB to 4 MB so apply_fix can both snapshot and write on real-world large overrides.</li>
+        <li><strong>L-1 &mdash; Anthropic API key fingerprint narrowed brute-force search.</strong> Diagnostics fingerprint previously rendered <code>starts="&lt;first 8&gt;", ends="&lt;last 4&gt;"</code> of the saved key. Replaced with a 12-char SHA-256 prefix &mdash; admins can still verify "this is the key I think it is" but no chars of the actual key leak.</li>
+        <li><strong>L-2 &mdash; Web Services apply-fix accepted nonexistent session_id.</strong> Audit-trail integrity bug. The endpoint now validates <code>session_id</code> references an existing session row; non-existent ids return 400 <code>INVALID_SESSION_ID</code>.</li>
+        <li><strong>L-3 &mdash; Defense-in-depth on <code>simplexml_load_file()</code>.</strong> Now passes <code>LIBXML_NONET</code> explicitly &mdash; belt-and-braces for older PHP and future libxml default changes.</li>
+        <li><strong>L-4 &mdash; Per-user soft cap on automated scans.</strong> <em>Run automated scan</em> now refuses if the current user has logged 12+ scan attempts in the past hour. Defends against accidental click-spam and against a CSRF-coerced admin (or compromised account) burning the saved Anthropic key's spend quota.</li>
+        <li><strong>L-5 &mdash; Session-download filename consistency.</strong> A session named <code>..</code> or <code>.</code> previously produced cosmetically odd download filenames. Sanitization now strips leading/trailing dots and falls back to <code>session-&lt;id&gt;</code> when empty.</li>
+    </ul>
+
+    <h3><span class="section-icon">📝</span>Docs</h3>
+    <ul>
+        <li><strong>Joomla Brain UI patterns</strong> &mdash; new section documenting the Cybersalt action-button palette, role/class/color table, "avoid" list, and CSS recipes for the orange Method 1 button and the mode-aware Rescan button. Future Cybersalt extensions can copy-paste from there.</li>
+        <li><strong>Joomla Brain company-info</strong> &mdash; new <em>"<code>cs</code> prefix vs. 'Cybersalt' full name"</em> section so the next extension doesn't drift between the technical short form (in code) and the brand name (in user-facing strings).</li>
+        <li><strong>Joomla Brain version-bump checklist</strong> &mdash; security review is now a hard prerequisite before any version bump. Routine bumps use the 0.7 confidence threshold; major bumps drop to 0.5 and require PHPStan in addition.</li>
+    </ul>
+
+    <h3>Migration</h3>
+    <p>In-place upgrade from 2.1.x. No schema changes; no settings changes. Backup-row size cap bump from 1 MB to 4 MB doesn't affect existing rows. Side menu reorder takes effect on next admin cache clear. View-tier users who previously saw the saved Joomla API token in the dashboard's prompt block will now see the placeholder instead &mdash; restore the convenience by ensuring those admins also hold <code>cstemplateintegrity.write</code> (or <code>core.manage</code>).</p>
+
+    <h2>
         <span class="version-badge">v2.1.0</span>
         <span class="date">2026-04-29</span>
     </h2>

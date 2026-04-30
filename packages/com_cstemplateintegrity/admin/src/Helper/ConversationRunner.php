@@ -252,19 +252,39 @@ final class ConversationRunner
         ];
 
         $http = HttpFactory::getHttp();
-        $response = $http->post(
-            self::ENDPOINT,
-            json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-            [
-                'x-api-key'         => $apiKey,
-                'anthropic-version' => self::API_VERSION,
-                'content-type'      => 'application/json',
-            ],
-            120
-        );
+        $status = $body = null;
+        $headers = [];
 
-        $status = (int) $response->code;
-        $body   = (string) $response->body;
+        // Retry-once-with-backoff on 429. Same logic as AnthropicClient;
+        // see comment there for rationale (low-tier 10K-tokens-per-min
+        // limits get blown by multi-turn chats sometimes).
+        for ($attempt = 0; $attempt <= 1; $attempt++) {
+            $response = $http->post(
+                self::ENDPOINT,
+                json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                [
+                    'x-api-key'         => $apiKey,
+                    'anthropic-version' => self::API_VERSION,
+                    'content-type'      => 'application/json',
+                ],
+                120
+            );
+
+            $status  = (int) $response->code;
+            $body    = (string) $response->body;
+            $headers = is_array($response->headers ?? null) ? $response->headers : [];
+
+            if ($status !== 429 || $attempt > 0) {
+                break;
+            }
+
+            $retryAfter = isset($headers['retry-after'])
+                ? (int) (is_array($headers['retry-after']) ? $headers['retry-after'][0] : $headers['retry-after'])
+                : 30;
+            $retryAfter = max(5, min(60, $retryAfter));
+            @set_time_limit(180 + $retryAfter + 30);
+            sleep($retryAfter);
+        }
 
         if ($status < 200 || $status >= 300) {
             $detail = $body;
@@ -272,8 +292,12 @@ final class ConversationRunner
             if (is_array($decoded) && isset($decoded['error']['message'])) {
                 $detail = $decoded['error']['message'];
             }
+            $hint = '';
+            if ($status === 429) {
+                $hint = ' — The extension waited and retried once already, so the per-minute budget is fully consumed. Wait 1–2 minutes before trying again. If this happens often, lower Overrides per scan in Options, send shorter chat messages (each turn re-sends the conversation history), or upgrade your Anthropic tier at https://console.anthropic.com/settings/limits';
+            }
             throw new \RuntimeException(
-                sprintf('Anthropic API returned HTTP %d: %s', $status, mb_substr($detail, 0, 800))
+                sprintf('Anthropic API returned HTTP %d: %s%s', $status, mb_substr($detail, 0, 800), $hint)
             );
         }
 
