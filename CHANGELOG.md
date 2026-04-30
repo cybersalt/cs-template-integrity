@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.1] — 2026-04-29
+
+Completes the multilingual rollout started in 2.3.0: all 14 non-English language packs are now fully translated (no more English fallback for any string).
+
+### 🌍 New
+
+- **Full translations for all 14 additional languages.** Every one of the 246 admin strings — plus the 5 system/API/package/plugin language files in each language — now ships translated. Previously only German (de-DE) was complete; the other 13 languages installed with English-fallback content. As of 2.3.1:
+  - **Romance:** fr-FR (French), es-ES (Spanish), it-IT (Italian), pt-BR (Brazilian Portuguese)
+  - **Germanic / Northern European:** nl-NL (Dutch), sv-SE (Swedish)
+  - **Slavic:** ru-RU (Russian), pl-PL (Polish), cs-CZ (Czech)
+  - **Other European:** tr-TR (Turkish), el-GR (Greek)
+  - **East Asian:** ja-JP (Japanese), zh-CN (Simplified Chinese)
+- All translations use the formal admin-tool register appropriate to each language (formal pronouns where applicable). Brand names ("Cybersalt Template Integrity", "Anthropic", "Claude", "Joomla", "Akeeba Backup"), technical acronyms (API, REST, XSS, SQL, CSRF, JSON, HTTP, PHP), code references (`#__template_overrides`, `JPATH_ROOT`, `sk-ant-…`, file paths, class names), URLs, and printf placeholders (`%s`, `%d`, `%1$d`) are preserved untranslated per Joomla extension convention.
+
+### 🔧 Improvements
+
+- The **Options &rarr; Keys & tokens** tab and every dashboard string render in the admin's chosen Joomla language out of the box — no further configuration needed.
+
+### Migration
+
+In-place upgrade from 2.3.0. No schema changes; no settings changes. Admin users whose Joomla language is set to any of the 14 supported tags will now see the full UI in their language. Native review by a fluent speaker is recommended for the East Asian (ja-JP, zh-CN) and Slavic / Eastern European (cs-CZ, el-GR, tr-TR) translations before depending on them in customer-facing scenarios — open a PR or email tim@cybersalt.com with corrections.
+
 ## [2.3.0] — 2026-04-29
 
 Multilingual support: language pack registered for all 15 of Cybersalt's standard languages.

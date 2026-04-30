@@ -2,6 +2,31 @@
     <h1>📋 Cybersalt Template Integrity — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v2.3.1</span>
+        <span class="date">2026-04-29</span>
+    </h2>
+    <p>Completes the multilingual rollout started in 2.3.0: all 14 non-English language packs are now fully translated (no more English fallback for any string).</p>
+    <h3><span class="section-icon">🌍</span>New</h3>
+    <ul>
+        <li><strong>Full translations for all 14 additional languages.</strong> Every one of the 246 admin strings &mdash; plus the 5 system/API/package/plugin language files in each language &mdash; now ships translated.
+            <ul>
+                <li><strong>Romance:</strong> fr-FR (French), es-ES (Spanish), it-IT (Italian), pt-BR (Brazilian Portuguese)</li>
+                <li><strong>Germanic / Northern European:</strong> nl-NL (Dutch), sv-SE (Swedish)</li>
+                <li><strong>Slavic:</strong> ru-RU (Russian), pl-PL (Polish), cs-CZ (Czech)</li>
+                <li><strong>Other European:</strong> tr-TR (Turkish), el-GR (Greek)</li>
+                <li><strong>East Asian:</strong> ja-JP (Japanese), zh-CN (Simplified Chinese)</li>
+            </ul>
+        </li>
+        <li>All translations use the formal admin-tool register appropriate to each language. Brand names (<em>Cybersalt Template Integrity</em>, <em>Anthropic</em>, <em>Claude</em>, <em>Joomla</em>, <em>Akeeba Backup</em>), technical acronyms (API, REST, XSS, SQL, CSRF, JSON, HTTP, PHP), code references (<code>#__template_overrides</code>, <code>JPATH_ROOT</code>, <code>sk-ant-…</code>, file paths, class names), URLs, and printf placeholders (<code>%s</code>, <code>%d</code>, <code>%1$d</code>) are preserved untranslated per Joomla extension convention.</li>
+    </ul>
+    <h3><span class="section-icon">🔧</span>Improvements</h3>
+    <ul>
+        <li>The <em>Options &rarr; Keys &amp; tokens</em> tab and every dashboard string render in the admin's chosen Joomla language out of the box &mdash; no further configuration needed.</li>
+    </ul>
+    <h3>Migration</h3>
+    <p>In-place upgrade from 2.3.0. No schema changes; no settings changes. Admin users whose Joomla language is set to any of the 14 supported tags will now see the full UI in their language. Native review by a fluent speaker is recommended for the East Asian (ja-JP, zh-CN) and Slavic / Eastern European (cs-CZ, el-GR, tr-TR) translations before depending on them in customer-facing scenarios &mdash; open a PR or email <a href=\"mailto:tim@cybersalt.com\">tim@cybersalt.com</a> with corrections.</p>
+
+    <h2>
         <span class="version-badge">v2.3.0</span>
         <span class="date">2026-04-29</span>
     </h2>
