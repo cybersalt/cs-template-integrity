@@ -19,6 +19,36 @@
     <changelog>
         <element>pkg_csoverridechecker</element>
         <type>package</type>
+        <version>2.6.0</version>
+        <addition>
+            <item>Choose your AI provider for the built-in automated scan: Anthropic (Claude), OpenAI (GPT) or Google (Gemini), each with its own API key field and model list.</item>
+            <item>New Setup guide view answering "which AI can I use?" from inside the admin, with per-family notes for terminal agents, browser chats, custom GPTs, local models and MCP clients.</item>
+            <item>New Support area: free-forever statement, honest support expectations, GitHub Issues link, and a copyable diagnostics block containing no secrets.</item>
+            <item>One-click Joomla API token fetch, including enable buttons for the two plugins a token depends on.</item>
+            <item>Screencasting-safe secret reveal: keys blur by default, hold-to-reveal with countdown, auto-hide after reveal. Two new configurable durations.</item>
+        </addition>
+        <change>
+            <item>Dashboard copy is no longer Claude-specific. Anthropic, OpenAI and Gemini all run scans; only the fix-applying chat remains Anthropic-only, and that is now stated plainly rather than implied.</item>
+            <item>Model list refreshed to Haiku 4.5, Sonnet 5 and Opus 4.8, defaulting to Opus 4.8. Previously-shipped model ids remain accepted so saved settings keep working.</item>
+            <item>All 15 languages now translate Joomla's own display names - plugin names, user groups such as Super User, setting labels and admin menu paths.</item>
+        </change>
+        <security>
+            <item>The endpoints that enable plg_user_token and plg_api-authentication_token change site-wide extension state and were gated only on this component's write tier. They now additionally require core.admin or core.manage on com_plugins, so a delegated override-reviewer role cannot re-open an API surface a Super User had closed. Found by the pre-release security review.</item>
+        </security>
+        <fix>
+            <item>Permissions screen no longer exposes the raw element id in the two custom ACL action titles.</item>
+            <item>Options help text corrected: it claimed a Sonnet 4.6 default and a 60-override cap, both wrong since v2.4.3.</item>
+            <item>Repaired corrupted em dashes and smart quotes in the English language file.</item>
+        </fix>
+        <note>
+            <item>No schema change. Safe in-place upgrade from 2.5.0.</item>
+            <item>Full documentation published at https://docs.cybersalt.com/extensions/override-checker</item>
+        </note>
+    </changelog>
+
+    <changelog>
+        <element>pkg_csoverridechecker</element>
+        <type>package</type>
         <version>2.5.0</version>
         <change>
             <item>Internal identifier rename: every "cstemplateintegrity" symbol — element ids, PHP namespaces, database tables, language keys, scheduler task type, Web Services API route, file and folder names — is now "csoverridechecker". Aligns the internals with the public name (renamed in v2.4.4). 168 files modified, 99 files renamed, 6 directories renamed.</item>

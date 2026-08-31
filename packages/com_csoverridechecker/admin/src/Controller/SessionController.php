@@ -147,7 +147,7 @@ final class SessionController extends BaseController
 
         @set_time_limit(180);
 
-        $chatModel = self::resolveModel($params->get('chat_model', 'claude-opus-4-7'));
+        $chatModel = self::resolveModel($params->get('chat_model', 'claude-opus-4-8'));
 
         try {
             $result = ConversationRunner::continueConversation($apiKey, $messages, $msg, $id, $chatModel);
@@ -174,9 +174,14 @@ final class SessionController extends BaseController
     {
         $allowed = [
             'claude-haiku-4-5-20251001',
+            'claude-sonnet-5',
+            'claude-opus-4-8',
+            // Legacy ids, still accepted so a setting saved by an
+            // earlier version keeps working instead of silently
+            // falling back to the default.
             'claude-sonnet-4-6',
             'claude-opus-4-7',
         ];
-        return in_array($candidate, $allowed, true) ? $candidate : 'claude-opus-4-7';
+        return in_array($candidate, $allowed, true) ? $candidate : 'claude-opus-4-8';
     }
 }

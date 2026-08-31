@@ -126,7 +126,9 @@ final class ScanRunnerHelper
         }
 
         $userPrompt = self::userPrompt($items, $truncated, $totalAvailable);
-        $client     = new AnthropicClient($apiKey, $model);
+        // Provider comes from Options; the scan path is provider-agnostic
+        // because it is a single system+messages -> text call.
+        $client     = AiClientFactory::make(null, $model !== '' ? $model : null);
         $markdown   = $client->complete(
             self::systemPrompt(),
             [

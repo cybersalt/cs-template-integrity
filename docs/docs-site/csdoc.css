@@ -1,0 +1,107 @@
+/* =====================================================================
+   Cybersalt documentation stylesheet  —  docs.cybersalt.com
+   =====================================================================
+   Shared by EVERY extension documentation article on the docs site.
+   Load it ONCE from the template so articles stay pure markup:
+
+     templates/<your-template>/css/user.css   (append this file), or
+     a <link> in the template's index.php <head>.
+
+   Because the CSS lives here and not inside the articles, documentation
+   can be edited with any Joomla editor — there is no <style> block for
+   TinyMCE to strip on save.
+
+   Every class is prefixed csdoc- so nothing collides with the template.
+
+   MARKUP CONTRACT — what documentation articles are expected to use:
+     .csdoc-doc         wrapper around the whole article body
+     .csdoc-note        blue informational callout
+     .csdoc-warn        red warning callout
+     .csdoc-tip         green tip callout
+     .csdoc-table-wrap  wrapper around every table (enables h-scroll)
+     .csdoc-fig         figure holding a screenshot
+       a.csdoc-thumb      links to the lightbox; add .csdoc-tall for very
+                          tall screenshots to cap the thumbnail height
+       span.csdoc-zoom    the "Click to enlarge" chip
+     a.csdoc-lb         full-screen overlay, id="csdoc-lb-<name>", with
+                        href back to the figure's id="csdoc-fig-<name>"
+       span.csdoc-lb-cap  caption, fixed top-left
+       span.csdoc-lb-x    close chip, fixed top-right
+
+   The lightbox is pure CSS (:target) — no JavaScript, no external
+   assets, so it survives any article content filter.
+   ===================================================================== */
+
+/* Theme-agnostic by design.
+   Earlier versions defined a light palette plus a prefers-color-scheme dark
+   override. That was wrong: it assumed the surrounding template follows the
+   OS theme. Cassiopeia Extended (and most Joomla templates) render a fixed
+   light page whatever the OS is set to, so the dark override produced a dark
+   callout behind the template's dark body text - unreadable.
+
+   Instead every tinted surface below is a TRANSLUCENT wash over whatever the
+   template's own background is, and text is always `inherit`. That is correct
+   on a light template, a dark template, and anything in between, with no
+   media query and nothing to keep in sync. */
+
+.csdoc-doc { line-height:1.65; }
+.csdoc-doc h2 { margin:2.2em 0 .6em; padding-bottom:.25em; border-bottom:2px solid rgba(127,127,127,.38); }
+.csdoc-doc h3 { margin:1.8em 0 .5em; }
+.csdoc-doc h4 { margin:1.4em 0 .4em; }
+.csdoc-doc code { background:rgba(127,127,127,.14); color:inherit; padding:.12em .38em; border-radius:3px;
+                  font-size:.92em; word-break:break-word; }
+.csdoc-doc pre { background:rgba(127,127,127,.14); color:inherit; padding:.9em 1.1em; border-radius:6px;
+                 overflow-x:auto; border:1px solid rgba(127,127,127,.38); }
+.csdoc-doc pre code { background:none; padding:0; }
+
+/* callouts */
+.csdoc-note, .csdoc-warn, .csdoc-tip {
+  border-left:4px solid #3b82f6; background:rgba(59,130,246,.10); color:inherit;
+  padding:.85em 1.1em; margin:1.2em 0; border-radius:0 5px 5px 0; }
+.csdoc-warn { border-left-color:#dc4436; background:rgba(220,68,54,.10); }
+.csdoc-tip  { border-left-color:#2e9e5b; background:rgba(46,158,91,.12); }
+.csdoc-note p:last-child, .csdoc-warn p:last-child, .csdoc-tip p:last-child { margin-bottom:0; }
+.csdoc-note p:first-child, .csdoc-warn p:first-child, .csdoc-tip p:first-child { margin-top:0; }
+
+/* tables */
+.csdoc-doc .csdoc-table-wrap { overflow-x:auto; margin:1.2em 0; }
+.csdoc-doc table { border-collapse:collapse; width:100%; min-width:520px; }
+.csdoc-doc th, .csdoc-doc td { border:1px solid rgba(127,127,127,.38); padding:.55em .7em;
+                               text-align:left; vertical-align:top; font-size:.95em; }
+.csdoc-doc th { background:rgba(127,127,127,.12); }
+
+/* ---------- figures + CSS-only lightbox ---------- */
+.csdoc-fig { margin:1.5em 0; }
+.csdoc-thumb { display:inline-block; position:relative; max-width:100%;
+               border:1px solid rgba(127,127,127,.38); border-radius:6px; overflow:hidden;
+               line-height:0; text-decoration:none; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+.csdoc-thumb img { max-width:100%; height:auto; display:block; }
+.csdoc-thumb .csdoc-zoom {
+  position:absolute; right:8px; bottom:8px; background:rgba(15,25,35,.82); color:#fff;
+  font-size:12px; line-height:1.4; padding:3px 9px; border-radius:12px;
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif; letter-spacing:.2px; }
+.csdoc-thumb:hover { border-color:#3b82f6; }
+.csdoc-thumb:focus-visible { outline:3px solid #3b82f6; outline-offset:2px; }
+.csdoc-fig figcaption { font-size:.9em; color:inherit; opacity:.75; margin-top:.5em;
+                        max-width:52em; }
+
+/* tall screenshots get a capped thumbnail so the page stays scannable */
+.csdoc-thumb.csdoc-tall img { max-height:340px; width:auto; object-fit:cover;
+                              object-position:top center; }
+
+/* The whole overlay is a link back to the figure, so clicking anywhere closes it. */
+.csdoc-lb { position:fixed; inset:0; z-index:9999; display:none;
+            background:rgba(10,16,22,.94); padding:64px 16px 32px; overflow:auto;
+            text-align:center; text-decoration:none; }
+.csdoc-lb:target { display:block; }
+.csdoc-lb img { max-width:min(1180px,96vw); height:auto; border-radius:4px;
+                box-shadow:0 6px 40px rgba(0,0,0,.55); }
+/* Caption and close chip are fixed to the viewport, so they stay reachable
+   however tall the screenshot is. */
+.csdoc-lb .csdoc-lb-cap, .csdoc-lb .csdoc-lb-x {
+  position:fixed; top:16px; font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:14px; line-height:1.4; }
+.csdoc-lb .csdoc-lb-cap { left:16px; right:150px; color:#c8d6e2; text-align:left;
+                          overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.csdoc-lb .csdoc-lb-x { right:16px; background:#e8eef4; color:#10171e; border-radius:4px;
+                        padding:5px 14px; font-weight:600; white-space:nowrap; }

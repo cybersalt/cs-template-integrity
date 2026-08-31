@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.0] — 2026-08-29
+
+Bring-your-own-AI release. The extension has always been drivable by any assistant that can make an HTTPS request — the REST API is open and secured by a standard Joomla API token — but both the admin interface and the documentation read as though Claude were a requirement. This release makes that true in the product: a provider selector for the built-in scan, an in-admin guide to using whatever AI you already have, a support area, and a one-click Joomla API token fetch. No schema change; safe in-place upgrade from 2.5.0.
+
+### 🚀 New
+
+- **Choose your AI provider for the automated scan.** *Options → Keys & tokens* gains an **AI provider** selector — **Anthropic (Claude)**, **OpenAI (GPT)** or **Google (Gemini)** — with a per-provider API key field and model list that appear only for the provider you pick. Built on a new `AiClientInterface` with `AnthropicClient`, `OpenAiClient` and `GeminiClient` behind an `AiClientFactory`, so adding a fourth provider is one class plus one map entry.
+- **Setup guide view** (*Components → Override Checker → Setup guide*). Answers "which AI can I use?" from inside the admin instead of only in the online docs. Leads with the actual capability an assistant needs — outbound HTTPS with a custom header, plus POST with a JSON body to apply fixes — rather than a list of product names that goes stale. Then per-family notes for terminal and editor agents, browser chat assistants, custom GPTs and Gems, local and self-hosted models, and MCP clients, plus the endpoint URL and the `X-Joomla-Token` auth warning.
+- **Support area** (*Components → Override Checker → Get help*). States plainly that this extension is free with no Pro tier and nothing held back, sets honest expectations about free-support response times, points at GitHub Issues, lists what to include in a report, and renders a copyable diagnostics block (extension / Joomla / PHP versions, site URL, key and token presence). The block contains **no secrets** — only presence flags, never values — so it is safe to paste into a public issue.
+- **One-click Joomla API token fetch.** The *Joomla API token* field in Options gains a **Fetch my token** button that derives the current user's token and fills the field in place, creating the `#__user_profiles` seed row if none exists. It also detects and offers a one-click enable for either plugin the token depends on: `plg_user_token`, which mints the seed, and `plg_api-authentication_token`, which actually authenticates inbound requests. Without that second one a token is well-formed but every API call silently returns 401 — a genuinely unpleasant thing to diagnose.
+- **Screencasting-safe secret reveal.** Keys and tokens now render blurred. Holding hover for a configurable delay shows a countdown and then reveals; moving away cancels; after a reveal the blur returns automatically. In Options, the existing Reveal toggle re-masks itself on the same timer. Two new settings: **Hold-to-reveal delay** (default 3s) and **Auto-hide after reveal** (default 8s); set either to 0 to disable. Ported from MCP for Joomla so live demos and training videos don't leak real credentials.
+
+### 🔧 Improvements
+
+- **Dashboard copy is no longer Claude-specific.** *"Method 1: Use Claude.ai or Code"* becomes *"Method 1: Use your AI assistant"*, and the step-by-step instructions, the continue-a-previous-review card, the sessions blurb and the About description were rewritten to describe the workflow without naming a vendor.
+- **The one genuinely vendor-locked path is now labelled as such.** Anthropic, OpenAI and Gemini all run scans. The follow-up chat on a session — where you ask it to apply fixes and it edits files through tool calls — remains Anthropic-only, because that loop is written against Anthropic's `tool_use` / `tool_result` protocol. Rather than letting someone discover this at the moment they try to apply a fix, it is surfaced as a capability in the Setup guide and the provider note.
+- **Model list refreshed** to Haiku 4.5 / **Sonnet 5** / **Opus 4.8**, with Opus 4.8 as the default. Previously-shipped model ids remain accepted, so a site that saved an older selection keeps working instead of silently falling back to the default.
+- **Translation policy normalised across all 15 languages.** Roughly half the locales left Joomla's own display names in English. All of them now translate what a Joomla admin running that language pack actually sees on screen — plugin display names, user group names such as *Super User*, plugin setting labels and admin menu paths. Deliberately still English: literal values the software matches on, and claude.ai's own strings and menu paths, since translating those would send people hunting for a menu that does not exist in an English interface.
+
+### 🔒 Security
+
+- **Plugin-enable endpoints now require Joomla's own plugin-management permission.** The tasks that enable `plg_user_token` and `plg_api-authentication_token` change site-wide extension state, but were gated only on this component's write tier. Since `access.xml` exists so a site owner can delegate a narrow "override reviewer" role to a non-Super-User group, that role would also have gained a one-click site-wide plugin-enable primitive — letting a reviewer re-open an API surface a Super User had deliberately closed. Both now additionally require `core.admin` or `core.manage` on `com_plugins`. Found by the pre-release security review.
+- The token-fetch endpoint never accepts a user id from the request — it derives only the current user's token — and is gated on the write tier plus the plugin's own allowed-user-groups check. The derived token appears only in the JSON response body; the action log records that a fetch happened, never the value.
+- `Setupguide` and `Support` views now call `PermissionHelper::requireView()`, consistent with every other view in the component.
+
+### 🐞 Fixes
+
+- **Permissions screen no longer shows the raw element id.** The two custom ACL actions rendered as *"View csoverridechecker data"* and *"Modify csoverridechecker data and override files"*, exposing the internal element name. They now read *"View Override Checker data"* and *"Modify Override Checker data and override files"*.
+- **Options help text corrected.** The Anthropic API key note still claimed the default model was *Claude Sonnet 4.6* and that scans were *"capped to the first 60 per run"*. Both changed in v2.4.3 — the cap default is 10.
+- **Corrupted characters in the English language file repaired.** Eleven em dashes and smart quotes had been written as raw UTF-8 bytes reinterpreted as separate characters, showing as mojibake in the dashboard's step-by-step instructions.
+
+### 📖 Documentation
+
+- **Full end-user documentation published** at <https://docs.cybersalt.com/extensions/override-checker> — install, all three review workflows, reading a report, applying and rolling back fixes, the audit trail, permissions, the Web Services API reference, troubleshooting, FAQ and support. Illustrated with 13 lossless-WebP screenshots. This is the documentation URL for the Joomla Extension Directory listing. Source lives in the repo at `docs/joomla-article.html`, with the shared site stylesheet at `docs/docs-site/csdoc.css`.
+
 ## [2.5.0] — 2026-06-26
 
 Internal rename release. v2.4.4 fixed the user-visible name but every internal identifier (element id, namespace, table prefix, file paths) still referenced "templateintegrity". This release renames all of them and ships a one-shot migration script so existing v2.4.x installs upgrade cleanly without losing data.

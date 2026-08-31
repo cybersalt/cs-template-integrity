@@ -1,0 +1,782 @@
+<!--
+    Cybersalt Override Checker - user documentation
+    ===============================================
+    Article body for docs.cybersalt.com
+
+    PUBLISHED AT
+        https://docs.cybersalt.com/extensions/override-checker
+        (this URL goes to JED, the README badge and the extension's
+        admin screens - treat it as permanent)
+
+    STYLING
+        This article carries NO inline stylesheet. It relies on the shared
+        site stylesheet at docs/docs-site/csdoc.css, which must be loaded
+        once from the docs template. Because there is no inline CSS,
+        this article can safely be edited with TinyMCE or any other
+        Joomla editor - there is nothing for the editor to strip.
+
+    IMAGES
+        Upload docs/screenshots/*.webp to
+            /images/documentation/override-checker/
+        Convention is /images/documentation/<extension>/ so each
+        extension's screenshots get their own folder. If that path
+        changes it is one find-and-replace: 26 occurrences of
+            /images/documentation/override-checker/
+        The 13 files are lossless WebP - pixel-identical to the source
+        PNGs at 34% of the size.
+
+    SCREENSHOTS PENDING A RESHOOT
+      Two images still show pre-fix UI copy. The language strings were
+      corrected in the repo on 2026-08-26; these need reshooting once
+      that release is deployed to the site they were captured from:
+        * 09-options-keys.webp  - showed "defaults to Claude Sonnet 4.6"
+          and "capped to the first 60 per run" (now Opus 4.7 / cap 10)
+        * 10-options-permissions.webp - showed the raw element id in the
+          ACL labels (now "View Override Checker data")
+      The prose is correct in both cases - only the images lag.
+-->
+
+<div class="csdoc-doc">
+
+<p><strong>Cybersalt Override Checker</strong> answers a question Joomla itself
+can't: when your template's override files drift away from Joomla core, does it
+matter? It opens your site's override data to an AI assistant of your choosing,
+which reads every flagged override, classifies it as <em>alert</em>,
+<em>review</em> or <em>info</em>, explains the result in plain English, and — for
+the findings you confirm — applies the patch in place, with an automatic backup
+so anything can be rolled back.</p>
+
+<div class="csdoc-note">
+<p><strong>Bring your own AI.</strong> The extension is not tied to any one
+assistant. Everything it exposes is a plain REST API secured by a standard Joomla
+API token, so <em>any</em> AI that can make an HTTPS request — or any script you
+write yourself — can drive it. The dashboard hands you a ready-made prompt that
+works in ChatGPT, Claude, Gemini, Copilot, Cursor, a local model, or whatever you
+already pay for. See <a href="#csdoc-choose">Choosing how to run a review</a>.</p>
+</div>
+
+<div class="csdoc-note">
+<p><strong>Requirements.</strong> Joomla 5.0+ or Joomla 6.0+ (native to both), PHP 8.1
+or newer. Licensed GPL v2 or later. <strong>Free, with no paid tier</strong> — there
+is no Pro version and nothing is held back. The interface ships in 15 languages and
+follows your admin user's language setting automatically.</p>
+</div>
+
+<h2>The problem this solves</h2>
+
+<p>A template override is a copy of one of Joomla's own layout files, kept inside your
+template, that your designer changed to make the site look the way you want. Joomla
+keeps a list of these in its Template Manager, and after a core update it will tell you
+how many of them no longer match the file they were copied from.</p>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb" href="#csdoc-lb-templates" id="csdoc-fig-templates">
+    <img src="/images/documentation/override-checker/01-joomla-changes-found.webp"
+         alt="Joomla's Template Manager listing site templates with an Override Files status column">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>Joomla's own Template Manager. The <em>Override Files</em> column is where
+  Joomla reports override drift — and where its usefulness stops. The Override Checker's
+  <em>Open Site Templates Management</em> button links straight here.</figcaption>
+</figure>
+
+<p>That count is the whole of Joomla's built-in feature. It tells you
+<em>something changed</em>. It does not tell you whether the change is a
+copyright year, a designer's styling tweak, or a missing security filter that
+lets a hostile article title run scripts in your visitors' browsers. After a
+Joomla point release every template with overrides lights up at once, so the
+signal-to-noise ratio is close to zero at exactly the moment a site owner
+actually needs to know whether something is wrong.</p>
+
+<p>The Override Checker reads that same native tracker and puts a
+template-literate reviewer behind it.</p>
+
+<h2>Installing</h2>
+
+<ol>
+  <li>Download <code>pkg_csoverridechecker_v*.zip</code> from the
+      <a href="https://github.com/cybersalt/cs-override-checker/releases/latest">releases page</a>.</li>
+  <li>In your Joomla admin go to <strong>System &rarr; Install &rarr; Extensions</strong>
+      and upload the zip.</li>
+  <li>The package installer enables the Web Services plugin for you — there is no
+      separate step.</li>
+  <li>Open <strong>Components &rarr; Override Checker</strong>.</li>
+</ol>
+
+<p>The package registers a Joomla update server, so from then on new versions appear
+under <strong>System &rarr; Update &rarr; Extensions</strong> like any first-party
+extension. The updater verifies a SHA-256 checksum on every download.</p>
+
+<h2>The dashboard</h2>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb" href="#csdoc-lb-nav" id="csdoc-fig-nav">
+    <img src="/images/documentation/override-checker/02-dashboard-nav.webp"
+         alt="Dashboard button row: Action log, File backups, Open Site Templates Management, Sessions, Reset overrides for review, Diagnostics, and the two method buttons">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>Every screen in the extension is one click from here. The top row navigates;
+  the two large buttons below choose how you want to run a review.</figcaption>
+</figure>
+
+<div class="csdoc-table-wrap">
+<table>
+<thead><tr><th>Button</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td><strong>Action log</strong></td><td>Read-only audit trail of every change the extension made.</td></tr>
+<tr><td><strong>File backups</strong></td><td>Pre-change snapshots of any file that was patched, with a Restore button.</td></tr>
+<tr><td><strong>Open Site Templates Management</strong></td><td>Opens Joomla's own Template Manager in a new tab.</td></tr>
+<tr><td><strong>Sessions</strong></td><td>Every review report produced for this site, whichever AI ran it.</td></tr>
+<tr><td><strong>Reset overrides for review</strong></td><td>Rebuilds the override tracker for the templates you pick.</td></tr>
+<tr><td><strong>Diagnostics</strong></td><td>Version, PHP, API key status, and a connection test.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Before your first scan: the Joomla API token</h2>
+
+<p>Your AI reads your override files through Joomla's Web Services API, so it needs a
+Joomla API token. Generate one at <strong>System &rarr; Manage &rarr; Users</strong>,
+open your own user, and switch to the <strong>Joomla API Token</strong> tab. Click the
+eye icon to reveal it, then copy it.</p>
+
+<p>You can either paste that token into the prompt each time, or save it once in the
+extension's Options so the dashboard prompt auto-fills it.</p>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb csdoc-tall" href="#csdoc-lb-options" id="csdoc-fig-options">
+    <img src="/images/documentation/override-checker/09-options-keys.webp"
+         alt="The Keys and tokens tab in Options, showing the Anthropic API key field, Joomla API token field, scan model, chat model and overrides-per-scan settings">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption><strong>Options &rarr; Keys &amp; tokens.</strong> Everything the extension
+  needs lives on one tab. Click to read the full-size version — the inline help explains
+  each field and the cost trade-off between models.</figcaption>
+</figure>
+
+<div class="csdoc-warn">
+<p><strong>Multi-admin caveat.</strong> A Joomla API token authenticates as
+<em>the person who generated it</em>. If several administrators share this dashboard,
+the saved token means your AI acts as that one user for everybody. Leave the field
+blank if you'd rather each admin pasted their own token at the time of use.</p>
+<p><strong>Regenerating a token kills the old one instantly.</strong> If you ever reset
+your Joomla API token, remember to update the copy saved here — otherwise the dashboard
+keeps handing out a token that returns <code>401 Forbidden</code>.</p>
+</div>
+
+<h2 id="csdoc-choose">Choosing how to run a review</h2>
+
+<p>There are three ways to drive the extension. They differ only in <em>who sends the
+requests</em> — the data, the reports and the safety rails are identical.</p>
+
+<div class="csdoc-table-wrap">
+<table>
+<thead><tr><th>Method</th><th>What you need</th><th>Best for</th></tr></thead>
+<tbody>
+<tr><td><strong>1. Copy-paste prompt</strong><br><em>start here</em></td>
+    <td>Any AI assistant that can make web requests. No API key, no extra cost.</td>
+    <td>Almost everyone. Works with whatever AI you already use.</td></tr>
+<tr><td><strong>2. Built-in automated scan</strong></td>
+    <td>An <strong>Anthropic</strong> API key (pay-per-token).</td>
+    <td>People who want the review to run server-side with no copy-paste.</td></tr>
+<tr><td><strong>3. Your own code or agent</strong></td>
+    <td>The REST API and a Joomla API token.</td>
+    <td>Agencies, multi-site dashboards, custom automations.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="csdoc-note">
+<p><strong>Only Method 2 is tied to a specific vendor.</strong> It calls Anthropic's
+API directly, so it needs an Anthropic key. Methods 1 and 3 are completely
+assistant-agnostic — the extension neither knows nor cares which AI is on the other
+end of the connection.</p>
+</div>
+
+<h2>Method 1 — the copy-paste prompt (any AI)</h2>
+
+<p>This is the simplest method and the one to start with. It needs no API key and no
+spend beyond whatever AI subscription you already have. The dashboard writes a
+complete, ready-to-send prompt with your site's URLs and token already filled in. You
+copy it, paste it into your assistant, and it does the rest by calling back to your
+site.</p>
+
+<h3>What your AI needs to be able to do</h3>
+
+<p>Rather than list which products work — plans and features change constantly — here
+is the actual requirement. Your assistant must be able to:</p>
+
+<ul>
+  <li><strong>Make outbound HTTPS requests</strong> to your site, with a custom
+      request header (<code>X-Joomla-Token</code>). This is the only hard requirement.</li>
+  <li><strong>Send POST requests with a JSON body</strong>, if you want it to apply
+      fixes rather than just report. Read-only reviews need GET alone.</li>
+  <li><strong>Hold a reasonably long conversation</strong>, since it fetches two files
+      per flagged override before reaching a verdict.</li>
+</ul>
+
+<p>Anything that satisfies the first point can produce a report. Anything that
+satisfies the first two can also apply fixes. If you're not sure whether your
+assistant qualifies, just paste the prompt and see — a tool that can't reach your
+site will say so immediately.</p>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb csdoc-tall" href="#csdoc-lb-method1" id="csdoc-fig-method1">
+    <img src="/images/documentation/override-checker/03-method1-card.webp"
+         alt="The Method 1 card, with four numbered setup steps and the generated scan prompt in a code block above a Copy scan prompt button">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>The prompt below the numbered steps is generated for <em>your</em> site —
+  the URLs and token are already substituted. Click <em>Copy scan prompt</em> and paste
+  it into the assistant of your choice.</figcaption>
+</figure>
+
+<p>What happens next, whichever assistant you used:</p>
+
+<ol>
+  <li>It fetches the list of flagged overrides from your site.</li>
+  <li>For each one it fetches both the override file and the stock Joomla file it shadows.</li>
+  <li>It classifies each pair and writes a report — a plain-English summary first, a
+      per-finding table second, and collapsible technical detail for a developer.</li>
+  <li>It saves that report back to your site as a <em>session</em>.</li>
+  <li>It asks which findings you want fixed. You answer in the same chat.</li>
+</ol>
+
+<h3>Notes for specific assistants</h3>
+
+<p>All of these work. The differences are in setup friction, not capability.</p>
+
+<h4>Terminal and editor agents — Claude Code, Codex CLI, Cursor, Copilot agent mode, Aider</h4>
+<p>The smoothest option, and what we'd recommend if you have one available. They run on
+your own machine with unrestricted outbound network access, no sandbox allowlist, and no
+request timeout, so a long review runs start-to-finish without babysitting. Paste the
+prompt and go.</p>
+
+<h4>Browser chat assistants — ChatGPT, Claude.ai, Gemini, Copilot</h4>
+<p>All work, provided the account and mode you're using can actually reach the internet.
+Two things to know:</p>
+<ul>
+  <li><strong>Web access must be genuinely on.</strong> Some tiers and some modes answer
+      from memory alone. If the assistant starts inventing findings without ever quoting
+      real file contents, that's the symptom — it can't reach your site and is guessing.
+      Stop and check its connectivity rather than trusting the report.</li>
+  <li><strong>Long reviews can hit a browser request timeout</strong> on a site with many
+      overrides, and the chat appears to stall. Ask it to work through the overrides in
+      smaller batches, or switch to a terminal agent.</li>
+</ul>
+
+<div class="csdoc-warn">
+<p><strong>Claude.ai specifically:</strong> if it replies <em>"Host not in allowlist"</em>,
+its code-execution sandbox is blocking your domain. Open <strong>Settings &rarr;
+Capabilities &rarr; Code execution &rarr; Network access</strong>, add your site, then
+<strong>start a new chat</strong> — the running one keeps the old allowlist.</p>
+</div>
+
+<h4>Custom GPTs, Gems and similar</h4>
+<p>If your platform lets you define an assistant with its own API actions, you can
+register the endpoints from the <a href="#csdoc-api">API reference</a> once and skip the
+prompt entirely. Set the auth header to <code>X-Joomla-Token</code>. This is the tidiest
+option if you look after several Joomla sites — the assistant remembers the setup.</p>
+
+<h4>Local and self-hosted models</h4>
+<p>Anything with tool-calling and network access will work. Be aware that this review is
+a judgement task, not a lookup: a small model will produce a report, but it is far more
+likely to miss a genuine security regression or invent one that isn't there. Treat
+findings from a small local model as a first pass, not a verdict.</p>
+
+<h4>MCP clients</h4>
+<p>If your assistant speaks the Model Context Protocol, our companion extension
+<strong>MCP for Joomla</strong> exposes this site's tooling that way and removes the
+copy-paste step entirely.</p>
+
+<h3>Coming back to a review later</h3>
+
+<p>Directly below the prompt card is a second, similar card headed
+<em>Continue a previous review in a new chat</em>. Most people never need it. Use it
+only if the original chat is gone — you closed it overnight, you're handing the work to
+a colleague, or you ran the scan in one assistant and want to apply the fixes from
+another. It gives a fresh chat the context from the saved session so it can pick up
+where you left off.</p>
+
+<h2>Method 2 — the built-in automated scan (Anthropic)</h2>
+
+<div class="csdoc-note">
+<p><strong>This is the one vendor-specific method.</strong> The extension calls
+Anthropic's API directly, so it needs an Anthropic key and will not work with an
+OpenAI, Google or other provider's key. If you'd rather use a different assistant,
+use <a href="#csdoc-choose">Method 1</a> — it costs nothing extra and does the same
+job.</p>
+</div>
+
+<p>If you save an Anthropic API key in Options, the dashboard gains a
+<strong>Run automated scan</strong> button. The whole review then runs server-side: no
+copy-paste, no second window. The report is saved as a session exactly as it would be in
+Method 1, and a chat box on the session page lets you ask for fixes without leaving the
+Joomla admin.</p>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb" href="#csdoc-lb-method2" id="csdoc-fig-method2">
+    <img src="/images/documentation/override-checker/05-method2-nokey.webp"
+         alt="The Method 2 card showing a warning that no Anthropic API key is saved, with an Options button">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>With no key saved, Method 2 explains itself and offers a shortcut to
+  Options. Method 1 keeps working regardless — the key is optional.</figcaption>
+</figure>
+
+<div class="csdoc-note">
+<p><strong>This is pay-per-token.</strong> The key is yours, from
+<a href="https://console.anthropic.com/">console.anthropic.com</a>, it is stored in your
+own site's database, and it is used only to call Anthropic on your behalf. Each scan is
+one API call. The <em>Overrides per scan</em> setting caps how many findings go into a
+single call — keeping it low also keeps your follow-up chat turns under Anthropic's
+rate limits. Sites with more overrides than the cap just need a few runs; each run saves
+as its own session.</p>
+</div>
+
+<h2>Method 3 — your own code or agent</h2>
+
+<p>Nothing about the extension assumes a human is watching. Every capability in the
+admin interface is a REST endpoint secured by a standard Joomla API token, so you can
+drive the whole thing from a script, a scheduled job, a CI pipeline, or an agent you
+built yourself.</p>
+
+<p>Things people do with this:</p>
+
+<ul>
+  <li><strong>Multi-site monitoring.</strong> Poll <code>/overrides</code> across every
+      site you look after and raise a ticket only when the count changes.</li>
+  <li><strong>Pre-upgrade gate.</strong> Run a review before a Joomla update and block
+      the deploy if anything comes back as an alert.</li>
+  <li><strong>Your own choice of model.</strong> Fetch the override and core files
+      yourself, send them to whichever model you prefer with your own prompt, then POST
+      the result back as a session so it appears in the admin like any other review.</li>
+  <li><strong>Reporting.</strong> Pull the session history for a client report without
+      logging into the site.</li>
+</ul>
+
+<p>The full endpoint list is in the <a href="#csdoc-api">API reference</a> below. The
+prompt on the dashboard is worth reading even if you never paste it — it documents the
+exact response shapes and the classification rules, and it makes a solid starting point
+for your own system prompt.</p>
+
+<h2>Reading a report</h2>
+
+<p>Every review, however it was run, lands in <strong>Sessions</strong>.</p>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb" href="#csdoc-lb-sessions" id="csdoc-fig-sessions">
+    <img src="/images/documentation/override-checker/11-sessions-list.webp"
+         alt="The Sessions list with one row: name, source claude_code, a summary reading 2 alert 31 review 0 info, and a created date">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>The Sessions list. The <em>Source</em> badge records how the review was
+  run, and the summary line gives you the alert / review / info counts at a glance.</figcaption>
+</figure>
+
+<p>Click a row for the full report.</p>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb csdoc-tall" href="#csdoc-lb-session" id="csdoc-fig-session">
+    <img src="/images/documentation/override-checker/12-session-detail.webp"
+         alt="A session detail page showing the report text, an Actions during this session panel, and a follow-up chat area">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>A real report on a real site. <em>Actions during this session</em> on the
+  right ties the report to what was actually done; the follow-up chat below is
+  where you ask for fixes when an Anthropic key is saved (Method 2). <em>Fullscreen</em> expands the
+  report; <em>Download report</em> saves the Markdown.</figcaption>
+</figure>
+
+<p>Reports are written for the site owner, not the developer, and always in the same order:</p>
+
+<div class="csdoc-table-wrap">
+<table>
+<thead><tr><th>Section</th><th>What's in it</th></tr></thead>
+<tbody>
+<tr><td>Headline answer</td><td>One paragraph answering "did anything bad happen?" before any detail.</td></tr>
+<tr><td>What you should do today</td><td>Concrete actions in plain English, one file per bullet.</td></tr>
+<tr><td>What I checked</td><td>How many overrides on which templates — and, explicitly, any that were <em>not</em> examined.</td></tr>
+<tr><td>Findings table</td><td>One row per flagged override. Every id appears, including ones that weren't reached.</td></tr>
+<tr><td>Technical detail</td><td>Collapsed by default. Diffs, the code-execution scan result, upgrade hazards.</td></tr>
+<tr><td>Suggested next-turn prompts</td><td>Copy-paste-able instructions with the real finding numbers already filled in.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>What the three severities mean</h3>
+
+<div class="csdoc-table-wrap">
+<table>
+<thead><tr><th>Severity</th><th>Meaning</th><th>What to do</th></tr></thead>
+<tbody>
+<tr><td>&#128308; <strong>Alert</strong></td>
+    <td>The override is <em>less safe than the Joomla file it replaces</em> — a missing
+        output filter, a removed security token, a dropped permission check, or code that
+        could execute input.</td>
+    <td>Fix it. The report states whether an anonymous visitor can trigger it or whether
+        it needs someone with an account.</td></tr>
+<tr><td>&#128993; <strong>Review</strong></td>
+    <td>Genuine design work that has drifted from current core but doesn't reduce safety —
+        markup, CSS classes, search-engine microdata, framework-generated overrides.</td>
+    <td>Safe to keep. Worth refreshing at your next template overhaul.</td></tr>
+<tr><td>&#9898; <strong>Info</strong></td>
+    <td>Cosmetic only: copyright year, whitespace, reindentation.</td>
+    <td>Nothing.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="csdoc-note">
+<p><strong>Severity is judged relative to core, not in the abstract.</strong> Joomla
+deliberately renders some values unescaped — article body text, plugin output, pagination
+markup. An override that does the same thing core does is not a finding. Only a file that
+is <em>worse than the original</em> earns an alert. That distinction is the whole point of
+the extension.</p>
+</div>
+
+<h2>Applying fixes — and undoing them</h2>
+
+<p>You confirm fixes by naming specific finding numbers, either in your own AI chat
+(Method 1) or in the session's chat box (Method 2). The prompt instructs the assistant to
+refuse vague instructions on purpose: if you say "fix those" without numbers, it should
+stop and ask which ones you mean, because acting on a misread pronoun could patch the
+wrong file.</p>
+
+<p>Every patch is snapshotted before it is written.</p>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb" href="#csdoc-lb-backups" id="csdoc-fig-backups">
+    <img src="/images/documentation/override-checker/14-file-backups.webp"
+         alt="The File backups screen explaining that snapshots are stored in the database, with a search and filter bar">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption><strong>File backups.</strong> Snapshots live in your database, not on disk —
+  each row holds the original path, a SHA-256 hash, the size and the full contents. Click
+  into any row to view it, download it, or restore it.</figcaption>
+</figure>
+
+<p><strong>Restoring is a single click</strong> from the backup's detail page, and it
+rewrites the original bytes exactly. Nothing the extension does to a file is one-way.</p>
+
+<div class="csdoc-tip">
+<p>Snapshots accumulate. The bundled scheduled-task plugin adds a
+<em>cs-override-checker: Purge old file backups</em> routine under
+<strong>System &rarr; Scheduled Tasks</strong>. Give it a daily or weekly schedule and it
+trims backups past your retention window (30 days by default) while always keeping the
+5 most recent, no matter how old. There's a dry-run switch so you can see what a new
+setting would delete before it deletes anything.</p>
+</div>
+
+<h2>The audit trail</h2>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb" href="#csdoc-lb-actions" id="csdoc-fig-actions">
+    <img src="/images/documentation/override-checker/13-action-log.webp"
+         alt="The Action log listing a session_created event and a disclaimer_acknowledged event with timestamps and JSON details">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>The Action log records every administrative event that touched the tracker,
+  the session log or the backups — with a timestamp and the session it belongs to.</figcaption>
+</figure>
+
+<p>Sessions record what the review <em>found</em>. The Action log records what was
+<em>done</em>. If something looks wrong on the site later, this is where you find out
+what changed and when.</p>
+
+<h2>Resetting the tracker</h2>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb" href="#csdoc-lb-reset" id="csdoc-fig-reset">
+    <img src="/images/documentation/override-checker/08-reset-overrides.webp"
+         alt="The Reset overrides for review modal listing each template with a checkbox and the number of rows currently tracked">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>Pick the templates to rebuild. Each row shows how many overrides are
+  currently tracked, so you can see the effect before you commit.</figcaption>
+</figure>
+
+<p>Use this after adding new override files, or when you want a template re-flagged for a
+fresh review. Only enabled templates with an <code>html/</code> override folder are
+listed. Ticking <em>Select all</em> reproduces the original "reset everything" behaviour.</p>
+
+<h2>Who can use it</h2>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb" href="#csdoc-lb-perms" id="csdoc-fig-perms">
+    <img src="/images/documentation/override-checker/10-options-permissions.webp"
+         alt="The Permissions tab showing five actions including View csoverridechecker data and Modify csoverridechecker data and override files">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>Two custom actions gate the extension: one for reading, one for writing.
+  Both are <em>Not Allowed</em> for every group until you grant them.</figcaption>
+</figure>
+
+<p>Out of the box only Super Users can use the extension or its API. Every read endpoint
+requires the <em>View</em> action and every write endpoint requires <em>Modify</em>, so
+granting a group read access does not give it the ability to patch files. Set these under
+<strong>Options &rarr; Permissions</strong> (or globally in
+<strong>System &rarr; Global Configuration &rarr; Permissions</strong>).</p>
+
+<h2 id="csdoc-api">The API</h2>
+
+<p>Everything the admin interface does is available over Joomla's Web Services API, which
+is how any AI assistant talks to your site — and how your own code can too.</p>
+
+<div class="csdoc-warn">
+<p><strong>Authentication gotcha.</strong> Joomla does <em>not</em> accept
+<code>Authorization: Bearer</code> on these routes. Every request needs:</p>
+<pre><code>X-Joomla-Token: &lt;your token&gt;
+Accept: application/vnd.api+json</code></pre>
+<p>A <code>Bearer</code>-formatted header returns <code>401 Forbidden</code>.</p>
+</div>
+
+<h3>Read</h3>
+<div class="csdoc-table-wrap">
+<table>
+<thead><tr><th>Endpoint</th><th>Returns</th></tr></thead>
+<tbody>
+<tr><td><code>GET /v1/csoverridechecker/overrides</code></td><td>Every flagged override.</td></tr>
+<tr><td><code>GET /v1/csoverridechecker/overrides/{id}/override-file</code></td><td>The override file's contents.</td></tr>
+<tr><td><code>GET /v1/csoverridechecker/overrides/{id}/core-file</code></td><td>The stock Joomla file it shadows.</td></tr>
+<tr><td><code>GET /v1/csoverridechecker/sessions/{id}</code></td><td>A previously saved report.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Write</h3>
+<div class="csdoc-table-wrap">
+<table>
+<thead><tr><th>Endpoint</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>POST …/overrides/{id}/apply-fix</code></td><td>Patches the file in place. Snapshots it first and returns the backup id.</td></tr>
+<tr><td><code>POST …/overrides/{id}/dismiss</code></td><td>Clears one tracker row — this is "mark as checked".</td></tr>
+<tr><td><code>POST …/overrides/dismiss-all</code></td><td>Clears every remaining row.</td></tr>
+<tr><td><code>POST …/sessions</code></td><td>Saves a review report.</td></tr>
+<tr><td><code>POST …/backups/{id}/restore</code></td><td>Rolls a patch back.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Your site's exact endpoint URL is shown at the bottom of the dashboard.</p>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb" href="#csdoc-lb-about" id="csdoc-fig-about">
+    <img src="/images/documentation/override-checker/06-about-footer.webp"
+         alt="The dashboard footer showing the About text, the endpoint URL and the installed version number">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>The dashboard footer carries your endpoint URL and the installed version.</figcaption>
+</figure>
+
+<h3>How the extension protects itself</h3>
+
+<ul>
+  <li>Every write must land inside <code>templates/&lt;template&gt;/html/</code> or
+      <code>administrator/templates/&lt;template&gt;/html/</code>. This is an allow-list
+      anchored on path separators, not a blocklist of file extensions — nothing outside
+      an override folder can be written, whatever it's called.</li>
+  <li>Writes are capped at 4&nbsp;MB.</li>
+  <li>Automated scans are rate-limited to 12 per user per hour.</li>
+  <li><code>opcache_invalidate()</code> runs after every PHP write, so a patch takes
+      effect on the very next request.</li>
+  <li>The saved Anthropic key is fingerprinted with a hash — no part of the key itself is
+      exposed in Diagnostics.</li>
+  <li>File contents are treated as untrusted data. Text inside an override file that looks
+      like an instruction is ignored; only the prompt and your chat messages direct the
+      review.</li>
+</ul>
+
+<h2>Troubleshooting</h2>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb" href="#csdoc-lb-diag" id="csdoc-fig-diag">
+    <img src="/images/documentation/override-checker/07-diagnostics.webp"
+         alt="The Diagnostics panel showing API key status, a Run test button, and system rows for version, Joomla, PHP, API base URL and auto-scan cap">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>Diagnostics. <em>Run test</em> sends a deliberately tiny request to
+  Anthropic to prove the key is valid and reachable from your server — it costs
+  next to nothing.</figcaption>
+</figure>
+
+<div class="csdoc-table-wrap">
+<table>
+<thead><tr><th>Symptom</th><th>Cause and fix</th></tr></thead>
+<tbody>
+<tr><td>API returns <code>404 Resource not found</code></td>
+    <td>The Web Services plugin isn't enabled. Check
+        <strong>System &rarr; Plugins</strong> for <em>Web Services - Cybersalt Override
+        Checker</em>. The package enables it automatically, but a manual install of the
+        component alone will not.</td></tr>
+<tr><td>API returns <code>401 Forbidden</code></td>
+    <td>Either you sent <code>Authorization: Bearer</code> instead of
+        <code>X-Joomla-Token</code>, or the token has been regenerated since it was saved.</td></tr>
+<tr><td>Claude.ai says "Host not in allowlist"</td>
+    <td>claude.ai's sandbox is blocking your domain. Add it under
+        <strong>Settings &rarr; Capabilities &rarr; Code execution &rarr; Network
+        access</strong>, then start a <em>new</em> chat.</td></tr>
+<tr><td>The chat stalls before the AI finishes</td>
+    <td>A browser request timeout. Ask it to work in smaller batches, or use a
+        terminal-based agent, which has no such limit.</td></tr>
+<tr><td><code>HTTP 429: rate limit exceeded</code></td>
+    <td>Too many tokens in one minute on a lower Anthropic tier. Lower
+        <em>Overrides per scan</em> and re-run.</td></tr>
+<tr><td>A <code>core-file</code> request 404s</td>
+    <td>Expected, not an error. The override is a custom alternative layout with no core
+        counterpart, so it's reviewed on its own merits instead of by comparison.</td></tr>
+<tr><td>Non-Super-Users can't see the component</td>
+    <td>Grant the <em>View</em> and <em>Modify</em> actions under
+        <strong>Options &rarr; Permissions</strong>.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Questions people ask</h2>
+
+<p><strong>Will it change my site without asking?</strong> No. Reviews are read-only.
+Nothing is written until you confirm specific numbered findings, and every write is
+backed up first.</p>
+
+<p><strong>Do I need to pay Anthropic?</strong> Only for Method 2. Method 1 works with
+whatever AI subscription you already have and needs no API key.</p>
+
+<p><strong>Does my code get sent anywhere?</strong> Your override files are sent to
+your chosen AI for review — that's what the review is. In Method 1 that happens through
+your own AI session; in Method 2 through your own Anthropic API key. Nothing is ever sent
+to Cybersalt.</p>
+
+<p><strong>What if I disagree with a finding?</strong> Ignore it. Nothing is applied
+without you naming it. You can also ask your AI to explain its reasoning on any single
+finding before deciding.</p>
+
+<p><strong>Can it fix a third-party extension's override?</strong> It will flag one, but
+the report will tell you to talk to that extension's developer rather than patch it —
+patching a file the vendor will overwrite on their next update is not a fix.</p>
+
+<p><strong>Is there a paid version with more features?</strong> No. There is no Pro
+tier, no licence key and no feature held back — what you've just read is the whole
+extension.</p>
+
+<h2>Support and feedback</h2>
+
+<p>Cybersalt Override Checker is <strong>free, and stays free</strong>. There's no paid
+upgrade, so nothing in this documentation is a trailer for a version you have to buy.</p>
+
+<div class="csdoc-tip">
+<p><strong>We genuinely want to hear from you.</strong> Bug reports, confusing wording,
+a finding it got wrong, a workflow it doesn't fit, an assistant you tried that behaved
+unexpectedly — all of it is useful, and the feedback from real sites is what has shaped
+every release so far.</p>
+</div>
+
+<h3>Where to send it</h3>
+
+<div class="csdoc-table-wrap">
+<table>
+<thead><tr><th>What</th><th>Where</th></tr></thead>
+<tbody>
+<tr><td>Bug reports and feature requests</td>
+    <td><a href="https://github.com/cybersalt/cs-override-checker/issues">GitHub Issues</a>
+        — the best place, because it's public and other users benefit from the answer</td></tr>
+<tr><td>General feedback and questions</td>
+    <td><a href="https://www.cybersalt.com/">cybersalt.com</a></td></tr>
+<tr><td>Source, releases and changelog</td>
+    <td><a href="https://github.com/cybersalt/cs-override-checker">github.com/cybersalt/cs-override-checker</a></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>What to expect</h3>
+
+<div class="csdoc-note">
+<p><strong>Please be realistic about response times.</strong> Cybersalt is a small
+company and this extension is given away for nothing, so free support is offered as time
+allows around client work. That's a real constraint, not a brush-off — we would rather
+say so plainly than leave you waiting on a promise we can't keep.</p>
+<p>You'll get the fastest result by helping us skip the diagnosis: tell us your
+<strong>Joomla and PHP versions</strong> and the <strong>extension version</strong> (all
+three are in the <em>Diagnostics</em> panel), which <strong>method and which AI
+assistant</strong> you were using, and what you expected to happen versus what actually
+did. A screenshot of the Diagnostics panel answers most of that in one go.</p>
+</div>
+
+<p>If you're reporting something the AI got wrong, the single most useful thing you can
+attach is the <strong>saved session report</strong> — use <em>Download report</em> on the
+session page. That gives us the exact findings and reasoning to look at.</p>
+
+<hr>
+
+<p><em>Cybersalt Override Checker is developed by
+<a href="https://www.cybersalt.com/">Cybersalt Consulting Ltd.</a> and released under the
+GNU General Public License v2 or later. Source, releases and changelog:
+<a href="https://github.com/cybersalt/cs-override-checker">github.com/cybersalt/cs-override-checker</a>.</em></p>
+
+</div><!-- /.csdoc-doc -->
+
+<!-- =================== lightbox overlays =================== -->
+
+<a class="csdoc-lb" id="csdoc-lb-templates" href="#csdoc-fig-templates">
+  <span class="csdoc-lb-cap">Joomla's Template Manager &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/01-joomla-changes-found.webp" alt="Joomla's Template Manager listing site templates and their override status">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-nav" href="#csdoc-fig-nav">
+  <span class="csdoc-lb-cap">Dashboard navigation &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/02-dashboard-nav.webp" alt="Dashboard button row and the two method buttons">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-options" href="#csdoc-fig-options">
+  <span class="csdoc-lb-cap">Options &rarr; Keys &amp; tokens &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/09-options-keys.webp" alt="The full Keys and tokens options tab">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-method1" href="#csdoc-fig-method1">
+  <span class="csdoc-lb-cap">Method 1 &mdash; the copy-paste prompt &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/03-method1-card.webp" alt="The Method 1 card with setup steps and the generated scan prompt">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-method2" href="#csdoc-fig-method2">
+  <span class="csdoc-lb-cap">Method 2 &mdash; automated scan &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/05-method2-nokey.webp" alt="The Method 2 automated scan card">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-sessions" href="#csdoc-fig-sessions">
+  <span class="csdoc-lb-cap">Sessions &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/11-sessions-list.webp" alt="The Sessions list">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-session" href="#csdoc-fig-session">
+  <span class="csdoc-lb-cap">A session report &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/12-session-detail.webp" alt="A session detail page with report, actions panel and chat area">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-backups" href="#csdoc-fig-backups">
+  <span class="csdoc-lb-cap">File backups &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/14-file-backups.webp" alt="The File backups screen">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-actions" href="#csdoc-fig-actions">
+  <span class="csdoc-lb-cap">Action log &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/13-action-log.webp" alt="The Action log audit trail">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-reset" href="#csdoc-fig-reset">
+  <span class="csdoc-lb-cap">Reset overrides for review &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/08-reset-overrides.webp" alt="The Reset overrides for review modal">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-perms" href="#csdoc-fig-perms">
+  <span class="csdoc-lb-cap">Permissions &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/10-options-permissions.webp" alt="The Permissions tab and its two custom actions">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-about" href="#csdoc-fig-about">
+  <span class="csdoc-lb-cap">Dashboard footer &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/06-about-footer.webp" alt="The dashboard About footer with endpoint URL and version">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-diag" href="#csdoc-fig-diag">
+  <span class="csdoc-lb-cap">Diagnostics &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/07-diagnostics.webp" alt="The Diagnostics panel">
+</a>

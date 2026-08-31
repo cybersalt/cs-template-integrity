@@ -2,6 +2,45 @@
     <h1>📋 Cybersalt Override Checker — Changelog</h1>
 
     <h2>
+        <span class="version-badge">v2.6.0</span>
+        <span class="date">2026-08-29</span>
+    </h2>
+    <p>Assistant-agnostic release. The extension has always been drivable by any AI that can make an HTTPS request, but the admin interface read as though Claude were a requirement. This release fixes that in the product itself, and adds the built-in support area the Cybersalt extension standard calls for.</p>
+
+    <h3><span class="section-icon">📦</span>New Features</h3>
+    <ul>
+        <li><strong>Setup guide view.</strong> Answers "which AI can I use?" from inside the admin. Leads with the actual capability an assistant needs &mdash; outbound HTTPS with a custom header, plus POST with a JSON body to apply fixes &mdash; rather than a product list that goes stale. Per-family notes for terminal and editor agents, browser chat assistants, custom GPTs and Gems, local and self-hosted models, and MCP clients, plus the endpoint URL and <code>X-Joomla-Token</code> auth warning.</li>
+        <li><strong>Support area.</strong> States plainly that the extension is free with no Pro tier, sets honest expectations about free-support response times, points at GitHub Issues, lists what to include in a report, and renders a copyable diagnostics block (extension / Joomla / PHP versions, site URL, key and token presence). The block contains <strong>no secrets</strong> &mdash; only presence flags, never values &mdash; so it is safe to paste into a public issue.</li>
+        <li>Both views are reachable from the dashboard button row, the toolbar, and the component submenu.</li>
+    </ul>
+
+    <h3><span class="section-icon">🔧</span>Improvements</h3>
+    <ul>
+        <li><strong>Dashboard copy is no longer Claude-specific.</strong> <em>"Method 1: Use Claude.ai or Code"</em> becomes <em>"Method 1: Use your AI assistant"</em>, and the step-by-step instructions, continue-a-previous-review card, sessions blurb and About description were rewritten to describe the workflow without naming a vendor.</li>
+        <li><strong>The one vendor-locked path is labelled as such.</strong> Method 2 calls Anthropic's API directly and cannot use another provider's key. The Setup guide says so outright and points users at Method 1 instead.</li>
+    </ul>
+
+    <p><em>No schema change &mdash; safe in-place upgrade from 2.5.1. New strings are en-GB only in this release; the other 14 locales fall back to English for the two new views until the translation pass lands.</em></p>
+
+    <h2>
+        <span class="version-badge">v2.6.0</span>
+        <span class="date">2026-08-29</span>
+    </h2>
+    <p>Copy-accuracy and documentation release. Two user-visible strings were stating things that stopped being true in v2.4.3, and the permissions screen was leaking an internal identifier at end users. Both fixed in all 15 languages. No functional or schema change &mdash; safe in-place upgrade from 2.5.0.</p>
+
+    <h3><span class="section-icon">🐛</span>Bug Fixes</h3>
+    <ul>
+        <li><strong>Permissions screen no longer shows the raw element id.</strong> The two custom ACL actions rendered as <em>"View csoverridechecker data"</em> and <em>"Modify csoverridechecker data and override files"</em> in <strong>Options &rarr; Permissions</strong>, exposing the internal element name to site administrators. They now read <em>"View Override Checker data"</em> and <em>"Modify Override Checker data and override files"</em>. Fixed in all 15 locales (30 strings), preserving each existing translation.</li>
+        <li><strong>Options help text corrected.</strong> <code>COM_CSOVERRIDECHECKER_CONFIG_ANTHROPIC_API_KEY_NOTE</code> still claimed the default model was <em>Claude Sonnet 4.6</em> and that scans were <em>"capped to the first 60 per run"</em>. Both changed in v2.4.3 &mdash; <strong>Opus 4.7</strong> is the default and the cap default is <strong>10</strong>. Fixed in all 15 locales.</li>
+    </ul>
+
+    <h3><span class="section-icon">📝</span>Documentation</h3>
+    <ul>
+        <li><strong>Full end-user documentation published</strong> at <a href="https://docs.cybersalt.com/extensions/override-checker">docs.cybersalt.com/extensions/override-checker</a> &mdash; install, all three review workflows, reading a report, applying and rolling back fixes, the audit trail, permissions, the Web Services API reference, troubleshooting, FAQ and support. Illustrated with 13 lossless-WebP screenshots.</li>
+        <li><strong>Documentation is now assistant-agnostic.</strong> The REST API has always been open to any AI that can make an HTTPS request, but the docs read as though Claude were required. They now lead with a three-method chooser, document the <em>capability</em> an assistant needs rather than naming products, and carry per-assistant notes for terminal agents, browser chats, Custom GPTs, local models and MCP clients. The one vendor-specific path &mdash; the built-in automated scan, which calls Anthropic directly &mdash; is labelled as such.</li>
+    </ul>
+
+    <h2>
         <span class="version-badge">v2.5.0</span>
         <span class="date">2026-06-26</span>
     </h2>

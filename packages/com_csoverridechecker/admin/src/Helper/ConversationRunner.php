@@ -67,7 +67,7 @@ final class ConversationRunner
 
     public const ENDPOINT     = 'https://api.anthropic.com/v1/messages';
     public const API_VERSION  = '2023-06-01';
-    public const DEFAULT_MODEL = 'claude-opus-4-7';
+    public const DEFAULT_MODEL = 'claude-opus-4-8';
 
     /**
      * Continue an existing conversation by appending a user message

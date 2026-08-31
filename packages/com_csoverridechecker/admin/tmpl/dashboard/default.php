@@ -26,6 +26,28 @@ $siteTemplatesUrl   = Route::_('index.php?option=com_templates&view=templates&cl
 $sessionsUrl        = Route::_('index.php?option=com_csoverridechecker&view=sessions', false);
 $actionsUrl         = Route::_('index.php?option=com_csoverridechecker&view=actions', false);
 $backupsUrl         = Route::_('index.php?option=com_csoverridechecker&view=backups', false);
+$that              = $this;
+$setupGuideUrl      = Route::_('index.php?option=com_csoverridechecker&view=setupguide', false);
+$supportUrl         = Route::_('index.php?option=com_csoverridechecker&view=support', false);
+?>
+
+<?php
+/**
+ * Wrap the saved API token inside a rendered prompt so it can be blurred.
+ * Escaping happens first, then the already-escaped token is swapped for a
+ * span wrapping the same escaped text - so this never widens the escaping
+ * surface, and the clipboard still copies the real value because
+ * textContent ignores the wrapper.
+ */
+$csocWrapSecret = function (string $prompt) use ($that): string {
+    $html = $that->escape($prompt);
+    $tok  = $that->joomlaToken;
+    if ($tok === '') {
+        return $html;
+    }
+    $esc = $that->escape($tok);
+    return str_replace($esc, '<span data-csti-secret>' . $esc . '</span>', $html);
+};
 ?>
 
 <div class="container-fluid csoverridechecker-dashboard">
@@ -65,6 +87,14 @@ $backupsUrl         = Route::_('index.php?option=com_csoverridechecker&view=back
             <span class="icon-info" aria-hidden="true"></span>
             <?php echo Text::_('COM_CSOVERRIDECHECKER_DASHBOARD_DIAGNOSTICS_BUTTON'); ?>
         </button>
+        <a href="<?php echo $this->escape($setupGuideUrl); ?>" class="btn btn-secondary">
+            <span class="icon-lightbulb" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSOVERRIDECHECKER_TOOLBAR_SETUPGUIDE'); ?>
+        </a>
+        <a href="<?php echo $this->escape($supportUrl); ?>" class="btn btn-secondary">
+            <span class="icon-help" aria-hidden="true"></span>
+            <?php echo Text::_('COM_CSOVERRIDECHECKER_TOOLBAR_SUPPORT'); ?>
+        </a>
     </div>
 
     <!--
@@ -127,7 +157,7 @@ $backupsUrl         = Route::_('index.php?option=com_csoverridechecker&view=back
             <p class="card-text mb-2">
                 <strong><?php echo Text::_('COM_CSOVERRIDECHECKER_DASHBOARD_USAGE_PROMPT_LABEL'); ?></strong>
             </p>
-            <pre class="csoverridechecker-codeblock mb-2"><code id="csoverridechecker-prompt"><?php echo $this->escape($this->claudePrompt); ?></code></pre>
+            <pre class="csoverridechecker-codeblock mb-2"><code id="csoverridechecker-prompt"><?php echo $csocWrapSecret($this->claudePrompt); ?></code></pre>
             <button type="button"
                     class="btn btn-primary"
                     id="csoverridechecker-copy-btn"
@@ -157,7 +187,7 @@ $backupsUrl         = Route::_('index.php?option=com_csoverridechecker&view=back
                 <?php echo Text::_('COM_CSOVERRIDECHECKER_DASHBOARD_FIX_TITLE'); ?>
             </h3>
             <p class="card-text"><?php echo Text::_('COM_CSOVERRIDECHECKER_DASHBOARD_FIX_INTRO'); ?></p>
-            <pre class="csoverridechecker-codeblock mb-2"><code id="csoverridechecker-fix-prompt"><?php echo $this->escape($this->fixPrompt); ?></code></pre>
+            <pre class="csoverridechecker-codeblock mb-2"><code id="csoverridechecker-fix-prompt"><?php echo $csocWrapSecret($this->fixPrompt); ?></code></pre>
             <button type="button"
                     class="btn btn-primary"
                     id="csoverridechecker-fix-copy-btn"

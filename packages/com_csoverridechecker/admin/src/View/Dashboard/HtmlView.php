@@ -12,6 +12,7 @@ namespace Cybersalt\Component\Csoverridechecker\Administrator\View\Dashboard;
 
 defined('_JEXEC') or die;
 
+use Cybersalt\Component\Csoverridechecker\Administrator\Helper\AiClientFactory;
 use Cybersalt\Component\Csoverridechecker\Administrator\Helper\AnthropicClient;
 use Cybersalt\Component\Csoverridechecker\Administrator\Helper\PermissionHelper;
 use Cybersalt\Component\Csoverridechecker\Administrator\Helper\RescanHelper;
@@ -44,6 +45,15 @@ final class HtmlView extends BaseHtmlView
 
     public string $apiKeyFingerprint = '';
 
+    /** Selected AI provider id, e.g. 'anthropic'. */
+    public string $aiProvider = '';
+
+    /** Human-readable provider name for the UI. */
+    public string $aiProviderLabel = '';
+
+    /** False when the selected provider can scan but not run the fix chat. */
+    public bool $hasChatSupport = true;
+
     public string $testConnectionUrl = '';
 
     public string $autoScanMaxOverrides = '';
@@ -56,6 +66,14 @@ final class HtmlView extends BaseHtmlView
      * place. Same URL the toolbar Options button targets internally.
      */
     public string $optionsUrl = '';
+
+    /**
+     * The saved Joomla API token, if any. Used only to locate that
+     * substring inside the rendered prompt so it can be wrapped for
+     * blurring - it is already present in the prompt text either way,
+     * so this exposes nothing new.
+     */
+    public string $joomlaToken = '';
 
     /**
      * Templates that have an html/ override directory on disk.
@@ -114,11 +132,17 @@ final class HtmlView extends BaseHtmlView
         $this->claudePrompt   = $this->buildClaudePrompt($tokenForPrompt);
         $this->fixPrompt      = $this->buildFixPrompt($tokenForPrompt);
 
-        $rawKey = (string) $params->get('anthropic_api_key', '');
-        $this->hasApiKey = trim($rawKey) !== '';
+        // Key presence is now per-provider: "has a key" means "has a key
+        // for the provider currently selected in Options", which is what
+        // decides whether Method 2 is offered.
+        $this->aiProvider      = AiClientFactory::currentProvider();
+        $this->aiProviderLabel = AiClientFactory::labelFor($this->aiProvider);
+        $this->hasChatSupport  = AiClientFactory::hasChatSupport($this->aiProvider);
+        $this->hasApiKey       = AiClientFactory::hasKey($this->aiProvider);
+
         if ($this->hasApiKey) {
             try {
-                $this->apiKeyFingerprint = (new AnthropicClient($rawKey))->keyFingerprint();
+                $this->apiKeyFingerprint = AiClientFactory::make()->keyFingerprint();
             } catch (\Throwable $e) {
                 $this->apiKeyFingerprint = '(could not fingerprint: ' . $e->getMessage() . ')';
             }
@@ -154,6 +178,22 @@ final class HtmlView extends BaseHtmlView
         // skipped so the picker only shows actionable rows.
         $this->rescanTemplates = RescanHelper::listTemplatesWithOverrideDirs();
 
+        // Screencasting-safe reveal timings, read by dashboard.js via
+        // Joomla.getOptions rather than interpolated into inline script.
+        //
+        // Deliberately the PERMISSION-GATED token, not the raw saved one:
+        // a view-tier user gets the placeholder in their prompt (see the
+        // $tokenForPrompt reasoning above), so the template must look for
+        // that same value when wrapping the secret. Using the raw token
+        // here would put a senior admin's credential on a property that a
+        // junior user's render pass can reach.
+        $this->joomlaToken = $tokenForPrompt;
+        $this->getDocument()->addScriptOptions('csoverridechecker', [
+            'revealDelay' => (int) $params->get('hover_reveal_delay_seconds', 3),
+            'revealHide'  => (int) $params->get('hover_reveal_hide_seconds', 8),
+            'revealLabel' => Text::_('COM_CSOVERRIDECHECKER_SECRET_REVEAL_COUNTDOWN'),
+        ]);
+
         HTMLHelper::_('stylesheet', 'com_csoverridechecker/dashboard.css', ['relative' => true, 'version' => 'auto']);
         HTMLHelper::_('script', 'com_csoverridechecker/dashboard.js', ['relative' => true, 'version' => 'auto', 'defer' => true]);
 
@@ -165,6 +205,22 @@ final class HtmlView extends BaseHtmlView
     private function addToolbar(): void
     {
         ToolbarHelper::title(Text::_('COM_CSOVERRIDECHECKER_DASHBOARD_TITLE'), 'check-circle');
+
+        $toolbar = $this->getDocument()->getToolbar();
+
+        // "Which AI can I use?" — the review workflow is assistant-agnostic
+        // and that needs to be discoverable from the dashboard, not only
+        // from the online documentation.
+        $toolbar->linkButton('setupguide', 'COM_CSOVERRIDECHECKER_TOOLBAR_SETUPGUIDE')
+            ->url(Route::_('index.php?option=com_csoverridechecker&view=setupguide', false))
+            ->icon('icon-lightbulb');
+
+        // Built-in support area, per the Cybersalt extension wishlist:
+        // every extension exposes a "Get help" link from its main view.
+        $toolbar->linkButton('support', 'COM_CSOVERRIDECHECKER_TOOLBAR_SUPPORT')
+            ->url(Route::_('index.php?option=com_csoverridechecker&view=support', false))
+            ->icon('icon-help');
+
         // Wires up Joomla's standard Options dialog, populated from
         // admin/config.xml. Surfaces the Anthropic API key field
         // (and the component-permissions tab) without us having to

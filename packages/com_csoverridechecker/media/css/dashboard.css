@@ -414,3 +414,55 @@
 .csti-row-actions .btn + .btn {
     margin-left: 2px;
 }
+
+/* ==========================================================================
+   Screencasting-safe secret reveal
+   --------------------------------------------------------------------------
+   Any element carrying [data-csti-secret] renders blurred until the operator
+   deliberately holds hover over it. Blur is heavy enough to defeat frame-grab
+   OCR at normal reading distances, so a live demo or training video does not
+   leak a real key. Copy-to-clipboard still works because the clipboard reads
+   textContent, which CSS never touches.
+   ========================================================================== */
+[data-csti-secret] {
+    filter: blur(5px);
+    transition: filter 0.15s ease;
+}
+
+/* Applied by the JS once the hold-hover countdown completes. */
+[data-csti-secret].csti-secret-revealed,
+[data-csti-secret].csti-secret-revealed:hover,
+[data-csti-secret].csti-secret-revealed:focus {
+    filter: none !important;
+}
+
+/* Wrapper the JS injects so the countdown pill can centre on the secret
+   itself rather than on whatever container happens to surround it. */
+.csti-secret-scope {
+    position: relative;
+    display: inline-block;
+}
+
+/* Centred "Revealing in Ns" pill. Without it, a slow reveal reads to the
+   operator as "hover isn't working". */
+.csti-secret-countdown {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bs-body-color, #16191c);
+    color: var(--bs-body-bg, #fff);
+    font-size: 0.875rem;
+    font-weight: 700;
+    padding: 0.35rem 0.75rem;
+    border-radius: 0.75rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    z-index: 5;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.csti-secret-countdown.is-visible {
+    opacity: 1;
+}

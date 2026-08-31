@@ -22,6 +22,29 @@
         label="COM_CSOVERRIDECHECKER_CONFIG_AI_FIELDSET_LABEL"
         description="COM_CSOVERRIDECHECKER_CONFIG_AI_FIELDSET_DESC">
 
+        <!--
+            Provider selector. Only affects the built-in "Run automated
+            scan" (Method 2). The copy-paste prompt workflow (Method 1)
+            is provider-agnostic and needs none of these keys.
+        -->
+        <field
+            name="ai_provider"
+            type="list"
+            label="COM_CSOVERRIDECHECKER_CONFIG_AI_PROVIDER_LABEL"
+            description="COM_CSOVERRIDECHECKER_CONFIG_AI_PROVIDER_DESC"
+            default="anthropic"
+            validate="options">
+            <option value="anthropic">COM_CSOVERRIDECHECKER_CONFIG_PROVIDER_ANTHROPIC</option>
+            <option value="openai">COM_CSOVERRIDECHECKER_CONFIG_PROVIDER_OPENAI</option>
+            <option value="gemini">COM_CSOVERRIDECHECKER_CONFIG_PROVIDER_GEMINI</option>
+        </field>
+
+        <field
+            name="ai_provider_note"
+            type="note"
+            class="alert alert-info"
+            description="COM_CSOVERRIDECHECKER_CONFIG_AI_PROVIDER_NOTE" />
+
         <field
             name="anthropic_api_key"
             type="apikey"
@@ -33,7 +56,36 @@
             spellcheck="false"
             filter="raw"
             size="80"
-            maxlength="500" />
+            maxlength="500"
+            showon="ai_provider:anthropic" />
+
+        <field
+            name="openai_api_key"
+            type="apikey"
+            addfieldprefix="Cybersalt\Component\Csoverridechecker\Administrator\Field"
+            label="COM_CSOVERRIDECHECKER_CONFIG_OPENAI_API_KEY_LABEL"
+            description="COM_CSOVERRIDECHECKER_CONFIG_OPENAI_API_KEY_DESC"
+            default=""
+            autocomplete="off"
+            spellcheck="false"
+            filter="raw"
+            size="80"
+            maxlength="500"
+            showon="ai_provider:openai" />
+
+        <field
+            name="gemini_api_key"
+            type="apikey"
+            addfieldprefix="Cybersalt\Component\Csoverridechecker\Administrator\Field"
+            label="COM_CSOVERRIDECHECKER_CONFIG_GEMINI_API_KEY_LABEL"
+            description="COM_CSOVERRIDECHECKER_CONFIG_GEMINI_API_KEY_DESC"
+            default=""
+            autocomplete="off"
+            spellcheck="false"
+            filter="raw"
+            size="80"
+            maxlength="500"
+            showon="ai_provider:gemini" />
 
         <field
             name="anthropic_api_key_note"
@@ -59,26 +111,85 @@
         <field
             name="scan_model"
             type="list"
+            showon="ai_provider:anthropic"
             label="COM_CSOVERRIDECHECKER_CONFIG_SCAN_MODEL_LABEL"
             description="COM_CSOVERRIDECHECKER_CONFIG_SCAN_MODEL_DESC"
-            default="claude-opus-4-7"
+            default="claude-opus-4-8"
             filter="cmd">
             <option value="claude-haiku-4-5-20251001">COM_CSOVERRIDECHECKER_CONFIG_MODEL_HAIKU</option>
-            <option value="claude-sonnet-4-6">COM_CSOVERRIDECHECKER_CONFIG_MODEL_SONNET</option>
-            <option value="claude-opus-4-7">COM_CSOVERRIDECHECKER_CONFIG_MODEL_OPUS</option>
+            <option value="claude-sonnet-5">COM_CSOVERRIDECHECKER_CONFIG_MODEL_SONNET</option>
+            <option value="claude-opus-4-8">COM_CSOVERRIDECHECKER_CONFIG_MODEL_OPUS</option>
+        </field>
+
+
+        <field
+            name="scan_model_openai"
+            type="list"
+            showon="ai_provider:openai"
+            label="COM_CSOVERRIDECHECKER_CONFIG_SCAN_MODEL_LABEL"
+            description="COM_CSOVERRIDECHECKER_CONFIG_SCAN_MODEL_DESC"
+            default="gpt-5"
+            filter="cmd"
+            validate="options">
+            <option value="gpt-5-mini">COM_CSOVERRIDECHECKER_CONFIG_MODEL_GPT5_MINI</option>
+            <option value="gpt-5">COM_CSOVERRIDECHECKER_CONFIG_MODEL_GPT5</option>
+        </field>
+
+        <field
+            name="scan_model_gemini"
+            type="list"
+            showon="ai_provider:gemini"
+            label="COM_CSOVERRIDECHECKER_CONFIG_SCAN_MODEL_LABEL"
+            description="COM_CSOVERRIDECHECKER_CONFIG_SCAN_MODEL_DESC"
+            default="gemini-2.5-pro"
+            filter="cmd"
+            validate="options">
+            <option value="gemini-2.5-flash">COM_CSOVERRIDECHECKER_CONFIG_MODEL_GEMINI_FLASH</option>
+            <option value="gemini-2.5-pro">COM_CSOVERRIDECHECKER_CONFIG_MODEL_GEMINI_PRO</option>
         </field>
 
         <field
             name="chat_model"
             type="list"
+            showon="ai_provider:anthropic"
             label="COM_CSOVERRIDECHECKER_CONFIG_CHAT_MODEL_LABEL"
             description="COM_CSOVERRIDECHECKER_CONFIG_CHAT_MODEL_DESC"
-            default="claude-opus-4-7"
+            default="claude-opus-4-8"
             filter="cmd">
             <option value="claude-haiku-4-5-20251001">COM_CSOVERRIDECHECKER_CONFIG_MODEL_HAIKU</option>
-            <option value="claude-sonnet-4-6">COM_CSOVERRIDECHECKER_CONFIG_MODEL_SONNET</option>
-            <option value="claude-opus-4-7">COM_CSOVERRIDECHECKER_CONFIG_MODEL_OPUS</option>
+            <option value="claude-sonnet-5">COM_CSOVERRIDECHECKER_CONFIG_MODEL_SONNET</option>
+            <option value="claude-opus-4-8">COM_CSOVERRIDECHECKER_CONFIG_MODEL_OPUS</option>
         </field>
+
+
+        <!--
+            Screencasting-safe secret reveal. Keys and tokens render blurred;
+            the operator must hold hover for delay_seconds before the blur
+            lifts, and it re-blurs automatically hide_seconds later. Ported
+            from cs-mcp-for-j, where it was added so live demos and training
+            videos don't leak real credentials.
+        -->
+        <field
+            name="hover_reveal_delay_seconds"
+            type="integer"
+            label="COM_CSOVERRIDECHECKER_CONFIG_HOVER_REVEAL_DELAY_LABEL"
+            description="COM_CSOVERRIDECHECKER_CONFIG_HOVER_REVEAL_DELAY_DESC"
+            default="3"
+            first="0"
+            last="60"
+            step="1"
+        />
+
+        <field
+            name="hover_reveal_hide_seconds"
+            type="integer"
+            label="COM_CSOVERRIDECHECKER_CONFIG_HOVER_REVEAL_HIDE_LABEL"
+            description="COM_CSOVERRIDECHECKER_CONFIG_HOVER_REVEAL_HIDE_DESC"
+            default="8"
+            first="0"
+            last="300"
+            step="1"
+        />
 
         <field
             name="scan_max_overrides"

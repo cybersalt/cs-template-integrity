@@ -28,7 +28,7 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Http\HttpFactory;
 
-final class AnthropicClient
+final class AnthropicClient implements AiClientInterface
 {
     public const API_VERSION = '2023-06-01';
     public const ENDPOINT    = 'https://api.anthropic.com/v1/messages';
@@ -40,7 +40,7 @@ final class AnthropicClient
 
     private int $keyRawLength = 0;
 
-    public function __construct(string $apiKey, string $model = 'claude-opus-4-7')
+    public function __construct(string $apiKey, string $model = 'claude-opus-4-8')
     {
         // Track the raw length (after the caller's trim, before our
         // own whitespace strip) so the fingerprint can show both —
@@ -76,6 +76,12 @@ final class AnthropicClient
      * meaningfully different from 108 strongly suggests truncation
      * during save.
      */
+    /** Human-readable provider name, for UI and error messages. */
+    public function providerLabel(): string
+    {
+        return 'Anthropic';
+    }
+
     public function keyFingerprint(): string
     {
         $len = strlen($this->apiKey);

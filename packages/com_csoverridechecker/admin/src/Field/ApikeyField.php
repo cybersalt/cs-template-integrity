@@ -37,6 +37,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Field\TextField;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Session\Session;
 use Joomla\CMS\Router\Route;
 
 class ApikeyField extends TextField
@@ -78,7 +79,9 @@ class ApikeyField extends TextField
         }
         $textInput = (string) preg_replace(
             '/\btype="text"/',
-            'type="password"',
+            'type="password" data-csti-autohide="'
+                . (int) \Joomla\CMS\Component\ComponentHelper::getParams('com_csoverridechecker')
+                    ->get('hover_reveal_hide_seconds', 8) . '"',
             (string) $textInput,
             1
         );
@@ -194,6 +197,24 @@ CSS;
 
     if (toggle) {
         var labelEl = toggle.querySelector('.csti-apikey-toggle-label');
+
+        // Auto-re-mask timer (csti-apikey-autohide). Seconds come from the
+        // component's hover_reveal_hide_seconds option, injected as a data
+        // attribute by the field. 0 disables it, matching the dashboard.
+        var autoHideSecs = parseInt(input.getAttribute('data-csti-autohide') || '0', 10) || 0;
+        var autoHideTimer = null;
+
+        function mask() {
+            input.type = 'password';
+            if (labelEl) {
+                labelEl.textContent = '{$reveal}';
+            }
+            if (autoHideTimer !== null) {
+                clearTimeout(autoHideTimer);
+                autoHideTimer = null;
+            }
+        }
+
         toggle.addEventListener('click', function () {
             // Swap the HTML type between password (masked) and text
             // (revealed). Native browser masking — no CSS blur, no
@@ -203,8 +224,25 @@ CSS;
             if (labelEl) {
                 labelEl.textContent = revealed ? '{$reveal}' : '{$hide}';
             }
+            if (autoHideTimer !== null) {
+                clearTimeout(autoHideTimer);
+                autoHideTimer = null;
+            }
             if (!revealed) {
                 input.focus();
+                // Just revealed — start the countdown to re-mask.
+                if (autoHideSecs > 0) {
+                    autoHideTimer = setTimeout(mask, autoHideSecs * 1000);
+                }
+            }
+        });
+
+        // Typing into a revealed field restarts the timer, so editing a
+        // long key doesn't get interrupted by it masking mid-paste.
+        input.addEventListener('input', function () {
+            if (input.type === 'text' && autoHideSecs > 0) {
+                if (autoHideTimer !== null) { clearTimeout(autoHideTimer); }
+                autoHideTimer = setTimeout(mask, autoHideSecs * 1000);
             }
         });
     }
@@ -237,6 +275,105 @@ CSS;
 </script>
 JS;
 
+        // "Fetch my token" only makes sense on the Joomla API token
+        // field - the Anthropic/OpenAI/Gemini keys come from those vendors.
+        $fetchButton = '';
+        $fetchJs     = '';
+
+        if ($this->fieldname === 'joomla_api_token') {
+            $fetchId  = $inputId . '_fetch';
+            $fetchTxt = htmlspecialchars(
+                Text::_('COM_CSOVERRIDECHECKER_FETCH_TOKEN_BUTTON'),
+                ENT_QUOTES,
+                'UTF-8'
+            );
+
+            $base  = 'index.php?option=com_csoverridechecker&task=display.';
+            $tok   = Session::getFormToken();
+            $urlF  = htmlspecialchars(Route::_($base . 'fetchApiToken&' . $tok . '=1', false), ENT_QUOTES, 'UTF-8');
+            $urlP  = htmlspecialchars(Route::_($base . 'enableTokenPlugin&' . $tok . '=1', false), ENT_QUOTES, 'UTF-8');
+            $urlA  = htmlspecialchars(Route::_($base . 'enableApiAuthPlugin&' . $tok . '=1', false), ENT_QUOTES, 'UTF-8');
+
+            $fetchButton = '<button type="button" id="' . $fetchId . '"'
+                . ' class="btn btn-primary csti-apikey-fetch"'
+                . ' data-fetch-url="' . $urlF . '"'
+                . ' data-enable-url="' . $urlP . '"'
+                . ' data-enable-auth-url="' . $urlA . '"'
+                . ' aria-controls="' . $inputId . '">'
+                . '<span class="icon-refresh" aria-hidden="true"></span>'
+                . '<span>' . $fetchTxt . '</span>'
+                . '</button>';
+
+            $msgFetching = json_encode(Text::_('COM_CSOVERRIDECHECKER_FETCH_TOKEN_WORKING'));
+            $msgEnable   = json_encode(Text::_('COM_CSOVERRIDECHECKER_FETCH_TOKEN_OFFER_ENABLE'));
+            $msgAuth     = json_encode(Text::_('COM_CSOVERRIDECHECKER_FETCH_TOKEN_OFFER_ENABLE_AUTH'));
+            $msgSaveNote = json_encode(Text::_('COM_CSOVERRIDECHECKER_FETCH_TOKEN_SAVE_REMINDER'));
+
+            $fetchJs = <<<FJS
+<script>
+(function () {
+    var btn   = document.getElementById('{$fetchId}');
+    var input = document.getElementById('{$inputId}');
+    if (!btn || !input) { return; }
+
+    function note(text, cls) {
+        var id = '{$fetchId}_note';
+        var el = document.getElementById(id);
+        if (!el) {
+            el = document.createElement('div');
+            el.id = id;
+            el.className = 'w-100 mt-2';
+            btn.parentNode.parentNode.appendChild(el);
+        }
+        el.className = 'w-100 mt-2 alert alert-' + (cls || 'info') + ' py-2 mb-0';
+        el.textContent = text;
+        return el;
+    }
+
+    function call(url, then) {
+        return fetch(url, { method: 'POST', credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(then)
+            .catch(function (e) { note(String(e), 'danger'); });
+    }
+
+    function offer(text, url, cls) {
+        var el = note(text, cls || 'warning');
+        var b  = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn btn-sm btn-primary ms-2';
+        b.textContent = {$msgEnable};
+        b.addEventListener('click', function () {
+            call(url, function (d) {
+                if (d && d.success) { btn.click(); } else { note((d && d.error) || 'Failed', 'danger'); }
+            });
+        });
+        el.appendChild(b);
+    }
+
+    btn.addEventListener('click', function () {
+        note({$msgFetching}, 'info');
+        call(btn.dataset.fetchUrl, function (d) {
+            if (!d) { return; }
+            if (d.success) {
+                input.value = d.token;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                if (d.api_auth_disabled) {
+                    offer({$msgAuth}, btn.dataset.enableAuthUrl, 'warning');
+                } else {
+                    note({$msgSaveNote}, 'success');
+                }
+                return;
+            }
+            if (d.plugin_disabled) { offer(d.error, btn.dataset.enableUrl, 'warning'); return; }
+            note(d.error || 'Failed', 'danger');
+        });
+    });
+})();
+</script>
+FJS;
+        }
+
         $wrapped = '<div class="input-group">'
             . $textInput
             . '<button type="button" id="' . $btnId . '"'
@@ -252,9 +389,10 @@ JS;
             . '<span class="icon-cancel" aria-hidden="true"></span>'
             . '<span class="csti-apikey-clear-label">' . $clearLabel . '</span>'
             . '</button>'
+            . $fetchButton
             . $helpButton
             . '</div>';
 
-        return $css . $wrapped . $js;
+        return $css . $wrapped . $js . $fetchJs;
     }
 }

@@ -21,6 +21,8 @@
     document.addEventListener('DOMContentLoaded', function () {
         wireCopyButton('csoverridechecker-copy-btn',     'csoverridechecker-prompt',     'btn-primary');
         wireCopyButton('csoverridechecker-fix-copy-btn', 'csoverridechecker-fix-prompt', 'btn-primary');
+        // Support view's diagnostics block (no-op elsewhere).
+        wireCopyButton('csti-support-copy', 'csti-support-diag', 'btn-primary');
         wireMarkReviewedModal();
         wireFullscreenButton();
         wireGatedConfirmModal('csoverridechecker-restore-modal',
@@ -403,3 +405,126 @@
         });
     }
 }());
+
+/* ==========================================================================
+   Screencasting-safe secret reveal
+   --------------------------------------------------------------------------
+   Any element carrying [data-csti-secret] starts blurred (see dashboard.css).
+   Holding hover over it for `delay` seconds shows a centred countdown and
+   then lifts the blur; leaving cancels and re-blurs; `hide` seconds after a
+   reveal the blur returns even if the pointer never moved.
+
+   Why hold-to-reveal rather than plain :hover — a pointer transiting the
+   element on its way to click something else would expose the secret on a
+   recording. Requiring a deliberate hold means exposure is always intentional.
+
+   Ported from cs-mcp-for-j, generalised to a single data-attribute hook so
+   any view can opt an element in without this file knowing about it.
+   ========================================================================== */
+(function () {
+    'use strict';
+
+    function opts() {
+        var o = (window.Joomla && Joomla.getOptions)
+            ? Joomla.getOptions('csoverridechecker', {})
+            : {};
+        return {
+            delay: parseInt(o.revealDelay, 10) || 0,
+            hide:  parseInt(o.revealHide, 10) || 0,
+            label: o.revealLabel || 'Revealing in {seconds}s'
+        };
+    }
+
+    function attach(el, cfg) {
+        if (!el || el.dataset.cstiRevealBound === '1') { return; }
+        el.dataset.cstiRevealBound = '1';
+
+        var isInput = el.tagName === 'INPUT' || el.tagName === 'TEXTAREA';
+
+        // Wrap in a scope whose box matches the element, so the countdown
+        // centres on the secret and not on some larger parent column.
+        var scope = document.createElement('span');
+        scope.className = 'csti-secret-scope';
+        if (isInput) { scope.style.display = 'block'; }
+        el.parentNode.insertBefore(scope, el);
+        scope.appendChild(el);
+
+        var countdown = document.createElement('span');
+        countdown.className = 'csti-secret-countdown';
+        countdown.setAttribute('aria-hidden', 'true');
+        scope.appendChild(countdown);
+
+        var tick = null, revealT = null, hideT = null, remaining = 0;
+
+        function cancel() {
+            if (tick !== null)    { clearInterval(tick); tick = null; }
+            if (revealT !== null) { clearTimeout(revealT); revealT = null; }
+            if (hideT !== null)   { clearTimeout(hideT); hideT = null; }
+            countdown.classList.remove('is-visible');
+            countdown.textContent = '';
+            el.classList.remove('csti-secret-revealed');
+        }
+
+        function reveal() {
+            if (tick !== null) { clearInterval(tick); tick = null; }
+            countdown.classList.remove('is-visible');
+            countdown.textContent = '';
+            el.classList.add('csti-secret-revealed');
+            revealT = null;
+            // Auto-hide covers the "glanced at it then got distracted" case,
+            // where an unattended browser would otherwise sit exposed.
+            if (cfg.hide > 0) {
+                hideT = setTimeout(function () {
+                    el.classList.remove('csti-secret-revealed');
+                    hideT = null;
+                }, cfg.hide * 1000);
+            }
+        }
+
+        function begin() {
+            if (cfg.delay <= 0) { cancel(); reveal(); return; }
+            cancel();
+            remaining = cfg.delay;
+            countdown.textContent = cfg.label.replace('{seconds}', String(remaining));
+            countdown.classList.add('is-visible');
+            tick = setInterval(function () {
+                remaining -= 1;
+                if (remaining <= 0) {
+                    countdown.textContent = '';
+                    countdown.classList.remove('is-visible');
+                } else {
+                    countdown.textContent = cfg.label.replace('{seconds}', String(remaining));
+                }
+            }, 1000);
+            revealT = setTimeout(reveal, cfg.delay * 1000);
+        }
+
+        el.addEventListener('mouseenter', begin);
+        el.addEventListener('mouseleave', cancel);
+        if (isInput) {
+            // Tabbing to a field to read or copy it shouldn't require a mouse.
+            el.addEventListener('focus', begin);
+            el.addEventListener('blur', cancel);
+        }
+    }
+
+    function bindAll() {
+        var cfg = opts();
+        document.querySelectorAll('[data-csti-secret]').forEach(function (el) {
+            attach(el, cfg);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        bindAll();
+        // Re-bind if a prompt block repaints and recreates its token span.
+        var host = document.getElementById('csoverridechecker-prompt');
+        if (host && 'MutationObserver' in window) {
+            new MutationObserver(bindAll).observe(host, { childList: true, subtree: true });
+        }
+    });
+
+    // Exposed so a view that injects secrets later can re-bind.
+    window.csti = window.csti || {};
+    window.csti.bindSecrets = bindAll;
+})();
