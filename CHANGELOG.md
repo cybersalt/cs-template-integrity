@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### 🐞 Fixes
+
+- **Browser tab title showed a raw HTML entity** on the Setup guide and Get help pages. `ToolbarHelper::title()` escapes its argument, so the `&mdash;` in those two title strings rendered literally as *"Cybersalt Override Checker &mdash; Setup guide"*. Both now use a real em dash. Fixed in all 15 locales.
+- **Anthropic key note still named the wrong default model.** It read *"defaults to Claude Opus 4.7"* after the default moved to Opus 4.8 — so the 2.6.0 changelog claimed this help text was correct when it wasn't. Fixed in all 15 locales.
+
 ## [2.6.0] — 2026-08-29
 
 Bring-your-own-AI release. The extension has always been drivable by any assistant that can make an HTTPS request — the REST API is open and secured by a standard Joomla API token — but both the admin interface and the documentation read as though Claude were a requirement. This release makes that true in the product: a provider selector for the built-in scan, an in-admin guide to using whatever AI you already have, a support area, and a one-click Joomla API token fetch. No schema change; safe in-place upgrade from 2.5.0.
@@ -35,7 +42,8 @@ Bring-your-own-AI release. The extension has always been drivable by any assista
 
 ### 📖 Documentation
 
-- **Full end-user documentation published** at <https://docs.cybersalt.com/extensions/override-checker> — install, all three review workflows, reading a report, applying and rolling back fixes, the audit trail, permissions, the Web Services API reference, troubleshooting, FAQ and support. Illustrated with 13 lossless-WebP screenshots. This is the documentation URL for the Joomla Extension Directory listing. Source lives in the repo at `docs/joomla-article.html`, with the shared site stylesheet at `docs/docs-site/csdoc.css`.
+- **Full end-user documentation published** at <https://docs.cybersalt.com/extensions/override-checker> — install, all three review workflows, reading a report, applying and rolling back fixes, the audit trail, permissions, the Web Services API reference, troubleshooting, FAQ and support. Illustrated with 15 lossless-WebP screenshots. This is the documentation URL for the Joomla Extension Directory listing. Source lives in the repo at `docs/joomla-article.html`, with the shared site stylesheet at `docs/docs-site/csdoc.css`.
+- **Documentation updated for this release.** Method 2 rewritten for the three-provider selector, with the Anthropic-only follow-up chat stated plainly rather than implied; new sections for the Setup guide and Get help views; the Joomla API token section rewritten around the one-click *Fetch my token* button and the two plugins a token depends on; hold-to-reveal secret blurring documented; troubleshooting gained rows for the silent `401` caused by a disabled `plg_api-authentication_token` and for the chat box being absent on non-Anthropic providers. Five screenshots reshot from the live 2.6.0 admin (`02`, `03`, `06`, `09`, `10`) and two added (`15-setup-guide`, `16-support`).
 
 ## [2.5.0] — 2026-06-26
 

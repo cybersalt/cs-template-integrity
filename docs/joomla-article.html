@@ -20,20 +20,33 @@
             /images/documentation/override-checker/
         Convention is /images/documentation/<extension>/ so each
         extension's screenshots get their own folder. If that path
-        changes it is one find-and-replace: 26 occurrences of
+        changes it is one find-and-replace: 30 occurrences of
             /images/documentation/override-checker/
-        The 13 files are lossless WebP - pixel-identical to the source
-        PNGs at 34% of the size.
+        The 15 files are lossless WebP - pixel-identical to the source
+        PNGs at roughly a third of the size.
 
-    SCREENSHOTS PENDING A RESHOOT
-      Two images still show pre-fix UI copy. The language strings were
-      corrected in the repo on 2026-08-26; these need reshooting once
-      that release is deployed to the site they were captured from:
-        * 09-options-keys.webp  - showed "defaults to Claude Sonnet 4.6"
-          and "capped to the first 60 per run" (now Opus 4.7 / cap 10)
-        * 10-options-permissions.webp - showed the raw element id in the
-          ACL labels (now "View Override Checker data")
-      The prose is correct in both cases - only the images lag.
+        Every figure MUST have a matching lightbox overlay at the foot
+        of the file and vice versa: csdoc-fig-NAME <-> csdoc-lb-NAME.
+
+    SCREENSHOT HISTORY
+      2026-09-01 (v2.6.0) - reshot from the live 2.6.0 admin:
+        * 02-dashboard-nav.webp   - nav row gained Setup guide / Get help;
+                                    "Method 1: Use your AI assistant"
+        * 03-method1-card.webp    - card is no longer Claude-specific
+        * 06-about-footer.webp    - vendor-neutral About text, version 2.6.0
+        * 09-options-keys.webp    - AI provider selector, per-provider key
+                                    fields, Fetch my Joomla API token button,
+                                    hold-to-reveal settings
+        * 10-options-permissions.webp - ACL labels now read
+                                    "View Override Checker data"
+      New in 2.6.0:
+        * 15-setup-guide.webp     - Components > Override Checker > Setup guide
+        * 16-support.webp         - Components > Override Checker > Get help
+
+      Capture notes: viewport 1440x900, element screenshots, secrets
+      redacted in the DOM before capture. Any Joomla API token visible
+      in 03 is the placeholder that decodes to
+      "sha256:408:DEMO-TOKEN-REDACTED-FOR-DOCUMENTATION".
 -->
 
 <div class="csdoc-doc">
@@ -129,6 +142,10 @@ extension. The updater verifies a SHA-256 checksum on every download.</p>
 <tr><td><strong>Sessions</strong></td><td>Every review report produced for this site, whichever AI ran it.</td></tr>
 <tr><td><strong>Reset overrides for review</strong></td><td>Rebuilds the override tracker for the templates you pick.</td></tr>
 <tr><td><strong>Diagnostics</strong></td><td>Version, PHP, API key status, and a connection test.</td></tr>
+<tr><td><strong>Setup guide</strong></td><td>Answers "which AI can I use?" without leaving the admin. See
+    <a href="#csdoc-setupguide">The Setup guide</a>.</td></tr>
+<tr><td><strong>Get help</strong></td><td>Where to report a problem, what to include, and a copyable diagnostics
+    block. See <a href="#csdoc-support">Getting help</a>.</td></tr>
 </tbody>
 </table>
 </div>
@@ -136,22 +153,57 @@ extension. The updater verifies a SHA-256 checksum on every download.</p>
 <h2>Before your first scan: the Joomla API token</h2>
 
 <p>Your AI reads your override files through Joomla's Web Services API, so it needs a
-Joomla API token. Generate one at <strong>System &rarr; Manage &rarr; Users</strong>,
-open your own user, and switch to the <strong>Joomla API Token</strong> tab. Click the
-eye icon to reveal it, then copy it.</p>
+Joomla API token. You can generate one the long way — <strong>System &rarr; Manage &rarr;
+Users</strong>, open your own user, switch to the <strong>Joomla API Token</strong> tab,
+reveal and copy — or you can let the extension do it.</p>
 
-<p>You can either paste that token into the prompt each time, or save it once in the
-extension's Options so the dashboard prompt auto-fills it.</p>
+<h3>The one-click way</h3>
+
+<p>Open <strong>Options &rarr; Keys &amp; tokens</strong>. Under the <em>Joomla API token</em>
+field there is a <strong>Fetch my Joomla API token</strong> button. Click it and the
+extension derives the token for the account you are logged in as and fills the field in
+place. If your account has never had one, it creates the seed record first. Save, and
+every prompt the dashboard generates from then on arrives with the token already
+substituted.</p>
+
+<div class="csdoc-note">
+<p><strong>It also fixes the thing nobody can diagnose.</strong> A working Joomla API
+token depends on <em>two</em> plugins, and they fail differently:</p>
+<ul>
+  <li><code>plg_user_token</code> — <em>User &ndash; Joomla API Token</em>. Mints the
+      token. With this disabled you simply cannot get one.</li>
+  <li><code>plg_api-authentication_token</code> — <em>API Authentication &ndash; Joomla API
+      Token</em>. Checks the token on incoming requests. With this disabled you get a
+      perfectly well-formed token that returns <code>401</code> on every single call,
+      with nothing anywhere to tell you why.</li>
+</ul>
+<p>If either is off, the Fetch button says so and offers to enable it for you. Enabling a
+plugin is a site-wide change, so that button needs Joomla's own plugin-management
+permission as well as write access to this component — if you are not a Super User you
+may be told to ask one.</p>
+</div>
+
+<h3>Keys don't sit on screen in plain text</h3>
+
+<p>Every key and token the extension displays is <strong>blurred by default</strong>. Hold
+your pointer over one and a countdown runs; after the delay it reveals, and it re-blurs
+by itself a few seconds later. Moving away cancels it. This exists so that a screen share,
+a training video or someone walking past your desk doesn't collect your credentials.
+Both timings are settings — <em>Hold-to-reveal delay</em> (3 seconds by default) and
+<em>Auto-hide after reveal</em> (8 seconds) — and setting either to <code>0</code> turns
+that half of the behaviour off.</p>
 
 <figure class="csdoc-fig">
   <a class="csdoc-thumb csdoc-tall" href="#csdoc-lb-options" id="csdoc-fig-options">
     <img src="/images/documentation/override-checker/09-options-keys.webp"
-         alt="The Keys and tokens tab in Options, showing the Anthropic API key field, Joomla API token field, scan model, chat model and overrides-per-scan settings">
+         alt="The Keys and tokens tab in Options, showing the AI provider selector, the Anthropic API key field, the Joomla API token field with its Fetch my Joomla API token button, the scan and chat model lists, the hold-to-reveal settings and overrides per scan">
     <span class="csdoc-zoom">&#10530; Click to enlarge</span>
   </a>
   <figcaption><strong>Options &rarr; Keys &amp; tokens.</strong> Everything the extension
-  needs lives on one tab. Click to read the full-size version — the inline help explains
-  each field and the cost trade-off between models.</figcaption>
+  needs lives on one tab: which AI provider to use, that provider's key, your Joomla API
+  token and the <em>Fetch</em> button, the model choice and the reveal timings. Click to
+  read the full-size version — the inline help explains every field and the cost
+  trade-off between models.</figcaption>
 </figure>
 
 <div class="csdoc-warn">
@@ -177,7 +229,8 @@ requests</em> — the data, the reports and the safety rails are identical.</p>
     <td>Any AI assistant that can make web requests. No API key, no extra cost.</td>
     <td>Almost everyone. Works with whatever AI you already use.</td></tr>
 <tr><td><strong>2. Built-in automated scan</strong></td>
-    <td>An <strong>Anthropic</strong> API key (pay-per-token).</td>
+    <td>An API key for <strong>Anthropic</strong>, <strong>OpenAI</strong> or
+        <strong>Google Gemini</strong> (pay-per-token).</td>
     <td>People who want the review to run server-side with no copy-paste.</td></tr>
 <tr><td><strong>3. Your own code or agent</strong></td>
     <td>The REST API and a Joomla API token.</td>
@@ -187,11 +240,42 @@ requests</em> — the data, the reports and the safety rails are identical.</p>
 </div>
 
 <div class="csdoc-note">
-<p><strong>Only Method 2 is tied to a specific vendor.</strong> It calls Anthropic's
-API directly, so it needs an Anthropic key. Methods 1 and 3 are completely
-assistant-agnostic — the extension neither knows nor cares which AI is on the other
-end of the connection.</p>
+<p><strong>Methods 1 and 3 are completely assistant-agnostic</strong> — the extension
+neither knows nor cares which AI is on the other end of the connection. Method 2 is the
+only one that calls an AI service itself, and it lets you pick which: Anthropic, OpenAI
+or Google. There is one real limit, covered in full under
+<a href="#csdoc-method2">Method 2</a>: all three providers run scans, but the follow-up
+chat that <em>applies</em> fixes for you is Anthropic-only.</p>
 </div>
+
+<h2 id="csdoc-setupguide">The Setup guide</h2>
+
+<p>"Which AI can I use?" is the question everybody asks first, so the answer is built into
+the admin as well as written here. <strong>Components &rarr; Override Checker &rarr; Setup
+guide</strong> is a single page you can read while you're deciding, without a second
+browser tab.</p>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb csdoc-tall" href="#csdoc-lb-setupguide" id="csdoc-fig-setupguide">
+    <img src="/images/documentation/override-checker/15-setup-guide.webp"
+         alt="The Setup guide view, leading with the capability an assistant needs and then per-family cards for terminal agents, browser chats, custom GPTs, local models and MCP clients, followed by the endpoint URL and authentication warning">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption>The Setup guide. It states the requirement first and names products second,
+  because product tiers change and the requirement doesn't.</figcaption>
+</figure>
+
+<p>It deliberately leads with the <em>capability</em> your assistant needs rather than a
+list of approved products — a list like that is out of date within months. Underneath
+that come per-family notes with a badge each: terminal and editor agents
+(<em>Recommended</em>), browser chat assistants (<em>Most common</em>), custom GPTs and
+Gems (<em>Best for multiple sites</em>), local and self-hosted models (<em>Works, with
+caveats</em>) and MCP clients (<em>Advanced</em>). The page finishes with this site's own
+endpoint URL and the <code>X-Joomla-Token</code> warning, ready to copy.</p>
+
+<p>If no Joomla API token is saved yet, the page says so at the top and links straight to
+Options. The same material, in more depth, is in
+<a href="#csdoc-notes">Notes for specific assistants</a> below.</p>
 
 <h2>Method 1 — the copy-paste prompt (any AI)</h2>
 
@@ -242,9 +326,11 @@ site will say so immediately.</p>
   <li>It asks which findings you want fixed. You answer in the same chat.</li>
 </ol>
 
-<h3>Notes for specific assistants</h3>
+<h3 id="csdoc-notes">Notes for specific assistants</h3>
 
-<p>All of these work. The differences are in setup friction, not capability.</p>
+<p>All of these work. The differences are in setup friction, not capability. A condensed
+version of this section is on the admin's <a href="#csdoc-setupguide">Setup guide</a>
+page, so you don't have to come back here mid-job.</p>
 
 <h4>Terminal and editor agents — Claude Code, Codex CLI, Cursor, Copilot agent mode, Aider</h4>
 <p>The smoothest option, and what we'd recommend if you have one available. They run on
@@ -298,26 +384,51 @@ a colleague, or you ran the scan in one assistant and want to apply the fixes fr
 another. It gives a fresh chat the context from the saved session so it can pick up
 where you left off.</p>
 
-<h2>Method 2 — the built-in automated scan (Anthropic)</h2>
+<h2 id="csdoc-method2">Method 2 — the built-in automated scan</h2>
 
-<div class="csdoc-note">
-<p><strong>This is the one vendor-specific method.</strong> The extension calls
-Anthropic's API directly, so it needs an Anthropic key and will not work with an
-OpenAI, Google or other provider's key. If you'd rather use a different assistant,
-use <a href="#csdoc-choose">Method 1</a> — it costs nothing extra and does the same
-job.</p>
+<p>Save an API key in Options and the dashboard gains a <strong>Run automated scan</strong>
+button. The whole review then runs server-side: no copy-paste, no second window. The
+report is saved as a session exactly as it would be in Method 1.</p>
+
+<h3>Pick your provider</h3>
+
+<p><strong>Options &rarr; Keys &amp; tokens</strong> has an <strong>AI provider</strong>
+selector at the top. Choosing one reveals that provider's key field and its model list and
+hides the others, so the tab only ever shows you the settings that apply.</p>
+
+<div class="csdoc-table-wrap">
+<table>
+<thead><tr><th>Provider</th><th>Key from</th><th>Models offered</th></tr></thead>
+<tbody>
+<tr><td><strong>Anthropic (Claude)</strong><br><em>default</em></td>
+    <td><a href="https://console.anthropic.com/">console.anthropic.com</a></td>
+    <td>Haiku 4.5, Sonnet 5, Opus 4.8 (default)</td></tr>
+<tr><td><strong>OpenAI (GPT)</strong></td>
+    <td><a href="https://platform.openai.com/api-keys">platform.openai.com</a></td>
+    <td>GPT-5 mini, GPT-5 (default)</td></tr>
+<tr><td><strong>Google (Gemini)</strong></td>
+    <td><a href="https://aistudio.google.com/apikey">aistudio.google.com</a></td>
+    <td>Gemini 2.5 Flash, Gemini 2.5 Pro (default)</td></tr>
+</tbody>
+</table>
 </div>
 
-<p>If you save an Anthropic API key in Options, the dashboard gains a
-<strong>Run automated scan</strong> button. The whole review then runs server-side: no
-copy-paste, no second window. The report is saved as a session exactly as it would be in
-Method 1, and a chat box on the session page lets you ask for fixes without leaving the
-Joomla admin.</p>
+<div class="csdoc-warn">
+<p><strong>All three run scans. Only Anthropic can apply the fixes for you.</strong>
+Whichever provider you pick, you get the full report saved as a session. What is
+Anthropic-only is the <em>follow-up chat</em> on the session page — the one where you name
+finding numbers and it edits the files. That loop is written against Anthropic's
+tool-calling protocol, so it isn't offered for the other two.</p>
+<p>This is not a dead end. With OpenAI or Gemini selected you read the report in the admin
+and then apply the fixes with <a href="#csdoc-choose">Method 1</a>'s copy-paste prompt,
+which works with any AI at all. Or switch the provider to Anthropic and use the chat box.
+Either way nothing is stuck.</p>
+</div>
 
 <figure class="csdoc-fig">
   <a class="csdoc-thumb" href="#csdoc-lb-method2" id="csdoc-fig-method2">
     <img src="/images/documentation/override-checker/05-method2-nokey.webp"
-         alt="The Method 2 card showing a warning that no Anthropic API key is saved, with an Options button">
+         alt="The Method 2 card showing a warning that no API key is saved, with an Options button">
     <span class="csdoc-zoom">&#10530; Click to enlarge</span>
   </a>
   <figcaption>With no key saved, Method 2 explains itself and offers a shortcut to
@@ -325,13 +436,19 @@ Joomla admin.</p>
 </figure>
 
 <div class="csdoc-note">
-<p><strong>This is pay-per-token.</strong> The key is yours, from
-<a href="https://console.anthropic.com/">console.anthropic.com</a>, it is stored in your
-own site's database, and it is used only to call Anthropic on your behalf. Each scan is
+<p><strong>This is pay-per-token.</strong> The key is yours, it is stored in your own
+site's database, and it is used only to call that provider on your behalf. Each scan is
 one API call. The <em>Overrides per scan</em> setting caps how many findings go into a
-single call — keeping it low also keeps your follow-up chat turns under Anthropic's
+single call — keeping it low also keeps your follow-up chat turns under the provider's
 rate limits. Sites with more overrides than the cap just need a few runs; each run saves
 as its own session.</p>
+</div>
+
+<div class="csdoc-tip">
+<p>Saved settings survive a provider change. Your Anthropic key stays where it is if you
+switch to Gemini for a while — the field is just hidden, not cleared — so switching back
+costs nothing. Likewise a model you picked in an earlier version keeps working after an
+upgrade rather than silently reverting to the new default.</p>
 </div>
 
 <h2>Method 3 — your own code or agent</h2>
@@ -383,9 +500,10 @@ for your own system prompt.</p>
     <span class="csdoc-zoom">&#10530; Click to enlarge</span>
   </a>
   <figcaption>A real report on a real site. <em>Actions during this session</em> on the
-  right ties the report to what was actually done; the follow-up chat below is
-  where you ask for fixes when an Anthropic key is saved (Method 2). <em>Fullscreen</em> expands the
-  report; <em>Download report</em> saves the Markdown.</figcaption>
+  right ties the report to what was actually done; the follow-up chat below is where you
+  ask for fixes, and it needs an <em>Anthropic</em> key saved (Method 2).
+  <em>Fullscreen</em> expands the report; <em>Download report</em> saves the
+  Markdown.</figcaption>
 </figure>
 
 <p>Reports are written for the site owner, not the developer, and always in the same order:</p>
@@ -438,7 +556,8 @@ the extension.</p>
 <h2>Applying fixes — and undoing them</h2>
 
 <p>You confirm fixes by naming specific finding numbers, either in your own AI chat
-(Method 1) or in the session's chat box (Method 2). The prompt instructs the assistant to
+(Method 1) or in the session's chat box (Method 2, Anthropic key required — see
+<a href="#csdoc-method2">Method 2</a>). The prompt instructs the assistant to
 refuse vague instructions on purpose: if you say "fix those" without numbers, it should
 stop and ask which ones you mean, because acting on a misread pronoun could patch the
 wrong file.</p>
@@ -580,8 +699,16 @@ Accept: application/vnd.api+json</code></pre>
   <li>Automated scans are rate-limited to 12 per user per hour.</li>
   <li><code>opcache_invalidate()</code> runs after every PHP write, so a patch takes
       effect on the very next request.</li>
-  <li>The saved Anthropic key is fingerprinted with a hash — no part of the key itself is
-      exposed in Diagnostics.</li>
+  <li>The saved provider key is fingerprinted with a hash — no part of the key itself is
+      exposed in Diagnostics, and the <em>Get help</em> page reports only whether a key
+      is present, never its value.</li>
+  <li>Keys and tokens render blurred wherever they appear, and re-blur on a timer after
+      being revealed, so a screen share or screencast doesn't leak them.</li>
+  <li>The one-click token fetch derives only the <em>current</em> user's token — it will
+      not accept a user id from the request — and the buttons that enable Joomla's two
+      token plugins require Joomla's own plugin-management permission on top of this
+      extension's write permission, so a delegated "override reviewer" group can't use
+      them to re-open an API surface a Super User closed.</li>
   <li>File contents are treated as untrusted data. Text inside an override file that looks
       like an instruction is ignored; only the prompt and your chat messages direct the
       review.</li>
@@ -595,8 +722,8 @@ Accept: application/vnd.api+json</code></pre>
          alt="The Diagnostics panel showing API key status, a Run test button, and system rows for version, Joomla, PHP, API base URL and auto-scan cap">
     <span class="csdoc-zoom">&#10530; Click to enlarge</span>
   </a>
-  <figcaption>Diagnostics. <em>Run test</em> sends a deliberately tiny request to
-  Anthropic to prove the key is valid and reachable from your server — it costs
+  <figcaption>Diagnostics. <em>Run test</em> sends a deliberately tiny request to your
+  chosen AI provider to prove the key is valid and reachable from your server — it costs
   next to nothing.</figcaption>
 </figure>
 
@@ -610,8 +737,17 @@ Accept: application/vnd.api+json</code></pre>
         Checker</em>. The package enables it automatically, but a manual install of the
         component alone will not.</td></tr>
 <tr><td>API returns <code>401 Forbidden</code></td>
-    <td>Either you sent <code>Authorization: Bearer</code> instead of
-        <code>X-Joomla-Token</code>, or the token has been regenerated since it was saved.</td></tr>
+    <td>Three usual causes. You sent <code>Authorization: Bearer</code> instead of
+        <code>X-Joomla-Token</code>; or the token has been regenerated since it was
+        saved; or — the nasty one — the <em>API Authentication &ndash; Joomla API
+        Token</em> plugin is disabled, in which case a perfectly valid token is rejected
+        on every call. Click <em>Fetch my Joomla API token</em> in
+        <strong>Options &rarr; Keys &amp; tokens</strong>: it checks both plugins and
+        offers to enable whichever is off.</td></tr>
+<tr><td><em>Fetch my Joomla API token</em> can't enable a plugin</td>
+    <td>Enabling a plugin is a site-wide change, so it needs Joomla's plugin-management
+        permission as well as this extension's write permission. Ask a Super User, or
+        enable the plugin by hand under <strong>System &rarr; Plugins</strong>.</td></tr>
 <tr><td>Claude.ai says "Host not in allowlist"</td>
     <td>claude.ai's sandbox is blocking your domain. Add it under
         <strong>Settings &rarr; Capabilities &rarr; Code execution &rarr; Network
@@ -620,8 +756,12 @@ Accept: application/vnd.api+json</code></pre>
     <td>A browser request timeout. Ask it to work in smaller batches, or use a
         terminal-based agent, which has no such limit.</td></tr>
 <tr><td><code>HTTP 429: rate limit exceeded</code></td>
-    <td>Too many tokens in one minute on a lower Anthropic tier. Lower
+    <td>Too many tokens in one minute on a lower provider tier. Lower
         <em>Overrides per scan</em> and re-run.</td></tr>
+<tr><td>The session's chat box isn't offered</td>
+    <td>The follow-up chat that applies fixes is Anthropic-only. With OpenAI or Gemini
+        selected you still get the full report — apply the fixes with Method 1's
+        copy-paste prompt, or switch the provider to Anthropic.</td></tr>
 <tr><td>A <code>core-file</code> request 404s</td>
     <td>Expected, not an error. The override is a custom alternative layout with no core
         counterpart, so it's reviewed on its own merits instead of by comparison.</td></tr>
@@ -638,13 +778,20 @@ Accept: application/vnd.api+json</code></pre>
 Nothing is written until you confirm specific numbered findings, and every write is
 backed up first.</p>
 
-<p><strong>Do I need to pay Anthropic?</strong> Only for Method 2. Method 1 works with
-whatever AI subscription you already have and needs no API key.</p>
+<p><strong>Do I need to pay an AI company?</strong> Only for Method 2, and only the one you
+choose — Anthropic, OpenAI or Google. Method 1 works with whatever AI subscription you
+already have and needs no API key at all.</p>
+
+<p><strong>Can I use ChatGPT or Gemini for everything?</strong> For the review, yes,
+either through Method 1's prompt or by selecting them as the Method 2 provider. The one
+thing they can't do yet is the in-admin follow-up chat that applies fixes for you; that
+loop is written against Anthropic's tool-calling protocol. Applying the fixes through
+Method 1's prompt works with any assistant.</p>
 
 <p><strong>Does my code get sent anywhere?</strong> Your override files are sent to
 your chosen AI for review — that's what the review is. In Method 1 that happens through
-your own AI session; in Method 2 through your own Anthropic API key. Nothing is ever sent
-to Cybersalt.</p>
+your own AI session; in Method 2 through your own API key with the provider you picked.
+Nothing is ever sent to Cybersalt.</p>
 
 <p><strong>What if I disagree with a finding?</strong> Ignore it. Nothing is applied
 without you naming it. You can also ask your AI to explain its reasoning on any single
@@ -669,6 +816,29 @@ a finding it got wrong, a workflow it doesn't fit, an assistant you tried that b
 unexpectedly — all of it is useful, and the feedback from real sites is what has shaped
 every release so far.</p>
 </div>
+
+<h3 id="csdoc-support">The Get help page</h3>
+
+<p>All of this is also in the admin, at <strong>Components &rarr; Override Checker &rarr;
+Get help</strong>, so you can start a bug report from the screen the problem happened
+on.</p>
+
+<figure class="csdoc-fig">
+  <a class="csdoc-thumb" href="#csdoc-lb-support" id="csdoc-fig-support">
+    <img src="/images/documentation/override-checker/16-support.webp"
+         alt="The Get help view: a free-and-stays-free card, a realistic note about response times, buttons for GitHub Issues and the documentation, a what-to-include list, and a diagnostics block with a Copy diagnostics button">
+    <span class="csdoc-zoom">&#10530; Click to enlarge</span>
+  </a>
+  <figcaption><strong>Get help.</strong> The panel on the right is the useful bit — one
+  click puts your versions on the clipboard, ready to paste into an issue.</figcaption>
+</figure>
+
+<p>The <strong>Diagnostics</strong> panel is worth knowing about. <em>Copy diagnostics</em>
+gives you a plain-text block with the extension version, your Joomla and PHP versions,
+the site URL, and whether an AI key and a Joomla API token are saved. That last pair is
+recorded as <em>presence only</em> — <strong>saved</strong> or <strong>not saved</strong>,
+never the value — so the whole block is safe to paste into a public GitHub issue without
+reading it line by line first.</p>
 
 <h3>Where to send it</h3>
 
@@ -695,10 +865,11 @@ company and this extension is given away for nothing, so free support is offered
 allows around client work. That's a real constraint, not a brush-off — we would rather
 say so plainly than leave you waiting on a promise we can't keep.</p>
 <p>You'll get the fastest result by helping us skip the diagnosis: tell us your
-<strong>Joomla and PHP versions</strong> and the <strong>extension version</strong> (all
-three are in the <em>Diagnostics</em> panel), which <strong>method and which AI
-assistant</strong> you were using, and what you expected to happen versus what actually
-did. A screenshot of the Diagnostics panel answers most of that in one go.</p>
+<strong>Joomla and PHP versions</strong> and the <strong>extension version</strong>,
+which <strong>method and which AI provider or assistant</strong> you were using, and what
+you expected to happen versus what actually did. The <em>Copy diagnostics</em> button on
+the <a href="#csdoc-support">Get help</a> page covers the first of those in one
+paste.</p>
 </div>
 
 <p>If you're reporting something the AI got wrong, the single most useful thing you can
@@ -779,4 +950,14 @@ GNU General Public License v2 or later. Source, releases and changelog:
 <a class="csdoc-lb" id="csdoc-lb-diag" href="#csdoc-fig-diag">
   <span class="csdoc-lb-cap">Diagnostics &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
   <img src="/images/documentation/override-checker/07-diagnostics.webp" alt="The Diagnostics panel">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-setupguide" href="#csdoc-fig-setupguide">
+  <span class="csdoc-lb-cap">The Setup guide &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/15-setup-guide.webp" alt="The Setup guide view with its per-assistant-family cards">
+</a>
+
+<a class="csdoc-lb" id="csdoc-lb-support" href="#csdoc-fig-support">
+  <span class="csdoc-lb-cap">Get help &mdash; click anywhere to close</span><span class="csdoc-lb-x">Close &times;</span>
+  <img src="/images/documentation/override-checker/16-support.webp" alt="The Get help view with its copyable diagnostics block">
 </a>
